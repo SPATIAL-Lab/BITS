@@ -32,6 +32,7 @@ model {
   #Priors for ivory sampling
   #assuming laser ablation has no averaging effects, which samples daily Rs values
   
+  #Parameters for the ivory growth rate of the subject
   Ivo.rate ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
   Ivo.rate.mean <- 14.7 #microns per day
   Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
@@ -58,12 +59,12 @@ model {
     
     #Rin.m.eps[i] ~ dnorm(Rin.m.eps[i - 1] * Rin.m.eps.ac, Rin.m.pre)
     
-    #error correlation structure of cps (change per step)
+    #autocorrelation structure of cps (change per step)
     Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre)
     
     #autocorrelation term is also a time series with an autocorrelation structure
-    #it is centered around the previous step with some error allowed
-    #this is used to accommodate the wide range of autocorrelation in the actual data
+    #it is centered around the previous step with some variation allowed
+    #this is used to accommodate the wide range of autocorrelation values in the actual data
     #including a sharp increase in input values during the switch, and steady values before and after
     Rin.m.cps.ac[i] ~ dnorm(Rin.m.cps.ac[i - 1], Rin.m.cps.ac.pre)
   }
@@ -73,23 +74,24 @@ model {
   
   Rin.m.int ~ dunif(R0, Re) #any value between R0 and Re
   
-  #initial error per step
+  #initial change per step
   Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   
-  #parameters for auto-correlation of error per step
+  #parameters for auto-correlation of change per step
   #this is assumed to be a universal parameter of the entire sequence
   #Rin.m.eps.ac ~ dunif(0, 2)
   
   Rin.m.cps.ac.pre ~ dgamma(Rin.m.cps.ac.pre.shp, Rin.m.cps.ac.pre.rate)
   
-  # Rin.m.cps.ac.pre.shp = 20
-  # Rin.m.cps.ac.pre.rate = 2
+  Rin.m.cps.ac.pre.shp = 20
+  Rin.m.cps.ac.pre.rate = 2
   
   #try a less variable conbination
-  Rin.m.cps.ac.pre.shp = 10
-  Rin.m.cps.ac.pre.rate = 0.2
+  # Rin.m.cps.ac.pre.shp = 10
+  # Rin.m.cps.ac.pre.rate = 0.2
   
   #it can also be modeled as a sequence with independent values
+  #the initial value is from an uninformative distribution
   Rin.m.cps.ac[1] ~ dunif(0, 2)
   
   #error of the input values, has to be a reasonable value, 1sd at 1e-5 for water measurements
@@ -97,7 +99,7 @@ model {
   
   Sr.pre.rate.Rin <- 1e-6
 
-
+  ####scaling parameters a, b, c to body mass of the subject#####
   #adjusting a, b and c to the body mass of the elephant investigated
   #rate ~ scale with e3/4 body mass (basal matabolic rate)
   #pool ~ scale with 1 body mass
@@ -106,7 +108,8 @@ model {
   b.m <- b * (Body.mass.m/Body.mass)^-0.25
   c.m <- c * (Body.mass.m/Body.mass)^-0.25
   
-  #Mammuthus primigenius is estimated to be around 9500 +- 500 kg 
+  #For example, Mammuthus primigenius is estimated to be around 9500 +- 500 kg
+  #for the purpose of demonstration, here we use the same parameters as in Misha
   Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2)
   Body.mass.m.mean <- 4800 # kg
   Body.mass.m.sd <- 250 # kg
@@ -115,7 +118,7 @@ model {
   Body.mass.mean <- 4800 # kg
   Body.mass.sd <- 250 # kg
   
-  ########calibration process for parameters a, b, and c######
+  ########calibration process for parameters a, b, and c in misha######
   #Data eveluation
   for (i in 1:n.cal){
 
