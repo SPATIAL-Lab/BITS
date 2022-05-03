@@ -297,6 +297,7 @@ post.misha.19$BUGSoutput$summary
 traplot(post.misha.19,parms = c("flux.ratio", "pool.ratio"))
 traplot(post.misha.19,parms = c("a", "b","c"))
 
+#checking the parameters
 hist(post.misha.19$BUGSoutput$sims.list$flux.ratio)
 hist(post.misha.19$BUGSoutput$sims.list$pool.ratio)
 plot(density(post.misha.19$BUGSoutput$sims.list$c))
@@ -325,7 +326,6 @@ MCMC.ts.Rs.index.19 <- MCMC.ts.dist(post.misha.19$BUGSoutput$sims.list$Rs.m,
                                  post.misha.19$BUGSoutput$sims.list$mod.index)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
 MCMC.ts.RS.89.19 <- MCMC.ts(MCMC.ts.Rs.index.19)
-#Misha.med.dist <- MCMC.dist.median(post.misha$BUGSoutput$sims.list$mod.dist)
 
 lines(dist.mea, MCMC.ts.RS.89.19[[1]], lwd = 1, col = "cyan")
 lines(dist.mea, MCMC.ts.RS.89.19[[2]], lwd = 1, lty = 2, col = "cyan")
@@ -340,7 +340,6 @@ MCMC.ts.Rb.index.19 <- MCMC.ts.dist(post.misha.19$BUGSoutput$sims.list$Rb.m,
                                     post.misha.19$BUGSoutput$sims.list$mod.index)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
 MCMC.ts.Rb.89.19 <- MCMC.ts(MCMC.ts.Rb.index.19)
-#Misha.med.dist <- MCMC.dist.median(post.misha$BUGSoutput$sims.list$mod.dist)
 
 lines(dist.mea, MCMC.ts.Rb.89.19[[1]], lwd = 1, col = "cyan")
 lines(dist.mea, MCMC.ts.Rb.89.19[[2]], lwd = 1, lty = 2, col = "cyan")
