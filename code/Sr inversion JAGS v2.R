@@ -36,8 +36,6 @@ model {
   Ivo.rate ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
   Ivo.rate.mean <- 14.7 #microns per day
   Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
-  
-  #use Rin.m to represent 
 
   for (i in 2:t){
     #serum ratio
