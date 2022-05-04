@@ -259,6 +259,114 @@ plot(density(post.misha$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c
 lines(density(post.misha$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
 legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
 
+####model with only one single serum pool###
+
+#R0 is the mean ratio of initial value
+#this is first tested with the same values assigned to the two pool model
+#then tested with a different end ratio
+R0 <- 0.70706
+#Re is the mean ratio of end value  
+Re <- 0.7110
+
+#assign fixed Rin mean values
+Rin.mean <- c(rep(R0,75),rep(Re,975))
+
+#hist(1/rgamma(1000, shape = 10, rate = 0.2)^0.5)
+
+#parameters to save
+parameters <- c("a", "Ivo.rate", "Rs.m","Rin","mod.index","mod.dist",
+                "Sr.pre", "Ps", "Fin")
+##Data to pass to the model
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1050, n.mea = n.mea, 
+           Rin.mean = Rin.mean, R0 = R0, Re = Re)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 1e4
+n.burnin = 2e3
+n.thin = floor(n.iter-n.burnin)/1000
+
+#Run it
+post.misha.nb1 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone.R", 
+                                        parameters.to.save = parameters, 
+                                        data = dat, n.chains=3, n.iter = n.iter, 
+                                        n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 2 hours
+
+post.misha.nb1$BUGSoutput$summary
+
+save(post.misha.nb1, file = "out/post.misha.nb1.RData")
+
+plot(density(post.misha.nb1$BUGSoutput$sims.list$a))
+map_estimate(post.misha.nb1$BUGSoutput$sims.list$a)
+
+plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+MCMC.ts.Rs.index.nb1 <- MCMC.ts.dist(post.misha.nb1$BUGSoutput$sims.list$Rs.m, 
+                                    post.misha.nb1$BUGSoutput$sims.list$mod.dist,
+                                    post.misha.nb1$BUGSoutput$sims.list$mod.index)
+lines(misha$dist,misha$mean,lwd = 2, col = "red")
+MCMC.ts.RS.89.nb1 <- MCMC.ts(MCMC.ts.Rs.index.nb1)
+
+lines(dist.mea, MCMC.ts.RS.89.nb1[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb1[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb1[[3]], lwd = 1, lty = 2, col = "cyan")
+
+#####try a new parameter fit with Re = 0.7110####
+R0 <- 0.70706
+#Re is the mean ratio of end value  
+Re <- 0.7110
+
+switch <- 75
+
+#parameters to save
+parameters <- c("a", "Ivo.rate", "Rs.m","Rin","mod.index","mod.dist",
+                "Sr.pre", "Ps", "Fin", "Re.mean", "R0.mean")
+##Data to pass to the model
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1050, n.mea = n.mea, 
+           R0 = R0, Re = Re, switch = switch)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 1e4
+n.burnin = 2e3
+n.thin = floor(n.iter-n.burnin)/1000
+
+#Run it
+post.misha.nb2 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone v2.R", 
+                                            parameters.to.save = parameters, 
+                                            data = dat, n.chains=3, n.iter = n.iter, 
+                                            n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 2 hours
+
+post.misha.nb2$BUGSoutput$summary
+
+save(post.misha.nb2, file = "out/post.misha.nb2.RData")
+
+plot(density(post.misha.nb2$BUGSoutput$sims.list$a))
+
+plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+MCMC.ts.Rs.index.nb2 <- MCMC.ts.dist(post.misha.nb2$BUGSoutput$sims.list$Rs.m, 
+                                     post.misha.nb2$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb2$BUGSoutput$sims.list$mod.index)
+lines(misha$dist,misha$mean,lwd = 2, col = "red")
+MCMC.ts.RS.89.nb2 <- MCMC.ts(MCMC.ts.Rs.index.nb2)
+
+lines(dist.mea, MCMC.ts.RS.89.nb2[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb2[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb2[[3]], lwd = 1, lty = 2, col = "cyan")
+
 ####v2 model with 0.7119 end value#####
 #R0 is the mean ratio of initial value 
 R0 <- 0.70706
