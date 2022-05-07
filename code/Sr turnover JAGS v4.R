@@ -102,7 +102,7 @@ model {
   
   #building a vector of weights for the switch point and allow some error
   #the suspected switch point is 76 out of t
-  #so the values between 73 and 79 are allowed
+  #so the values between 74 and 78 are allowed
   pi <- c(pi.int, pi.switch, pi.end)
     
   pi.end <- rep(0, t - date - err.date)
@@ -112,10 +112,10 @@ model {
   pi.int <- rep(0, date - err.date - 1)
   
   #uncertainty of the date of switch = +- the number of days
-  err.date <- 3 
+  err.date <- 2 
   
   #suspected date of the switch
-  date <- 77
+  date <- 76
   
 
   #allowing some uncertainty in Re and R0 values
@@ -127,7 +127,7 @@ model {
   Re.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Re)
   R0.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.R0)
   Sr.pre.rate.Re <- 2e-5
-  Sr.pre.rate.R0 <- 1e-6
+  Sr.pre.rate.R0 <- 2e-6
 
   
   #precision for average Sr measurements in bone should be much smaller, here represented using rate

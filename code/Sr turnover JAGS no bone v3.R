@@ -112,7 +112,7 @@ model {
   Re.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Re)
   R0.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.R0)
   Sr.pre.rate.Re <- 2e-5
-  Sr.pre.rate.R0 <- 1e-6
+  Sr.pre.rate.R0 <- 2e-6
   
   Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s)  
   
