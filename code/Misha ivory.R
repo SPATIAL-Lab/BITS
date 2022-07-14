@@ -302,6 +302,7 @@ proc.time() - t1 #~ 5 hours
 post.misha.4$BUGSoutput$summary
 
 save(post.misha.4, file = "out/post.misha.4.RData")
+load("out/post.misha.4.RData")
 
 traplot(post.misha.4,parms = c("flux.ratio", "pool.ratio"))
 traplot(post.misha.4,parms = c("a", "b","c"))
@@ -480,6 +481,8 @@ proc.time() - t1 #~ 2 hours
 post.misha.nb3$BUGSoutput$summary
 
 save(post.misha.nb3, file = "out/post.misha.nb3.RData")
+
+load("out/post.misha.nb3.RData")
 
 plot(density(post.misha.nb3$BUGSoutput$sims.list$a))
 
@@ -778,6 +781,8 @@ proc.time() - t1 #~ 8 hours
 save(post.misha.inversion3, file = "out/post.misha.inversion3.RData")
 
 post.misha.inversion3$BUGSoutput$summary
+
+post.misha.inversion3 <- load("out/post.misha.inversion3.RData")
 
 #plotting modeled serum values and checking the fit of the data
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
