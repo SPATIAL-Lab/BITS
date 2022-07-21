@@ -20,10 +20,6 @@ model {
   #assuming serum volume is ~ 7% volume (L) of body mass (kg)
   S.vol <- 0.07 * Body.mass # Liter
 
-  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
-  Body.mass.mean <- 4800 # kg
-  Body.mass.sd <- 250 # kg
-
   flux.ratio <- a/b
   pool.ratio <- c/b
   #Data eveluation
@@ -86,15 +82,15 @@ model {
   # c ~ dunif(0, 1)
 
   #model initial values for bone and serum
-  
-  Rb.m[1] ~ dnorm(R0.mean, Sr.pre.b) #use a different error term
+  #assume that bone value is similar to serum, but use a different error term
+  Rb.m[1] ~ dnorm(Rs.m[1], Sr.pre.b) 
   Rs.m[1] ~ dnorm(R0.mean, Sr.pre.s)
   
   #generate time series of input values
   #Rin is the input ratio, which is modeled with a switch point in the time series
   for(i in 1:t){
     
-    Rin[i] ~ dnorm(ifelse(i > switch, Re.mean, R0.mean), ifelse(i > switch, Re.pre, R0.pre))
+    Rin[i] ~ dnorm(ifelse(i > switch, Re.mean[i], R0.mean), ifelse(i > switch, Re.pre, R0.pre))
     #When i is greater than the switch point, Rin ~ dnorm(Re.mean, Rin.m.pre)
   }
   
@@ -116,11 +112,8 @@ model {
   
   #suspected date of the switch
   date <- 76
-  
 
-  #allowing some uncertainty in Re and R0 values
-  Re.mean ~ dnorm(Re, Re.pre)
-  
+  #allowing some uncertainty in R0 values
   R0.mean ~ dnorm(R0, R0.pre)
   
   #Re has more uncertainty than Re
@@ -130,18 +123,113 @@ model {
   Sr.pre.rate.R0 <- 2e-6
 
   
-  #precision for average Sr measurements in bone should be much smaller, here represented using rate
+  #precision for average Sr measurements in bone should be much smaller
   Sr.pre.b ~ dgamma(Sr.pre.shape, Sr.pre.rate.b)  
-  Sr.pre.rate.b <- 1e-6
+  Sr.pre.rate.b <- 2e-6
   
-  #precition for average Sr measurements in ivory and serum is estimated
-  #based on 25 point average, which centers around 1e-4
-  Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s)
+  Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s) 
   
   Sr.pre.shape <- 100
   Sr.pre.rate.s <- 4e-5
   
-
+  #generate Sr values of food using a mixing process of food and water
+  for(i in 1:t){
+    w.contrib[i] = w.water[i]/(w.food[i] + w.water[i])
+    
+    h.contrib[i] = w.hay[i]/(w.food[i] + w.water[i])
+    #weighted mean calculated by Sr concentration and ratio
+    Re.mean[i] = (sum.c.Sr.pel[i] + sum.c.Sr.hay[i] + sum.c.Sr.sup[i] + c.Sr.w * w.intake[i])/(w.food[i] + w.water[i])
+    
+    w.food[i] = w.hay[i] + w.sup[i] + w.pel[i] #total amount of Sr in food
+    
+    #calculate weights based on concentrations, 20kg each for hay and alfalfa
+    #with the digestibility modifier for hay and alfalfa and diet ratio
+    #total amount of Sr in hay, mass * concentration * digestibility * ratio
+    w.hay[i] = sum(c.hay.m) * diges.h * f.h[i] / m.feed * f.intake[i] 
+    
+    sum.c.Sr.hay[i] = sum(c.Sr.hay) * diges.h * f.h[i] / m.feed * f.intake[i]
+    
+    #pellet is assumed to be homogenized and 60% digestible (Sr) (half the fiber content as hay)
+    #calculate weight of the pellet
+    w.pel[i] = c.pel.m * f.pel[i] * diges.p * p.intake[i] #total amount of Sr in pellet
+    
+    sum.c.Sr.pel[i] = Sr.pel.m * c.pel.m * f.pel[i] * diges.p * p.intake[i]
+    
+    #calculate weight of the supplement
+    w.sup[i] = c.sup.m * (1- f.pel[i]) * diges.s * p.intake[i] #total amount of Sr in pellet
+    
+    sum.c.Sr.sup[i] = Sr.sup.m * c.sup.m * (1- f.pel[i]) * diges.s * p.intake[i]
+    
+    #Water Sr values
+    #calculate weight of the water
+    w.water[i] = w.intake[i] * c.w.m #total amount of Sr in water intake, volume * concentration
+    
+    #pellet is fed at ~10% food by mass(Wood et al., 2020)
+    
+    p.intake[i] = f.intake[i] *(1 - f.h[i])
+    
+    f.pel[i] ~ dbeta(alpha.pel, beta.pel) #Pellet vs supplement
+    
+    f.h[i] ~ dbeta(alpha.h, beta.h) #Hay ~80%
+    
+    f.intake[i] = f.intake.perc[i] * Body.mass
+    #daily food intake ~ 1.5% +- 0.2% body mass
+    f.intake.perc[i] ~ dnorm(0.015, 1/0.002^2)
+    
+    w.intake[i] = w.intake.perc[i] * Body.mass
+    #daily water intake ~ 1.5% +- 0.2% body mass
+    w.intake.perc[i] ~ dnorm(0.015, 1/0.002^2)
+    
+  }
+  #water concentration and Sr ratio
+  c.w.m ~ dlnorm(conc.w.mean, 1/conc.w.sd^2)
+  
+  Sr.w.m ~ dnorm(Sr.w.mean, 1/Sr.w.sd^2)
+  
+  c.Sr.w = Sr.w.m * c.w.m #product of concentration and Sr
+  
+  #Define parameters for beta distributions
+  alpha.h ~ dnorm(32, 1/0.4^2)
+  
+  beta.h ~ dnorm(8, 1/4^2)
+  
+  alpha.pel ~ dnorm(40, 1/1^2)
+  
+  beta.pel ~ dnorm(40, 1/1^2)
+  
+  #Ca absorption rate of hay is estimated to be 60 +- 2%
+  diges.h ~ dnorm(0.6, 1/0.03^2)
+  
+  #Ca absorption rate of pellet is assumed to be slightly higher 70% (15% fiber)
+  diges.p ~ dnorm(0.7, 1/0.03^2)
+  
+  #Ca absorption rate of supplement is assumed to be around the same as pellet at 70% (12% fiber)
+  diges.s ~ dnorm(0.7, 1/0.03^2)
+  
+  #supplement concentration and Sr ratio
+  c.sup.m ~ dlnorm(conc.sup.mean, 1/conc.sup.sd^2)
+  
+  Sr.sup.m ~ dnorm(Sr.sup.mean, 1/Sr.sup.sd^2)
+  
+  #pellet concentration and Sr ratio
+  c.pel.m ~ dlnorm(conc.pel.mean, 1/conc.pel.sd^2)
+  
+  Sr.pel.m ~ dnorm(Sr.pel.mean, 1/Sr.pel.sd^2)
+  
+  #modeling mixing of m.feed kgs of hay in the feeding process
+  for(i in 1:m.feed){
+    
+    c.hay.m[i] ~ dlnorm(conc.hay.mean, 1/conc.hay.sd^2)
+    
+    Sr.hay.m[i] ~ dnorm(Sr.hay.mean, 1/Sr.hay.sd^2)
+    
+    c.Sr.hay[i] = Sr.hay.m[i] * c.hay.m[i] #product of concentration and Sr
+    
+  }
+  
+  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
+  Body.mass.mean <- 4800 # kg
+  Body.mass.sd <- 250 # kg
   
 }
 
