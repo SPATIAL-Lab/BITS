@@ -6,261 +6,19 @@ library(bayestestR)
 library(scales)
 library(MASS)
 library(viridisLite)
+library(EnvStats)
 
 plot.col<-viridis(7)
 
 setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 misha <- read.csv("data/Misha ivory.csv")
 
-#helper functions
-
-MCMC.ts <- function (MCMC.res){
-  require(KernSmooth)
-  require(bayestestR)
-  dim.MCMC <- dim(MCMC.res)
-  #typically, the first element is # of interation
-  #the second element is the time series
-  map.res <- rep(0, dim.MCMC[2])
-  hdi.high <- rep(0, dim.MCMC[2])
-  hdi.low <- rep(0, dim.MCMC[2])
-  
-  for(i in 1:dim.MCMC[2]){
-    map.res[i] <- map_estimate(MCMC.res[,i], method = "KernSmooth")
-    hdi.89 <- hdi(MCMC.res[,i], ci = 0.89)
-    hdi.low[i] <- hdi.89$CI_low
-    hdi.high[i] <- hdi.89$CI_high
-  }
-  
-  return (list(map.res, hdi.low, hdi.high))
-}
-
-MCMC.ts.dist <- function(MCMC.res, MCMC.dist, MCMC.index){
-  require(scales)
-  
-  #typically, the first element is # of interation
-  #the second element is the time series
-  
-  dim.MCMC <- dim(MCMC.res) #this is 800
-  n <- dim.MCMC[1] #number of interation
-  dim.MCMC.dist <- dim(MCMC.dist) #this is 100
-  MCMC.res.index <- array(0, c(n, dim.MCMC.dist[2]))
-  for(i in 1:n){ #for each iteration, extract MCMC index results
-    MCMC.res.index[i,] <- MCMC.res[i, MCMC.index[i,]]
-  }
-  
-  for(i in 1:n){
-    lines(MCMC.dist[i,], MCMC.res.index[i,], col = alpha("black", 0.02))
-  }
-
-  return(MCMC.res.index)
-}
-
-MCMC.dist.median <- function(MCMC.res){
-  dim.MCMC <- dim(MCMC.res)
-  n <- dim.MCMC[2] #number of data points
-  MCMC.res.med <- rep(0, n)
-  MCMC.res.max <- rep(0, n)
-  MCMC.res.min <- rep(0, n)
-  for(i in 1:n){ #for each iteration, extract MCMC index results
-    MCMC.res.med[i] <- median (MCMC.res[,i])
-    MCMC.res.min[i] <- min (MCMC.res[,i])
-    MCMC.res.max[i] <- median (MCMC.res[,i])
-  }
-  return(MCMC.res.med)
-}
-
 R.sd.mea <- misha$sd
 dist.mea <- misha$dist
 R.mea <- misha$mean
 n.mea = length(dist.mea)
-# #R0 is the mean ratio of initial value 
-# R0 <- 0.7070
-# #Re is the mean ratio of end value  
-# Re <- 0.711
-# Rin.mean <- c(rep(R0,81),rep(Re,769))
-# 
-# #parameters to save
-# parameters <- c("a", "b", "c", "Ivo.rate", "Rs.m", "Rb.m","Rin","mod.index","mod.dist",
-#                 "flux.ratio", "pool.ratio", "Sr.pre", "Ps", "Pb", "Fin", "Fb")
-# ##Data to pass to the model
-# dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 850, n.mea = n.mea, 
-#            Rin.mean = Rin.mean, R0 = R0, Re = Re)
-# 
-# #Start time
-# t1 = proc.time()
-# 
-# set.seed(t1[3])
-# n.iter = 1e4
-# n.burnin = 2e3
-# n.thin = floor(n.iter-n.burnin)/1000
-# 
-# #Run it
-# post.misha = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS v1.R", 
-#                                         parameters.to.save = parameters, 
-#                                         data = dat, n.chains=3, n.iter = n.iter, 
-#                                         n.burnin = n.burnin, n.thin = n.thin))
-# 
-# #Time taken
-# proc.time() - t1 #~ 2 hours
-# 
-# post.misha$BUGSoutput$summary
-# traplot(post.misha,parms = c("flux.ratio", "pool.ratio"))
-# traplot(post.misha,parms = c("a", "b","c"))
-# 
-# hist(post.misha$BUGSoutput$sims.list$flux.ratio)
-# hist(post.misha$BUGSoutput$sims.list$pool.ratio)
-# #make a contour map
-# contour.flux.pool <- kde2d(post.misha$BUGSoutput$sims.list$flux.ratio[,1], 
-#       post.misha$BUGSoutput$sims.list$pool.ratio[,1], n = 64)
-# image(contour.flux.pool, col=viridis(64), xlab="Flux ratio: Fs/Fb", ylab="Pool ratio: Ps/Pb",xlim =c(0,200))
-# contour(contour.flux.pool,lwd = 1.5, add = TRUE, labcex = 1)
-# 
-# hist(post.misha$BUGSoutput$sims.list$Ivo.rate)
-# map_estimate(post.misha$BUGSoutput$sims.list$Pb) #3.24 mmol
-# hist(post.misha$BUGSoutput$sims.list$Pb)
-# map_estimate(post.misha$BUGSoutput$sims.list$Ps) #1.05 mmol
-# map_estimate(post.misha$BUGSoutput$sims.list$Fin) #0.03 mmol/day
-# hist(post.misha$BUGSoutput$sims.list$Fin)
-# map_estimate(post.misha$BUGSoutput$sims.list$Fb) #0.00736 mmol/day
-# hist(post.misha$BUGSoutput$sims.list$Fb)
-# 
-# 
-# plot(density(post.misha$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
-#      ylim = c(0, 4), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
-# lines(density(post.misha$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
-# legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-# 
-# plot(density(post.misha$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.1),
-#      ylim = c(0, 80), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
-# lines(density(post.misha$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
-# legend(0.06, 80, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-# 
-# #a/b = Fin/Fb
-# #c/b = Ps/Pb
-# 
-# plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
-# abline(h = R0, lwd = 2, lty = 2)
-# abline(h = Re, lwd = 2, lty = 2)
-# MCMC.ts.Rs.index <- MCMC.ts.dist(post.misha$BUGSoutput$sims.list$Rs.m, 
-#                                  post.misha$BUGSoutput$sims.list$mod.dist,
-#                                 post.misha$BUGSoutput$sims.list$mod.index)
-# lines(misha$dist,misha$mean,lwd = 2, col = "red")
-# MCMC.ts.RS.89 <- MCMC.ts(MCMC.ts.Rs.index)
-# #Misha.med.dist <- MCMC.dist.median(post.misha$BUGSoutput$sims.list$mod.dist)
-# 
-# lines(dist.mea, MCMC.ts.RS.89[[1]], lwd = 1, col = "cyan")
-# lines(dist.mea, MCMC.ts.RS.89[[2]], lwd = 1, lty = 2, col = "cyan")
-# lines(dist.mea, MCMC.ts.RS.89[[3]], lwd = 1, lty = 2, col = "cyan")
-# 
-# plot(density(post.misha$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
-#      ylim = c(0, 3), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
-# lines(density(post.misha$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
-# legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-# 
-# plot(density(post.misha$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.4),
-#      ylim = c(0, 20), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
-# lines(density(post.misha$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
-# legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
 
-#####testing version 3 of the turnover model with evaluation on the mean of neighbouring data points##
-#and variable R0 and Re values###
-R.sd.mea <- misha$sd
-dist.mea <- misha$dist
-R.mea <- misha$mean
-n.mea = length(dist.mea)
-#R0 is the mean ratio of initial value 
-R0 <- 0.7070
-#Re is the mean ratio of end value  
-Re <- 0.7113
-
-switch <- 75
-
-#hist(1/rgamma(1000, shape = 10, rate = 0.2)^0.5)
-
-#parameters to save
-parameters <- c("a", "b", "c", "Ivo.rate", "Rs.m", "Rb.m","Rin","mod.index","mod.dist",
-                "flux.ratio", "pool.ratio", "Sr.pre", "Ps", "Pb", "Fin", "Fb")
-##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1050, n.mea = n.mea, 
-           R0 = R0, Re = Re, switch = switch)
-
-#Start time
-t1 = proc.time()
-
-set.seed(t1[3])
-n.iter = 1e4
-n.burnin = 2e3
-n.thin = floor(n.iter-n.burnin)/1000
-
-#Run it
-post.misha = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS v3.R", 
-                                        parameters.to.save = parameters, 
-                                        data = dat, n.chains=3, n.iter = n.iter, 
-                                        n.burnin = n.burnin, n.thin = n.thin))
-
-#Time taken
-proc.time() - t1 #~ 2 hours
-
-post.misha$BUGSoutput$summary
-traplot(post.misha,parms = c("flux.ratio", "pool.ratio"))
-traplot(post.misha,parms = c("a", "b","c"))
-
-hist(post.misha$BUGSoutput$sims.list$flux.ratio)
-hist(post.misha$BUGSoutput$sims.list$pool.ratio)
-#make a contour map
-contour.flux.pool <- kde2d(post.misha$BUGSoutput$sims.list$flux.ratio[,1], 
-                           post.misha$BUGSoutput$sims.list$pool.ratio[,1], n = 64)
-image(contour.flux.pool, col=viridis(64), xlab="Flux ratio: Fs/Fb", ylab="Pool ratio: Ps/Pb",xlim =c(0,200))
-contour(contour.flux.pool,lwd = 1.5, add = TRUE, labcex = 1)
-
-#plotting some parameters
-hist(post.misha$BUGSoutput$sims.list$Ivo.rate)
-map_estimate(post.misha$BUGSoutput$sims.list$Pb) #3.24 mmol
-hist(post.misha$BUGSoutput$sims.list$Pb)
-map_estimate(post.misha$BUGSoutput$sims.list$Ps) #1.05 mmol
-map_estimate(post.misha$BUGSoutput$sims.list$Fin) #0.03 mmol/day
-hist(post.misha$BUGSoutput$sims.list$Fin)
-map_estimate(post.misha$BUGSoutput$sims.list$Fb) #0.00736 mmol/day
-hist(post.misha$BUGSoutput$sims.list$Fb)
-
-plot(density(post.misha$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
-     ylim = c(0, 4), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
-lines(density(post.misha$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
-legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-
-plot(density(post.misha$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.1),
-     ylim = c(0, 80), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
-lines(density(post.misha$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
-legend(0.06, 80, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-
-#a/b = Fin/Fb
-#c/b = Ps/Pb
-
-#plotting modeled serum values and checking the fit of the data
-plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rs.index <- MCMC.ts.dist(post.misha$BUGSoutput$sims.list$Rs.m, 
-                                 post.misha$BUGSoutput$sims.list$mod.dist,
-                                 post.misha$BUGSoutput$sims.list$mod.index)
-lines(misha$dist,misha$mean,lwd = 2, col = "red")
-MCMC.ts.RS.89 <- MCMC.ts(MCMC.ts.Rs.index)
-#Misha.med.dist <- MCMC.dist.median(post.misha$BUGSoutput$sims.list$mod.dist)
-
-lines(dist.mea, MCMC.ts.RS.89[[1]], lwd = 1, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89[[3]], lwd = 1, lty = 2, col = "cyan")
-
-plot(density(post.misha$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
-     ylim = c(0, 3), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
-lines(density(post.misha$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
-legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-
-plot(density(post.misha$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.4),
-     ylim = c(0, 20), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
-lines(density(post.misha$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
-legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-
+##########two pool turnover model########
 #####testing version 4 of the turnover model with evaluation on the mean of neighbouring data points##
 #and variable R0 and Re values###
 #and variable switch positions##
@@ -391,26 +149,78 @@ plot(density(post.misha.4$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim =
 lines(density(post.misha.4$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
 legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
 
-####model with only one single serum pool###
+###Version 4 of one pool model######
+#adding the model component of food and water mixture as intake#
+intake <- read.csv("data/intake.csv")
 
-#R0 is the mean ratio of initial value
-#this is first tested with the same values assigned to the two pool model
-#then tested with a different end ratio
-R0 <- 0.70706
-#Re is the mean ratio of end value  
-Re <- 0.7110
+Hay <- intake[which(intake$type=="H"),]
+Pellet <- intake[which(intake$type=="P"),]
+Supplement <- intake[which(intake$type=="S"),]
+Water <- intake[which(intake$type=="W"),]
 
-#assign fixed Rin mean values
-Rin.mean <- c(rep(R0,75),rep(Re,975))
+#estimate mean and sd for hay Sr87/86
+Sr.hay <- enorm(Hay$X87Sr.86Sr)
+Sr.hay.mean <- Sr.hay$parameters[1]
+Sr.hay.sd <- Sr.hay$parameters[2]
 
-#hist(1/rgamma(1000, shape = 10, rate = 0.2)^0.5)
+#estimate mean and sd for pellet Sr87/86
+Sr.pel <- enorm(Pellet$X87Sr.86Sr)
+Sr.pel.mean <- Sr.pel$parameters[1]
+Sr.pel.sd <- Sr.pel$parameters[2]
+
+#estimate mean and sd for alfalfa Sr87/86
+Sr.sup <- enorm(Supplement$X87Sr.86Sr)
+Sr.sup.mean <- Sr.sup$parameters[1]
+Sr.sup.sd <- Sr.sup$parameters[2]
+
+#estimate mean and sd for water Sr87/86
+Sr.w <- enorm(Water$X87Sr.86Sr)
+Sr.w.mean <- Sr.w$parameters[1]
+Sr.w.sd <- Sr.w$parameters[2]
+
+#estimate mean and sd for hay Sr concentration
+#log-normal distribution
+conc.hay <- elnorm(Hay$Sr_conc)
+conc.hay.mean <- conc.hay$parameters[1]
+conc.hay.sd <- conc.hay$parameters[2]
+
+conc.sup <- elnorm(Supplement$Sr_conc)
+conc.sup.mean <- conc.sup$parameters[1]
+conc.sup.sd <- conc.sup$parameters[2]
+
+#estimate mean and sd for pellet concentration
+#log-normal distribution
+conc.pel <- elnorm(Pellet$Sr_conc)
+conc.pel.mean <- conc.pel$parameters[1]
+conc.pel.sd <- conc.pel$parameters[2]
+
+#estimate mean and sd for water concentration
+#log-normal distribution
+conc.w <- elnorm(Water$Sr_conc)
+conc.w.mean <- conc.w$parameters[1]
+conc.w.sd <- conc.w$parameters[2]
+
+plot(seq(0, 1, length=100), dbeta(seq(0, 1, length=100), 8, 32))
+
+#daily dry matter intake by adults of about 1.5% of body weight
+
+R0 <- 0.7071
+
+m.feed <- 40 #mixing of x kg of hay, this is to constrain Sr variability of hay
 
 #parameters to save
-parameters <- c("a", "Ivo.rate", "Rs.m","Rin","mod.index","mod.dist",
-                "Sr.pre", "Ps", "Fin")
+parameters <- c("a", "Ivo.rate", "Rs.m","Rin","mod.index","mod.dist","f.h","f.pel",
+                "Sr.pre", "Ps", "Fin", "Re.mean", "R0.mean", "switch", "w.contrib", "h.contrib")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1050, n.mea = n.mea, 
-           Rin.mean = Rin.mean, R0 = R0, Re = Re)
+           R0 = R0, Sr.hay.mean = Sr.hay.mean, Sr.hay.sd = Sr.hay.sd, 
+           Sr.pel.mean = Sr.pel.mean, Sr.pel.sd = Sr.pel.sd, 
+           Sr.sup.mean = Sr.sup.mean, Sr.sup.sd = Sr.sup.sd,
+           Sr.w.mean = Sr.w.mean, Sr.w.sd = Sr.w.sd, m.feed = m.feed,
+           conc.hay.mean = conc.hay.mean, conc.hay.sd = conc.hay.sd, 
+           conc.pel.mean = conc.pel.mean, conc.pel.sd = conc.pel.sd,
+           conc.sup.mean = conc.sup.mean, conc.sup.sd = conc.sup.sd,
+           conc.w.mean = conc.w.mean, conc.w.sd = conc.w.sd)
 
 #Start time
 t1 = proc.time()
@@ -421,101 +231,76 @@ n.burnin = 2e3
 n.thin = floor(n.iter-n.burnin)/1000
 
 #Run it
-post.misha.nb1 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone.R", 
-                                        parameters.to.save = parameters, 
-                                        data = dat, n.chains=3, n.iter = n.iter, 
-                                        n.burnin = n.burnin, n.thin = n.thin))
-
-#Time taken
-proc.time() - t1 #~ 2 hours
-
-post.misha.nb1$BUGSoutput$summary
-
-save(post.misha.nb1, file = "out/post.misha.nb1.RData")
-
-plot(density(post.misha.nb1$BUGSoutput$sims.list$a))
-map_estimate(post.misha.nb1$BUGSoutput$sims.list$a)
-
-plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rs.index.nb1 <- MCMC.ts.dist(post.misha.nb1$BUGSoutput$sims.list$Rs.m, 
-                                    post.misha.nb1$BUGSoutput$sims.list$mod.dist,
-                                    post.misha.nb1$BUGSoutput$sims.list$mod.index)
-lines(misha$dist,misha$mean,lwd = 2, col = "red")
-MCMC.ts.RS.89.nb1 <- MCMC.ts(MCMC.ts.Rs.index.nb1)
-
-lines(dist.mea, MCMC.ts.RS.89.nb1[[1]], lwd = 1, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89.nb1[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89.nb1[[3]], lwd = 1, lty = 2, col = "cyan")
-
-#####try a new parameter fit with Re = 0.7110####
-R0 <- 0.7071
-#Re is the mean ratio of end value  
-Re <- 0.7112
-
-#parameters to save
-parameters <- c("a", "Ivo.rate", "Rs.m","Rin","mod.index","mod.dist",
-                "Sr.pre", "Ps", "Fin", "Re.mean", "R0.mean", "switch")
-##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1050, n.mea = n.mea, 
-           R0 = R0, Re = Re)
-
-#Start time
-t1 = proc.time()
-
-set.seed(t1[3])
-n.iter = 2e4
-n.burnin = 4e3
-n.thin = floor(n.iter-n.burnin)/1000
-
-#Run it
-post.misha.nb3 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone v3.R", 
+post.misha.nb4 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone v4.R", 
                                             parameters.to.save = parameters, 
                                             data = dat, n.chains=3, n.iter = n.iter, 
                                             n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 2 hours
+proc.time() - t1 #~ 4 hours
 
-post.misha.nb3$BUGSoutput$summary
+post.misha.nb4$BUGSoutput$summary
 
-save(post.misha.nb3, file = "out/post.misha.nb3.RData")
+save(post.misha.nb4, file = "out/post.misha.nb4.RData")
 
-load("out/post.misha.nb3.RData")
+load("out/post.misha.nb4.RData")
 
-plot(density(post.misha.nb3$BUGSoutput$sims.list$a))
+plot(density(post.misha.nb4$BUGSoutput$sims.list$a))
 
-summary(post.misha.nb3$BUGSoutput$sims.list$switch)
+summary(post.misha.nb4$BUGSoutput$sims.list$switch)
 
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rs.index.nb3 <- MCMC.ts.dist(post.misha.nb3$BUGSoutput$sims.list$Rs.m, 
-                                     post.misha.nb3$BUGSoutput$sims.list$mod.dist,
-                                     post.misha.nb3$BUGSoutput$sims.list$mod.index)
+MCMC.ts.Rs.index.nb4 <- MCMC.ts.dist(post.misha.nb4$BUGSoutput$sims.list$Rs.m, 
+                                     post.misha.nb4$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb4$BUGSoutput$sims.list$mod.index)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
-MCMC.ts.RS.89.nb3 <- MCMC.ts(MCMC.ts.Rs.index.nb3)
+MCMC.ts.RS.89.nb4 <- MCMC.ts(MCMC.ts.Rs.index.nb4)
 
-lines(dist.mea, MCMC.ts.RS.89.nb3[[1]], lwd = 1, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89.nb3[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89.nb3[[3]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb4[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb4[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb4[[3]], lwd = 1, lty = 2, col = "cyan")
 
-####v2 model with 0.7119 end value#####
-#R0 is the mean ratio of initial value 
-R0 <- 0.70706
+plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+MCMC.ts.Re.index.nb4 <- MCMC.ts.dist(post.misha.nb4$BUGSoutput$sims.list$Re.mean, 
+                                     post.misha.nb4$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb4$BUGSoutput$sims.list$mod.index)
+lines(misha$dist,misha$mean,lwd = 2, col = "red")
+MCMC.ts.Re.89.nb4 <- MCMC.ts(MCMC.ts.Re.index.nb4)
 
-#Re is the mean ratio of end value  
-Re <- 0.71179
+lines(dist.mea, MCMC.ts.Re.89.nb4[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.Re.89.nb4[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.Re.89.nb4[[3]], lwd = 1, lty = 2, col = "cyan")
 
-Rin.mean <- c(rep(R0,81),rep(Re,819))
+plot(0,0, xlim = c(20000,8000), ylim = c(0, 1), xlab = "distance", ylab ="r")
+MCMC.ts.fr.index.nb4 <- MCMC.ts.dist(post.misha.nb4$BUGSoutput$sims.list$f.h, 
+                                     post.misha.nb4$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb4$BUGSoutput$sims.list$mod.index)
+
+plot(density(post.misha.nb4$BUGSoutput$sims.list$f.h))
+plot(density(post.misha.nb4$BUGSoutput$sims.list$f.pel))
+
+#####ver 5 no bone with variable food ratios but fixed Sr values
+R0 <- 0.7071
+
+m.feed <- 40 #mixing of x kg of hay, this is to constrain Sr variability of hay
 
 #parameters to save
-parameters <- c("a", "b", "c", "Ivo.rate", "Rs.m", "Rb.m","Rin","mod.index","mod.dist",
-                "flux.ratio", "pool.ratio", "Sr.pre", "Ps", "Pb", "Fin", "Fb")
+parameters <- c("a", "Ivo.rate", "Rs.m","Rin","mod.index","mod.dist","f.h","f.pel","h.l",
+                "Sr.pre", "Ps", "Fin", "Re.mean", "R0.mean", "switch", "w.contrib", "h.contrib")
 ##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 900, n.mea = n.mea, 
-           Rin.mean = Rin.mean, R0 = R0, Re = Re)
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1050, n.mea = n.mea, 
+           R0 = R0, Sr.hay.mean = Sr.hay.mean, Sr.hay.sd = Sr.hay.sd, 
+           Sr.pel.mean = Sr.pel.mean, Sr.pel.sd = Sr.pel.sd, 
+           Sr.sup.mean = Sr.sup.mean, Sr.sup.sd = Sr.sup.sd,
+           Sr.w.mean = Sr.w.mean, Sr.w.sd = Sr.w.sd, m.feed = m.feed,
+           conc.hay.mean = conc.hay.mean, conc.hay.sd = conc.hay.sd, 
+           conc.pel.mean = conc.pel.mean, conc.pel.sd = conc.pel.sd,
+           conc.sup.mean = conc.sup.mean, conc.sup.sd = conc.sup.sd,
+           conc.w.mean = conc.w.mean, conc.w.sd = conc.w.sd)
 
 #Start time
 t1 = proc.time()
@@ -526,221 +311,145 @@ n.burnin = 2e3
 n.thin = floor(n.iter-n.burnin)/1000
 
 #Run it
-post.misha.19 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS v2.R", 
-                                        parameters.to.save = parameters, 
-                                        data = dat, n.chains=3, n.iter = n.iter, 
-                                        n.burnin = n.burnin, n.thin = n.thin))
+post.misha.nb5 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone v5.R", 
+                                            parameters.to.save = parameters, 
+                                            data = dat, n.chains=3, n.iter = n.iter, 
+                                            n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 2 hours
-save(post.misha.19, file = "out/post_misha_19.RData")
+proc.time() - t1 #~ 4 hours
 
-post.misha.19$BUGSoutput$summary
-traplot(post.misha.19,parms = c("flux.ratio", "pool.ratio"))
-traplot(post.misha.19,parms = c("a", "b","c"))
+post.misha.nb5$BUGSoutput$summary
 
-#checking the parameters
-hist(post.misha.19$BUGSoutput$sims.list$flux.ratio)
-hist(post.misha.19$BUGSoutput$sims.list$pool.ratio)
-plot(density(post.misha.19$BUGSoutput$sims.list$c))
-plot(density(post.misha.19$BUGSoutput$sims.list$a))
-plot(density(post.misha.19$BUGSoutput$sims.list$b))
+save(post.misha.nb5, file = "out/post.misha.nb5.RData")
 
-map_estimate(post.misha.19$BUGSoutput$sims.list$Pb) #3.14 mmol
-map_estimate(post.misha.19$BUGSoutput$sims.list$Ps) #1.02 mmol
-map_estimate(post.misha.19$BUGSoutput$sims.list$Fin) #0.03 mmol/day
-map_estimate(post.misha.19$BUGSoutput$sims.list$Fb) #0.007 mmol/day
-map_estimate(post.misha.19$BUGSoutput$sims.list$a) #0.03
-map_estimate(post.misha.19$BUGSoutput$sims.list$c) #0.003
+load("out/post.misha.nb5.RData")
 
-#make a contour map
-contour.flux.pool.19 <- kde2d(post.misha.19$BUGSoutput$sims.list$flux.ratio[,1], 
-                           post.misha.19$BUGSoutput$sims.list$pool.ratio[,1], n = 64)
-image(contour.flux.pool.19, col=viridis(64), xlab="Flux ratio: Fin/Fb", ylab="Pool ratio: Ps/Pb")
-contour(contour.flux.pool.19,lwd = 1.5, add = TRUE, labcex = 1)
+plot(density(post.misha.nb5$BUGSoutput$sims.list$a))
 
-####R serum ratio###
+summary(post.misha.nb5$BUGSoutput$sims.list$switch)
+
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rs.index.19 <- MCMC.ts.dist(post.misha.19$BUGSoutput$sims.list$Rs.m, 
-                                 post.misha.19$BUGSoutput$sims.list$mod.dist,
-                                 post.misha.19$BUGSoutput$sims.list$mod.index)
+MCMC.ts.Rs.index.nb5 <- MCMC.ts.dist(post.misha.nb5$BUGSoutput$sims.list$Rs.m, 
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.index)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
-MCMC.ts.RS.89.19 <- MCMC.ts(MCMC.ts.Rs.index.19)
+MCMC.ts.RS.89.nb5 <- MCMC.ts(MCMC.ts.Rs.index.nb5)
 
-lines(dist.mea, MCMC.ts.RS.89.19[[1]], lwd = 1, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89.19[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(dist.mea, MCMC.ts.RS.89.19[[3]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb5[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb5[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nb5[[3]], lwd = 1, lty = 2, col = "cyan")
 
-#R bone ratio##
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rb.index.19 <- MCMC.ts.dist(post.misha.19$BUGSoutput$sims.list$Rb.m, 
-                                    post.misha.19$BUGSoutput$sims.list$mod.dist,
-                                    post.misha.19$BUGSoutput$sims.list$mod.index)
+MCMC.ts.Rin.index.nb5 <- MCMC.ts.dist(post.misha.nb5$BUGSoutput$sims.list$Rin, 
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.index)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
-MCMC.ts.Rb.89.19 <- MCMC.ts(MCMC.ts.Rb.index.19)
+MCMC.ts.Rin.89.nb5 <- MCMC.ts(MCMC.ts.Rin.index.nb5)
 
-lines(dist.mea, MCMC.ts.Rb.89.19[[1]], lwd = 1, col = "cyan")
-lines(dist.mea, MCMC.ts.Rb.89.19[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(dist.mea, MCMC.ts.Rb.89.19[[3]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.Rin.89.nb5[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.Rin.89.nb5[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.Rin.89.nb5[[3]], lwd = 1, lty = 2, col = "cyan")
 
+plot(0,0, xlim = c(20000,8000), ylim = c(0, 1), xlab = "distance", ylab ="r")
+MCMC.ts.fh.index.nb5 <- MCMC.ts.dist(post.misha.nb5$BUGSoutput$sims.list$f.h, 
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.index)
 
-plot(density(post.misha.19$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
-     ylim = c(0, 3), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
-lines(density(post.misha.19$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
-legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+plot(0,0, xlim = c(20000,8000), ylim = c(0, 1), xlab = "distance", ylab ="r")
+MCMC.ts.fpel.index.nb5 <- MCMC.ts.dist(post.misha.nb5$BUGSoutput$sims.list$f.pel, 
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nb5$BUGSoutput$sims.list$mod.index)
 
-plot(density(post.misha.19$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.1),
-     ylim = c(0, 80), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
-lines(density(post.misha.19$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
-legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+plot(density(post.misha.nb5$BUGSoutput$sims.list$w.contrib))
+plot(density(post.misha.nb5$BUGSoutput$sims.list$h.contrib))
 
-#####inversion for Rin using posterior distributions of a, b and c####
-# R0 <- 0.70706
-# 
-# #Re is the mean ratio of end value  
-# Re <- 0.71179
-# 
-# Rin.mean <- c(rep(R0,75),rep(Re,1125))
-# #parameters to save
-# parameters <- c("Ivo.rate", "Rs.cal", "Rb.cal", "mod.index.cal","mod.dist.cal","Rin.cal","a","b","c",
-#                 "Rs.m", "Rb.m","Rin.m","mod.index","mod.dist", "a.m", "b.m", "c.m","Rin.m.eps.ac")
-# ##Data to pass to the model
-# dat = list(R.cal = R.mea, dist.cal = dist.mea, R.sd.cal = R.sd.mea, t.cal = 1200, n.cal = n.mea, 
-#            Rin.mean = Rin.mean, R0 = R0, Re = Re, 
-#            R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1200, n.mea = n.mea)
-# 
-# #Start time
-# t1 = proc.time()
-# 
-# set.seed(t1[3])
-# n.iter = 1e4
-# n.burnin = 2e3
-# n.thin = floor(n.iter-n.burnin)/600
-# 
-# #Run it
-# post.misha.inversion = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS v1.R", 
-#                                            parameters.to.save = parameters, 
-#                                            data = dat, n.chains=5, n.iter = n.iter, 
-#                                            n.burnin = n.burnin, n.thin = n.thin))
-# 
-# #Time taken
-# proc.time() - t1 #~ 4 hours
-# 
-# #save(post.misha.inversion, file = "out/post.misha.inversion.RData")
-# 
-# post.misha.inversion$BUGSoutput$summary
-# 
-# plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
-# abline(h = R0, lwd = 2, lty = 2)
-# abline(h = Re, lwd = 2, lty = 2)
-# MCMC.ts.Rs.cal.index.inversion <- MCMC.ts.dist(post.misha.inversion$BUGSoutput$sims.list$Rs.cal, 
-#                                         post.misha.inversion$BUGSoutput$sims.list$mod.dist.cal,
-#                                         post.misha.inversion$BUGSoutput$sims.list$mod.index.cal)
-# lines(misha$dist,misha$mean,lwd = 2, col = "red")
-# MCMC.ts.Rs.89.inversion <- MCMC.ts(MCMC.ts.Rs.cal.index.inversion)
-# 
-# lines(dist.mea, MCMC.ts.Rs.89.inversion[[1]], lwd = 1, col = "cyan")
-# lines(dist.mea, MCMC.ts.Rs.89.inversion[[2]], lwd = 1, lty = 2, col = "cyan")
-# lines(dist.mea, MCMC.ts.Rs.89.inversion[[3]], lwd = 1, lty = 2, col = "cyan")
-# 
-# #reconstructed Rin
-# plot(0,0, xlim = c(1,1000), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
-# abline(h = R0, lwd = 2, lty = 2)
-# abline(h = Re, lwd = 2, lty = 2)
-# MCMC.ts.Rin.cal.89 <- MCMC.ts(post.misha.inversion$BUGSoutput$sims.list$Rin.cal)
-# lines(1:1200,MCMC.ts.Rin.cal.89[[1]],lwd = 2, col = "black")
-# lines(1:1200,MCMC.ts.Rin.cal.89[[2]], lwd = 1, lty = 2, col = "black")
-# lines(1:1200,MCMC.ts.Rin.cal.89[[3]], lwd = 1, lty = 2, col = "black")
-# 
-# MCMC.ts.Rin.m.89 <- MCMC.ts(post.misha.inversion$BUGSoutput$sims.list$Rin.m)
-# lines(1:1200,MCMC.ts.Rin.m.89[[1]],lwd = 2, col = "red")
-# lines(1:1200,MCMC.ts.Rin.m.89[[2]], lwd = 1, lty = 2, col = "red")
-# lines(1:1200,MCMC.ts.Rin.m.89[[3]], lwd = 1, lty = 2, col = "red")
-# 
-# plot(density(post.misha.inversion$BUGSoutput$sims.list$Rin.m.eps.ac),type="l")
-# plot(density(post.misha.inversion$BUGSoutput$sims.list$Ivo.rate),type="l")
-# plot(density(post.misha.inversion$BUGSoutput$sims.list$a.m),type="l")
-# plot(density(post.misha.inversion$BUGSoutput$sims.list$b.m),type="l")
-# plot(density(post.misha.inversion$BUGSoutput$sims.list$c.m),type="l")
+#####no bone but with time averaging parameter
+R0 <- 0.7071
 
-#####v2 inversion for Rin using posterior distributions of a, b and c####
-#assign input values before and after the switch
-R0 <- 0.70706
+m.feed <- 40 #mixing of x kg of hay, this is to constrain Sr variability of hay
 
-#Re is the mean ratio of end value  
-Re <- 0.71179
+#calculate n.days before and after the day of evaluation for time averaging
+#this number is truncated for more conservative evaluation
 
-#assign the mean values of the input sequence. The switch is at a fixed location
-Rin.mean <- c(rep(R0,75),rep(Re,1125))
+#calculate average sampling interval
+Ivo.rate.mean <- 14.7
+samp.interval <- mean(dist.mea[1:(n.mea - 1)] - dist.mea[2:n.mea])
+n.days.bef.aft <- trunc(samp.interval/2/Ivo.rate.mean) #this parameter has to be supplied to the model
 
 #parameters to save
-parameters <- c("Ivo.rate", "Rs.cal", "Rb.cal", "mod.index.cal","mod.dist.cal","Rin.cal","a","b","c",
-                "Rs.m", "Rb.m","Rin.m","mod.index","mod.dist", "a.m", "b.m", "c.m","Rin.m.eps.ac")
-
+parameters <- c("a", "Ivo.rate", "Rs.m","Rin","mod.index","mod.dist","f.h","f.pel","h.l",
+                "Sr.pre", "Ps", "Fin", "Re.mean", "R0.mean", "switch", "w.contrib", "h.contrib")
 ##Data to pass to the model
-#compared to the turnover model that is essentially the .cal part here 
-#the inversion takes the measured value of potentially a different ivory series
-dat = list(R.cal = R.mea, dist.cal = dist.mea, R.sd.cal = R.sd.mea, t.cal = 1200, n.cal = n.mea, 
-           Rin.mean = Rin.mean, R0 = R0, Re = Re, 
-           R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1200, n.mea = n.mea)
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1050, n.mea = n.mea, 
+           R0 = R0, Sr.hay.mean = Sr.hay.mean, Sr.hay.sd = Sr.hay.sd, 
+           Sr.pel.mean = Sr.pel.mean, Sr.pel.sd = Sr.pel.sd, 
+           Sr.sup.mean = Sr.sup.mean, Sr.sup.sd = Sr.sup.sd,
+           Sr.w.mean = Sr.w.mean, Sr.w.sd = Sr.w.sd, m.feed = m.feed,
+           conc.hay.mean = conc.hay.mean, conc.hay.sd = conc.hay.sd, 
+           conc.pel.mean = conc.pel.mean, conc.pel.sd = conc.pel.sd,
+           conc.sup.mean = conc.sup.mean, conc.sup.sd = conc.sup.sd,
+           conc.w.mean = conc.w.mean, conc.w.sd = conc.w.sd,
+           n.days.bef.aft = n.days.bef.aft)
 
 #Start time
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 1e4
-n.burnin = 2e3
-n.thin = floor(n.iter-n.burnin)/600
+n.iter = 5e3
+n.burnin = 1e3
+n.thin = floor(n.iter-n.burnin)/1000
 
 #Run it
-post.misha.inversion2 = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS v2.R", 
-                                                  parameters.to.save = parameters, 
-                                                  data = dat, n.chains=5, n.iter = n.iter, 
-                                                  n.burnin = n.burnin, n.thin = n.thin))
+post.misha.nbm = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone micromill.R", 
+                                            parameters.to.save = parameters, 
+                                            data = dat, n.chains=3, n.iter = n.iter, 
+                                            n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 8 hours
+proc.time() - t1 #~ 4 hours
 
-save(post.misha.inversion2, file = "out/post.misha.inversion2.RData")
+post.misha.nbm$BUGSoutput$summary
 
-post.misha.inversion2$BUGSoutput$summary
+save(post.misha.nbm, file = "out/post.misha.nbm.RData")
 
-#plotting modeled serum values and checking the fit of the data
+load("out/post.misha.nbm.RData")
+
+plot(density(post.misha.nbm$BUGSoutput$sims.list$a))
+
+summary(post.misha.nbm$BUGSoutput$sims.list$switch)
+
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rs.cal.index.inversion2 <- MCMC.ts.dist(post.misha.inversion2$BUGSoutput$sims.list$Rs.cal, 
-                                               post.misha.inversion2$BUGSoutput$sims.list$mod.dist.cal,
-                                               post.misha.inversion2$BUGSoutput$sims.list$mod.index.cal)
+MCMC.ts.Rs.index.nbm <- MCMC.ts.dist(post.misha.nbm$BUGSoutput$sims.list$Rs.m, 
+                                     post.misha.nbm$BUGSoutput$sims.list$mod.dist,
+                                     post.misha.nbm$BUGSoutput$sims.list$mod.index)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
-MCMC.ts.Rs.89.inversion2 <- MCMC.ts(MCMC.ts.Rs.cal.index.inversion2)
+MCMC.ts.RS.89.nbm <- MCMC.ts(MCMC.ts.Rs.index.nbm)
 
-lines(dist.mea, MCMC.ts.Rs.89.inversion2[[1]], lwd = 1, col = "cyan")
-lines(dist.mea, MCMC.ts.Rs.89.inversion2[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(dist.mea, MCMC.ts.Rs.89.inversion2[[3]], lwd = 1, lty = 2, col = "cyan")
-legend(12000, 0.709, c("measured ivory","modeled serum"),lwd = c(2, 1), col=c("red","cyan"))
-#end plot
+lines(dist.mea, MCMC.ts.RS.89.nbm[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nbm[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.RS.89.nbm[[3]], lwd = 1, lty = 2, col = "cyan")
 
-#plotting reconstructed Rin and compared that with posterior of Rin
-plot(0,0, xlim = c(1,1000), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rin.cal.89.2 <- MCMC.ts(post.misha.inversion2$BUGSoutput$sims.list$Rin.cal)
-lines(1:1200,MCMC.ts.Rin.cal.89.2[[1]],lwd = 2, col = "black")
-lines(1:1200,MCMC.ts.Rin.cal.89.2[[2]], lwd = 1, lty = 2, col = "black")
-lines(1:1200,MCMC.ts.Rin.cal.89.2[[3]], lwd = 1, lty = 2, col = "black")
+MCMC.ts.Rin.index.nbm <- MCMC.ts.dist(post.misha.nbm$BUGSoutput$sims.list$Rin, 
+                                      post.misha.nbm$BUGSoutput$sims.list$mod.dist,
+                                      post.misha.nbm$BUGSoutput$sims.list$mod.index)
+lines(misha$dist,misha$mean,lwd = 2, col = "red")
+MCMC.ts.Rin.89.nbm <- MCMC.ts(MCMC.ts.Rin.index.nbm)
 
-MCMC.ts.Rin.m.89.2 <- MCMC.ts(post.misha.inversion2$BUGSoutput$sims.list$Rin.m)
-lines(1:1200,MCMC.ts.Rin.m.89.2[[1]],lwd = 2, col = "red")
-lines(1:1200,MCMC.ts.Rin.m.89.2[[2]], lwd = 1, lty = 2, col = "red")
-lines(1:1200,MCMC.ts.Rin.m.89.2[[3]], lwd = 1, lty = 2, col = "red")
-legend(0, 0.716, c("PD input","PD reconstructed"),lwd = c(2, 2), col=c("black","red"))
-#end plot
+lines(dist.mea, MCMC.ts.Rin.89.nbm[[1]], lwd = 1, col = "cyan")
+lines(dist.mea, MCMC.ts.Rin.89.nbm[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(dist.mea, MCMC.ts.Rin.89.nbm[[3]], lwd = 1, lty = 2, col = "cyan")
 
+########inversion model#######
 #####v3 inversion for Rin using posterior distributions of a, b and c####
 #assign input values before and after the switch, but allows some variation
 R0 <- 0.70706

@@ -28,24 +28,29 @@ model {
     #evaluate its ratio
     R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
   }
-  #problem, 1 in 8 values are wasted
+  #problem, 1 in 8 values is wasted
  
-  #Evaluating the mean of neighboring 7 data points, ~ 100 micron
-  for (i in 2:(n.mea)){
-    Rs.eva[i] <- (Rs.m[mod.index[i]] + Rs.m[mod.index[i]+1] + Rs.m[mod.index[i]-1]+
-                    Rs.m[mod.index[i]+2] + Rs.m[mod.index[i]-2]+
-                    Rs.m[mod.index[i]+3] + Rs.m[mod.index[i]-3])/7
+  #Evaluating the mean of x micron width of ivory sampled
+  for (i in 2:n.mea){ #it is safe to evaluate the sequence at the second measurement
+    for(j in 1:n.days.bef.aft){
+      Rs.bef[i, j] <- Rs.m[mod.index[i] - j]
+      Rs.aft[i, j] <- Rs.m[mod.index[i] + j]
+    }
+    Rs.eva[i] <- (Rs.m[mod.index[i]] + sum(Rs.bef[i,]) + sum(Rs.aft[i,]))/(2*n.days.bef.aft + 1)
   }
-  
+
   Rs.eva[1] <- Rs.m [1]
   
   #also record modeled distance from pulp cavity
-  mod.dist <- 19200 - dist.index * Ivo.rate
+  mod.dist <- max.dist - dist.index * Ivo.rate
 
   #converting distance values to a set of indexes (integer)
+  #mod.index is measured in days ~1:1050
   mod.index <- round(dist.index) + 1
   
-  dist.index <- (19200 - dist.mea)/Ivo.rate
+  dist.index <- (max.dist - dist.mea)/Ivo.rate 
+  
+  max.dist = 19200 #maximum distance from the pulp cavity in microns
   
   #Data model of ivory
   #Priors for ivory sampling
