@@ -40,12 +40,15 @@ model {
   Rs.eva[1] <- Rs.m [1]
   
   #also record modeled distance from pulp cavity
-  mod.dist <- 19200 - dist.index * Ivo.rate
-
+  mod.dist <- max.dist - dist.index * Ivo.rate
+  
   #converting distance values to a set of indexes (integer)
+  #mod.index is measured in days ~1:1050
   mod.index <- round(dist.index) + 1
   
-  dist.index <- (19200 - dist.mea)/Ivo.rate
+  dist.index <- (max.dist - dist.mea)/Ivo.rate 
+  
+  max.dist = 19200 #maximum distance from the pulp cavity in microns
   
   #Data model of ivory
   #Priors for ivory sampling
