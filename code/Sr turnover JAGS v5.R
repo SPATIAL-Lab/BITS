@@ -30,11 +30,14 @@ model {
   }
   #problem, 1 in 8 values are wasted
  
-  #Evaluating the mean of neighbouring 7 data points, ~ 100 micron
-  for (i in 2:(n.mea)){
-    Rs.eva[i] <- (Rs.m[mod.index[i]] + Rs.m[mod.index[i]+1] + Rs.m[mod.index[i]-1]+
-                    Rs.m[mod.index[i]+2] + Rs.m[mod.index[i]-2]+
-                    Rs.m[mod.index[i]+3] + Rs.m[mod.index[i]-3])/7
+  #Evaluating the mean of neighbouring data points, ~ 100 micron
+  
+  for (i in 2:n.mea){ #it is safe to evaluate the sequence at the second measurement
+    for(j in 1:n.days.bef.aft){
+      Rs.bef[i, j] <- Rs.m[mod.index[i] - j]
+      Rs.aft[i, j] <- Rs.m[mod.index[i] + j]
+    }
+    Rs.eva[i] <- (Rs.m[mod.index[i]] + sum(Rs.bef[i,]) + sum(Rs.aft[i,]))/(2*n.days.bef.aft + 1)
   }
   
   Rs.eva[1] <- Rs.m [1]
@@ -87,7 +90,7 @@ model {
   #model initial values for bone and serum
   #assume that bone value is similar to serum, but use a different error term
   Rb.m[1] ~ dnorm(Rs.m[1], Sr.pre.b) 
-  Rs.m[1] ~ dnorm(R0.mean, Sr.pre.s)
+  Rs.m[1] ~ dnorm(R0.mean, R0.pre)
   
   #generate time series of input values
   #Rin is the input ratio, which is modeled with a switch point in the time series
@@ -133,7 +136,7 @@ model {
   Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s) 
   
   Sr.pre.shape <- 100
-  Sr.pre.rate.s <- 4e-5
+  Sr.pre.rate.s <- 2e-5
   
   #generate Sr values of food using a mixing process of food and water
   for(i in 1:t){
