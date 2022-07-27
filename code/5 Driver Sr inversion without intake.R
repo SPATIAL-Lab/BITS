@@ -20,7 +20,7 @@ misha <- read.csv("data/Misha ivory.csv")
 R.sd.cal <- misha$sd
 dist.cal <- misha$dist
 R.cal <- misha$mean
-n.cal = length(dist.mea)
+n.cal = length(dist.cal)
 
 micromill <- read.csv("data/Misha micromill.csv")
 
@@ -30,12 +30,12 @@ dist.mic <- rev(micromill$dist)
 n.mic <- length(dist.mic)
 
 #calculate average sampling interval
-Ivo.rate.mic <- 20 #this is estimated for the M640 slab, according to Uno 2012
+Ivo.rate.mic <- 20.1 #this is estimated for the M640 slab, according to Uno 2012
 samp.interval <- mean(dist.mic[1:(n.mic - 1)] - dist.mic[2:n.mic])
 n.days.bef.aft <- trunc(samp.interval/2/Ivo.rate.mic) #this parameter has to be supplied to the model
 
 Ivo.rate.mean <- 14.7
-cal.interval <- mean(dist.mea[1:(n.mea - 1)] - dist.mea[2:n.mea])
+cal.interval <- mean(dist.cal[1:(n.cal - 1)] - dist.cal[2:n.cal])
 n.days.bef.aft.cal <- trunc(cal.interval/2/Ivo.rate.mean) #this parameter has to be supplied to the model
 
 #assign input values before and after the switch, but allows some variation
@@ -46,15 +46,15 @@ Re <- 0.7112
 
 #parameters to save
 parameters <- c("Ivo.rate", "Rs.cal", "Rb.cal", "mod.index.cal","mod.dist.cal","Rin.cal","a","b","c",
-                "Rs.m", "Rb.m","Rin.m","mod.index","mod.dist", "a.m", "b.m", "c.m","Rin.m.eps.ac")
+                "Rs.m", "Rb.m","Rin.m","mod.index","mod.dist", "a.m", "b.m", "c.m","Rin.m.cps.ac")
 
 ##Data to pass to the model
 #compared to the turnover model that is essentially the .cal part here 
 #the inversion takes the measured value of potentially a different ivory series
-dat = list(R.cal = R.cal, dist.cal = dist.cal, R.sd.cal = R.sd.cal, t.cal = 1100, n.cal = n.cal, 
+dat = list(R.cal = R.cal, dist.cal = dist.cal, R.sd.cal = R.sd.cal, t.cal = 1200, n.cal = n.cal, 
            R0 = R0, Re = Re,
            n.days.bef.aft = n.days.bef.aft, n.days.bef.aft.cal = n.days.bef.aft.cal,
-           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 500, n.mea = n.mic)
+           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 600, n.mea = n.mic)
 
 #Start time
 t1 = proc.time()
@@ -118,3 +118,5 @@ lines(1:t,MCMC.ts.Rin.m.89.p[[1]],lwd = 2, col = "firebrick4")
 lines(1:t,MCMC.ts.Rin.m.89.p[[2]], lwd = 1, lty = 2, col = "firebrick4")
 lines(1:t,MCMC.ts.Rin.m.89.p[[3]], lwd = 1, lty = 2, col = "firebrick4")
 legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
+
+plot(density(post.misha.inversion.p$BUGSoutput$sims.list$Rin.m.cps.ac))

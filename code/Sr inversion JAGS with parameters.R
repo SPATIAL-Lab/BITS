@@ -5,8 +5,6 @@ model {
     #evaluate its ratio
     R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
   }
-  
-  #Evaluating the mean of neighbouring 7 data points, ~ 100 micron
   #this should be consistent with the averaging pattern of actual data
   #The data we used here is a 100 point average, at 100 micron interval
   #Evaluating the mean of x micron width of ivory sampled
@@ -58,17 +56,21 @@ model {
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i]
     
-    #Rin.m.eps[i] ~ dnorm(Rin.m.eps[i - 1] * Rin.m.eps.ac, Rin.m.pre)
+    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre)
     
     #autocorrelation structure of cps (change per step)
-    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre)
+    #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre)
     
     #autocorrelation term is also a time series with an autocorrelation structure
     #it is centered around the previous step with some variation allowed
     #this is used to accommodate the wide range of autocorrelation values in the actual data
     #including a sharp increase in input values during the switch, and steady values before and after
-    Rin.m.cps.ac[i] ~ dnorm(Rin.m.cps.ac[i - 1], Rin.m.cps.ac.pre)
+    # Rin.m.cps.ac[i] ~ dnorm(Rin.m.cps.ac[i - 1], Rin.m.cps.ac.pre)
   }
+  
+  #it can also be modeled as a sequence with independent values
+  #the initial value is from an uninformative distribution
+  Rin.m.cps.ac ~ dunif(0.01, 0.99)
   
   # initiate the series with an uninformative prior
   Rin.m[1] ~ dnorm(Rin.m.int, Rin.m.pre)
@@ -76,24 +78,28 @@ model {
   Rin.m.int ~ dunif(min.inv, max.inv) #any value between min and max values
   
   #setting upper and lower bounds of the uninformative prior
-  min.inv = 0.706
-  max.inv = 0.715
+  min.inv = 0.707
+  max.inv = 0.713
   
   #initial change per step centered around 0
   Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   
+  Sr.pre.b ~ dgamma(Rin.m.pre.shp, Sr.pre.b.rate)
+  Sr.pre.b.rate = 1e-6
+  
+  Sr.pre.s ~ dgamma(Rin.m.pre.shp, Sr.pre.s.rate)
+  Sr.pre.s.rate = 2e-5
+  
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 1e-5
+  Rin.m.pre.rate = 4e-6
   
   Rin.m.cps.ac.pre ~ dgamma(Rin.m.cps.ac.pre.shp, Rin.m.cps.ac.pre.rate)
   
   Rin.m.cps.ac.pre.shp = 20
   Rin.m.cps.ac.pre.rate = 2
   
-  #it can also be modeled as a sequence with independent values
-  #the initial value is from an uninformative distribution
-  Rin.m.cps.ac[1] ~ dunif(0.01, 0.99)
+
   
   ####scaling parameters a, b, c to body mass of the subject#####
   #adjusting a, b and c to the body mass of the elephant investigated
@@ -116,10 +122,10 @@ model {
   Body.mass.sd <- 250 # kg
   
   #supply the model with estimated parameters
-  a ~ dlnrom(a.mean, 1/a.sd^2)
+  a ~ dlnorm(a.mean, 1/a.sd^2)
   
-  b ~ dlnrom(b.mean, 1/b.sd^2)
+  b ~ dlnorm(b.mean, 1/b.sd^2)
   
-  c ~ dlnrom(c.mean, 1/c.sd^2)
+  c ~ dlnorm(c.mean, 1/c.sd^2)
 
 }
