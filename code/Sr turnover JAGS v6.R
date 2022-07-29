@@ -23,13 +23,21 @@ model {
   flux.ratio <- a/b
   pool.ratio <- c/b
   #Data eveluation
+  for (i in 1:n.mea){
 
+    #evaluate its ratio
+    R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
+  }
+  #problem, 1 in 8 values are wasted
+ 
+  #Evaluating the mean of neighbouring data points, ~ 100 micron
+  
   #matching measured distance with modeled distance
   for (i in 1:n.mea){
     #max.dist is added to make sure that the results are binary; no negative dist is allowed
     low.c[i] <- dist.mea[i] + s.intv/2 + max.dist
     up.c[i] <- dist.mea[i] - s.intv/2 + max.dist
-
+    
     #Evaluating the mean of neighbouring data points
     #this can accommodate variable growth rate of tusk/enamel
     #the following lines create vectors of 1s and 0s,
@@ -40,7 +48,6 @@ model {
     R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
   }
   
-  #Data model priors for ivory growth
   for (i in 2:t){
     Ivo.rate[i] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
     dist[i] <- dist[i - 1] - Ivo.rate[i] #cumulative distance
@@ -52,7 +59,7 @@ model {
   
   Ivo.rate.mean <- 14.7 #microns per day
   Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
-
+  
   #generate time series
   for (i in 2:t){
     #serum ratio
@@ -67,11 +74,10 @@ model {
     #derivative of bone ratios is linearly correlated with the difference between serum and bone
     #Rb.m[i] <- Rb.m[i-1] + Fb/Pb (Rs.m[i-1] - Rb.m[i-1])
     Rb.m[i] <- Rb.m[i - 1] + c * (Rs.m[i - 1] - Rb.m[i - 1])
-    
   }#can use three parameters instead
   
   #define the three parameters with uninformative priors
-    c <- b * c.coef
+  c <- b * c.coef
   c.coef ~ dunif(0.01, 1)
   b <- a * b.coef
   b.coef ~ dunif(0.01, 1)
@@ -86,7 +92,7 @@ model {
   #Rin is the input ratio, which is modeled with a switch point in the time series
   for(i in 1:t){
     
-    Rin[i] ~ dnorm(ifelse(i > switch, Re.mean, R0.mean), ifelse(i > switch, Re.pre, R0.pre))
+    Rin[i] ~ dnorm(ifelse(i > switch, Re.mean[i], R0.mean), ifelse(i > switch, Re.pre, R0.pre))
     #When i is greater than the switch point, Rin ~ dnorm(Re.mean, Rin.m.pre)
   }
   
@@ -104,15 +110,13 @@ model {
   pi.int <- rep(0, date - err.date - 1)
   
   #uncertainty of the date of switch = +- the number of days
-  err.date <- 5 
+  err.date <- 2 
   
   #suspected date of the switch
   date <- 76
 
   #allowing some uncertainty in R0 values
   R0.mean ~ dnorm(R0, R0.pre)
-  
-  Re.mean ~ dnorm(Re, Re.pre)
   
   #Re has more uncertainty than Re
   Re.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Re)
@@ -123,14 +127,108 @@ model {
   
   #precision for average Sr measurements in bone should be much smaller
   Sr.pre.b ~ dgamma(Sr.pre.shape, Sr.pre.rate.b)  
-  Sr.pre.rate.b <- 1e-6
+  Sr.pre.rate.b <- 2e-6
   
   Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s) 
   
   Sr.pre.shape <- 100
-  Sr.pre.rate.s <- 1e-5
+  Sr.pre.rate.s <- 2e-5
   
-
+  #generate Sr values of food using a mixing process of food and water
+  for(i in 1:t){
+    w.contrib[i] = w.water[i]/(w.food[i] + w.water[i])
+    
+    h.contrib[i] = w.hay[i]/(w.food[i] + w.water[i])
+    #weighted mean calculated by Sr concentration and ratio
+    Re.mean[i] = (sum.c.Sr.pel[i] + sum.c.Sr.hay[i] + sum.c.Sr.sup[i] + c.Sr.w * w.intake[i])/(w.food[i] + w.water[i])
+    
+    w.food[i] = w.hay[i] + w.sup[i] + w.pel[i] #total amount of Sr in food
+    
+    #calculate weights based on concentrations, 20kg each for hay and alfalfa
+    #with the digestibility modifier for hay and alfalfa and diet ratio
+    #total amount of Sr in hay, mass * concentration * digestibility * ratio
+    w.hay[i] = sum(c.hay.m) * diges.h * f.h[i] / m.feed * f.intake[i] 
+    
+    sum.c.Sr.hay[i] = sum(c.Sr.hay) * diges.h * f.h[i] / m.feed * f.intake[i]
+    
+    #pellet is assumed to be homogenized and 60% digestible (Sr) (half the fiber content as hay)
+    #calculate weight of the pellet
+    w.pel[i] = c.pel.m * f.pel[i] * diges.p * p.intake[i] #total amount of Sr in pellet
+    
+    sum.c.Sr.pel[i] = Sr.pel.m * c.pel.m * f.pel[i] * diges.p * p.intake[i]
+    
+    #calculate weight of the supplement
+    w.sup[i] = c.sup.m * (1- f.pel[i]) * diges.s * p.intake[i] #total amount of Sr in pellet
+    
+    sum.c.Sr.sup[i] = Sr.sup.m * c.sup.m * (1- f.pel[i]) * diges.s * p.intake[i]
+    
+    #Water Sr values
+    #calculate weight of the water
+    w.water[i] = w.intake[i] * c.w.m #total amount of Sr in water intake, volume * concentration
+    
+    #pellet is fed at ~10% food by mass(Wood et al., 2020)
+    
+    p.intake[i] = f.intake[i] *(1 - f.h[i])
+    
+    f.pel[i] ~ dbeta(alpha.pel, beta.pel) #Pellet vs supplement
+    
+    f.h[i] ~ dbeta(alpha.h, beta.h) #Hay ~80%
+    
+    f.intake[i] = f.intake.perc[i] * Body.mass
+    #daily food intake ~ 1.5% +- 0.2% body mass
+    f.intake.perc[i] ~ dnorm(0.015, 1/0.002^2)
+    
+    w.intake[i] = w.intake.perc[i] * Body.mass
+    #daily water intake ~ 1.5% +- 0.2% body mass
+    w.intake.perc[i] ~ dnorm(0.015, 1/0.002^2)
+    
+  }
+  #water concentration and Sr ratio
+  c.w.m ~ dlnorm(conc.w.mean, 1/conc.w.sd^2)
+  
+  Sr.w.m ~ dnorm(Sr.w.mean, 1/Sr.w.sd^2)
+  
+  c.Sr.w = Sr.w.m * c.w.m #product of concentration and Sr
+  
+  #Define parameters for beta distributions
+  alpha.h ~ dnorm(32, 1/0.4^2)
+  
+  beta.h ~ dnorm(8, 1/4^2)
+  
+  alpha.pel ~ dnorm(40, 1/1^2)
+  
+  beta.pel ~ dnorm(40, 1/1^2)
+  
+  #Ca absorption rate of hay is estimated to be 60 +- 2%
+  diges.h ~ dnorm(0.6, 1/0.03^2)
+  
+  #Ca absorption rate of pellet is assumed to be slightly higher 70% (15% fiber)
+  diges.p ~ dnorm(0.7, 1/0.03^2)
+  
+  #Ca absorption rate of supplement is assumed to be around the same as pellet at 70% (12% fiber)
+  diges.s ~ dnorm(0.7, 1/0.03^2)
+  
+  #supplement concentration and Sr ratio
+  c.sup.m ~ dlnorm(conc.sup.mean, 1/conc.sup.sd^2)
+  
+  Sr.sup.m ~ dnorm(Sr.sup.mean, 1/Sr.sup.sd^2)
+  
+  #pellet concentration and Sr ratio
+  c.pel.m ~ dlnorm(conc.pel.mean, 1/conc.pel.sd^2)
+  
+  Sr.pel.m ~ dnorm(Sr.pel.mean, 1/Sr.pel.sd^2)
+  
+  #modeling mixing of m.feed kgs of hay in the feeding process
+  for(i in 1:m.feed){
+    
+    c.hay.m[i] ~ dlnorm(conc.hay.mean, 1/conc.hay.sd^2)
+    
+    Sr.hay.m[i] ~ dnorm(Sr.hay.mean, 1/Sr.hay.sd^2)
+    
+    c.Sr.hay[i] = Sr.hay.m[i] * c.hay.m[i] #product of concentration and Sr
+    
+  }
+  
   Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
   Body.mass.mean <- 4800 # kg
   Body.mass.sd <- 250 # kg
