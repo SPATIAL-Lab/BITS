@@ -1,9 +1,9 @@
 ####helper functions#####
-MCMC.ts <- function (MCMC.res){
+MCMC.CI.bound <- function (MCMC.res, CI){
   require(KernSmooth)
   require(bayestestR)
   dim.MCMC <- dim(MCMC.res)
-  #typically, the first element is # of interation
+  #typically, the first element is # of iterations
   #the second element is the time series
   map.res <- rep(0, dim.MCMC[2])
   hdi.high <- rep(0, dim.MCMC[2])
@@ -11,33 +11,46 @@ MCMC.ts <- function (MCMC.res){
   
   for(i in 1:dim.MCMC[2]){
     map.res[i] <- map_estimate(MCMC.res[,i], method = "KernSmooth")
-    hdi.89 <- hdi(MCMC.res[,i], ci = 0.89)
-    hdi.low[i] <- hdi.89$CI_low
-    hdi.high[i] <- hdi.89$CI_high
+    hdi <- hdi(MCMC.res[,i], ci = CI)
+    hdi.low[i] <- hdi$CI_low
+    hdi.high[i] <- hdi$CI_high
   }
   
-  return (list(map.res, hdi.low, hdi.high))
+  return (list(map.res, hdi.low, hdi.high, CI))
 }
 
-MCMC.ts.dist <- function(MCMC.res, MCMC.dist, MCMC.index){
+#modeled sampling distance to compare with raw data, can be used to visualize serum values (Rs.m)
+MCMC.dist.plot <- function(MCMC.res, MCMC.dist){#t is the number of days in the model
   require(scales)
   
-  #typically, the first element is # of interation
+  #typically, the first element is # of iterations
   #the second element is the time series
+  #t is the number of days in the model
   
-  dim.MCMC <- dim(MCMC.res) #this is 800
-  n <- dim.MCMC[1] #number of interation
-  dim.MCMC.dist <- dim(MCMC.dist) #this is 100
-  MCMC.res.index <- array(0, c(n, dim.MCMC.dist[2]))
-  for(i in 1:n){ #for each iteration, extract MCMC index results
-    MCMC.res.index[i,] <- MCMC.res[i, MCMC.index[i,]]
-  }
+  dim.MCMC <- dim(MCMC.res)
+  n <- dim.MCMC[1] #number of iterations
   
   for(i in 1:n){
-    lines(MCMC.dist[i,], MCMC.res.index[i,], col = alpha("black", 0.02))
+    lines(MCMC.dist[i,], MCMC.res[i,], col = alpha("black", 0.02))
   }
   
-  return(MCMC.res.index)
+}
+
+#reconstructed time line, could be serum(Rs.m), input(Rin), modeled distance(dist).
+MCMC.tl.plot <- function(MCMC.res, t){#t is the number of days in the model
+  require(scales)
+  
+  #typically, the first element is # of iterations
+  #the second element is the time series
+  #t is the number of days in the model
+  
+  dim.MCMC <- dim(MCMC.res)
+  n <- dim.MCMC[1] #number of iterations
+
+  for(i in 1:n){
+    lines(1:t, MCMC.res[i,], col = alpha("black", 0.02))
+  }
+
 }
 
 MCMC.dist.median <- function(MCMC.res){
@@ -48,8 +61,6 @@ MCMC.dist.median <- function(MCMC.res){
   MCMC.res.min <- rep(0, n)
   for(i in 1:n){ #for each iteration, extract MCMC index results
     MCMC.res.med[i] <- median (MCMC.res[,i])
-    MCMC.res.min[i] <- min (MCMC.res[,i])
-    MCMC.res.max[i] <- median (MCMC.res[,i])
   }
   return(MCMC.res.med)
 }
