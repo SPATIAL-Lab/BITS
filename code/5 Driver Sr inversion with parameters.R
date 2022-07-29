@@ -18,56 +18,6 @@ dist.mea <- misha$dist
 R.mea <- misha$mean
 n.mea = length(dist.mea)
 
-#adding the model component of food and water mixture as intake#
-intake <- read.csv("data/intake.csv")
-
-Hay <- intake[which(intake$type=="H"),]
-Pellet <- intake[which(intake$type=="P"),]
-Supplement <- intake[which(intake$type=="S"),]
-Water <- intake[which(intake$type=="W"),]
-
-#estimate mean and sd for hay Sr87/86
-Sr.hay <- enorm(Hay$X87Sr.86Sr)
-Sr.hay.mean <- Sr.hay$parameters[1]
-Sr.hay.sd <- Sr.hay$parameters[2]
-
-#estimate mean and sd for pellet Sr87/86
-Sr.pel <- enorm(Pellet$X87Sr.86Sr)
-Sr.pel.mean <- Sr.pel$parameters[1]
-Sr.pel.sd <- Sr.pel$parameters[2]
-
-#estimate mean and sd for alfalfa Sr87/86
-Sr.sup <- enorm(Supplement$X87Sr.86Sr)
-Sr.sup.mean <- Sr.sup$parameters[1]
-Sr.sup.sd <- Sr.sup$parameters[2]
-
-#estimate mean and sd for water Sr87/86
-Sr.w <- enorm(Water$X87Sr.86Sr)
-Sr.w.mean <- Sr.w$parameters[1]
-Sr.w.sd <- Sr.w$parameters[2]
-
-#estimate mean and sd for hay Sr concentration
-#log-normal distribution
-conc.hay <- elnorm(Hay$Sr_conc)
-conc.hay.mean <- conc.hay$parameters[1]
-conc.hay.sd <- conc.hay$parameters[2]
-
-conc.sup <- elnorm(Supplement$Sr_conc)
-conc.sup.mean <- conc.sup$parameters[1]
-conc.sup.sd <- conc.sup$parameters[2]
-
-#estimate mean and sd for pellet concentration
-#log-normal distribution
-conc.pel <- elnorm(Pellet$Sr_conc)
-conc.pel.mean <- conc.pel$parameters[1]
-conc.pel.sd <- conc.pel$parameters[2]
-
-#estimate mean and sd for water concentration
-#log-normal distribution
-conc.w <- elnorm(Water$Sr_conc)
-conc.w.mean <- conc.w$parameters[1]
-conc.w.sd <- conc.w$parameters[2]
-
 ########inversion model with calibration for either the one/two pool model#######
 #inversion based on micromill results
 micromill <- read.csv("data/Misha micromill.csv")
@@ -77,17 +27,15 @@ R.sd.mic <- rev(micromill$StdErr)
 dist.mic <- rev(micromill$dist)
 n.mic <- length(dist.mic)
 
-#calculate average sampling interval
-Ivo.rate.mic <- 20 #this is estimated for the M640 slab, according to Uno 2012
-samp.interval <- mean(dist.mic[1:(n.mic - 1)] - dist.mic[2:n.mic])
-n.days.bef.aft <- trunc(samp.interval/2/Ivo.rate.mic) #this parameter has to be supplied to the model
+#calibration interval and sampling interval
+cal.intv <- 100
 
-Ivo.rate.mean <- 14.7
-cal.interval <- mean(dist.mea[1:(n.mea - 1)] - dist.mea[2:n.mea])
-n.days.bef.aft.cal <- trunc(cal.interval/2/Ivo.rate.mean) #this parameter has to be supplied to the model
-
+s.intv <- 400
 
 R0 <- 0.7071
+
+#Re is the mean ratio of end value  
+Re <- 0.7112
 
 #parameters to save
 parameters <- c("Ivo.rate", "Rs.cal", "Rb.cal", "mod.index.cal","mod.dist.cal","Rin.cal","a","b","c",
@@ -98,17 +46,9 @@ parameters <- c("Ivo.rate", "Rs.cal", "Rb.cal", "mod.index.cal","mod.dist.cal","
 ##Data to pass to the model
 #compared to the turnover model that is essentially the .cal part here 
 #the inversion takes the measured value of potentially a different ivory series
-dat = list(R.cal = R.mea, dist.cal = dist.mea, R.sd.cal = R.sd.mea, t.cal = 1400, n.cal = n.mea, 
-           R0 = R0,  
-           Sr.hay.mean = Sr.hay.mean, Sr.hay.sd = Sr.hay.sd, 
-           Sr.pel.mean = Sr.pel.mean, Sr.pel.sd = Sr.pel.sd, 
-           Sr.sup.mean = Sr.sup.mean, Sr.sup.sd = Sr.sup.sd,
-           Sr.w.mean = Sr.w.mean, Sr.w.sd = Sr.w.sd, m.feed = m.feed,
-           conc.hay.mean = conc.hay.mean, conc.hay.sd = conc.hay.sd, 
-           conc.pel.mean = conc.pel.mean, conc.pel.sd = conc.pel.sd,
-           conc.sup.mean = conc.sup.mean, conc.sup.sd = conc.sup.sd,
-           conc.w.mean = conc.w.mean, conc.w.sd = conc.w.sd,
-           n.days.bef.aft = n.days.bef.aft, n.days.bef.aft.cal = n.days.bef.aft.cal,
+dat = list(R.cal = R.mea, dist.cal = dist.mea, R.sd.cal = R.sd.mea, t.cal = 800, n.cal = n.mea, 
+           R0 = R0,  Re = Re, cal.intv = cal.intv, s.intv = s.intv, 
+           params.mu = turnover.params.mu, params.vcov = turnover.params.vcov,
            R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 800, n.mea = n.mic)
 
 #Start time

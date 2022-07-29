@@ -1,40 +1,36 @@
 model {
   ######inversion######
+
+  #Evaluating the mean of x micron width of ivory sampled
   for (i in 1:n.mea){
+    #max.dist is added to make sure that the results are binary; no negative dist is allowed
+    low.c[i] <- dist.mea[i] + s.intv/2 + max.dist
+    up.c[i] <- dist.mea[i] - s.intv/2 + max.dist
+    
+    #Evaluating the mean of neighbouring data points
+    #this should be consistent with the averaging pattern of actual data
+    #The data we used here is from a micromill transect at 400 micron interval
+    #this can accommodate variable growth rate of tusk/enamel
+    #the following lines create vectors of 1s and 0s,
+    #dist.mea is used as reference; if dist falls within the brackets, then 1s will be recorded
+    #low.c - up.c result in binary position vectors for averaging Rs.m using inner product of the two vectors
+    Rs.eva[i] <- inprod(Rs.m, trunc(low.c[i]/(dist + max.dist)) - trunc(up.c[i]/(dist + max.dist)))/sum(trunc(low.c[i]/(dist + max.dist)) - trunc(up.c[i]/(dist + max.dist)))
     
     #evaluate its ratio
     R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
   }
-  #this should be consistent with the averaging pattern of actual data
-  #The data we used here is a 100 point average, at 100 micron interval
-  #Evaluating the mean of x micron width of ivory sampled
-  for (i in 2:n.mea){ #it is safe to evaluate the sequence at the second measurement
-    for(j in 1:n.days.bef.aft){
-      Rs.bef[i, j] <- Rs.m[mod.index[i] - j]
-      Rs.aft[i, j] <- Rs.m[mod.index[i] + j]
-    }
-    Rs.eva[i] <- (Rs.m[mod.index[i]] + sum(Rs.bef[i,]) + sum(Rs.aft[i,]))/(2*n.days.bef.aft + 1)
+  
+  #Data model priors for ivory growth
+  for (i in 2:t){
+    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
+    dist[i] <- dist[i - 1] - Ivo.rate[i] #cumulative distance
   }
   
-  
-  Rs.eva[1] <- Rs.m [1]
-  
-  #also record modeled distance from pulp cavity
-  mod.dist <- max.dist.mic - dist.index * Ivo.rate
-  
-  #converting distance values to a set of indexes (integer)
-  #mod.index is measured in days 
-  mod.index <- round(dist.index) + 1
-  
-  dist.index <- (max.dist.mic - dist.mea)/Ivo.rate 
-  
-  max.dist.mic = 8000 #maximum distance from the pulp cavity in microns
-  #Data model of ivory
-  #Priors for ivory sampling
-  #assuming laser ablation has no averaging effects, which samples daily Rs values
+  dist[1] <- max.dist
+  max.dist <- max(dist.mea) #maximum distance from the pulp cavity in microns
+  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
   
   #Parameters for the ivory growth rate of the subject
-  Ivo.rate ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
   Ivo.rate.mean <- 20 #microns per day
   Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
   
@@ -121,11 +117,13 @@ model {
   Body.mass.mean <- 4800 # kg
   Body.mass.sd <- 250 # kg
   
+    a <- exp(params[1])
+    
+    b <- exp(params[2])
+    
+    c <- exp(params[3])
+  
   #supply the model with estimated parameters
-  a ~ dlnorm(a.mean, 1/a.sd^2)
-  
-  b ~ dlnorm(b.mean, 1/b.sd^2)
-  
-  c ~ dlnorm(c.mean, 1/c.sd^2)
+  params ~ dmnorm.vcov(params.mu, params.vcov)
 
 }

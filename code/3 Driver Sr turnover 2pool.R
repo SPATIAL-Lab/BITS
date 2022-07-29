@@ -77,17 +77,14 @@ R0 <- 0.7071
 
 m.feed <- 40 #mixing of x kg of hay, this is to constrain Sr variability of hay
 
-#calculate average sampling interval
-Ivo.rate.mean <- 14.7
-samp.interval <- mean(dist.mea[1:(n.mea - 1)] - dist.mea[2:n.mea])
-n.days.bef.aft <- trunc(samp.interval/2/Ivo.rate.mean) #this parameter has to be supplied to the model
+s.intv <- 100
 
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","mod.index","mod.dist","f.h","f.pel","h.l.s",
                 "Sr.pre", "Ps", "Fin","Pb", "Fb", "Re.mean", "switch", "w.contrib", "h.contrib",
                 "flux.ratio", "pool.ratio")
 ##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1100, n.mea = n.mea, 
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 800, n.mea = n.mea, 
            R0 = R0, Sr.hay.mean = Sr.hay.mean, Sr.hay.sd = Sr.hay.sd, 
            Sr.pel.mean = Sr.pel.mean, Sr.pel.sd = Sr.pel.sd, 
            Sr.sup.mean = Sr.sup.mean, Sr.sup.sd = Sr.sup.sd,
@@ -95,8 +92,7 @@ dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 1100, n.
            conc.hay.mean = conc.hay.mean, conc.hay.sd = conc.hay.sd, 
            conc.pel.mean = conc.pel.mean, conc.pel.sd = conc.pel.sd,
            conc.sup.mean = conc.sup.mean, conc.sup.sd = conc.sup.sd,
-           conc.w.mean = conc.w.mean, conc.w.sd = conc.w.sd,
-           n.days.bef.aft = n.days.bef.aft)
+           conc.w.mean = conc.w.mean, conc.w.sd = conc.w.sd, s.intv = s.intv)
 
 #Start time
 t1 = proc.time()
@@ -107,7 +103,7 @@ n.burnin = 2e3
 n.thin = floor(n.iter-n.burnin)/600
 
 #Run it
-post.misha.5 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS v5.R", 
+post.misha.5 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS v6.R", 
                                           parameters.to.save = parameters, 
                                           data = dat, n.chains=5, n.iter = n.iter, 
                                           n.burnin = n.burnin, n.thin = n.thin))
@@ -193,26 +189,6 @@ plot(density(post.misha.4$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim =
 lines(density(post.misha.4$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
 legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
 
-#check parameters a, b, and c
-plot(density(post.misha.5$BUGSoutput$sims.list$a))
-plot(density(post.misha.5$BUGSoutput$sims.list$b))
-plot(density(post.misha.5$BUGSoutput$sims.list$c))
-
-#estimate log-normal parameters for each, but they are correlated! should use a correlated structure!
-a.param <- elnorm(post.misha.5$BUGSoutput$sims.list$a[,1])
-b.param <- elnorm(post.misha.5$BUGSoutput$sims.list$b[,1])
-c.param <- elnorm(post.misha.5$BUGSoutput$sims.list$c[,1])
-
-#check the log-normal fit using q-q plots
-qqPlot(post.misha.5$BUGSoutput$sims.list$a[,1],distribution = "lnorm",
-       param.list=list(mean=a.param$parameters[1],sd=a.param$parameters[2]),add.line=T)
-
-qqPlot(post.misha.5$BUGSoutput$sims.list$b[,1],distribution = "lnorm",
-       param.list=list(mean=b.param$parameters[1],sd=b.param$parameters[2]),add.line=T)
-
-qqPlot(post.misha.5$BUGSoutput$sims.list$c[,1],distribution = "lnorm",
-       param.list=list(mean=c.param$parameters[1],sd=c.param$parameters[2]),add.line=T)
-
 #####without intake model try randomly generated distance sequence###
 #this also works with variable growth rates#
 
@@ -241,7 +217,7 @@ t1 = proc.time()
 set.seed(t1[3])
 n.iter = 5e3
 n.burnin = 1e3
-n.thin = floor(n.iter-n.burnin)/600
+n.thin = floor(n.iter-n.burnin)/400
 
 #Run it
 post.misha.woint3 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS wo intake model3.R", 
@@ -250,7 +226,7 @@ post.misha.woint3 = do.call(jags.parallel,list(model.file = "code/Sr turnover JA
                                               n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 5 hours
+proc.time() - t1 #~ 20 hours
 
 post.misha.woint3$BUGSoutput$summary
 
@@ -335,3 +311,33 @@ plot(density(post.misha.4$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim =
      ylim = c(0, 20), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
 lines(density(post.misha.4$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
 legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+
+#check parameters a, b, and c
+plot(density(post.misha.5$BUGSoutput$sims.list$a))
+plot(density(post.misha.5$BUGSoutput$sims.list$b))
+plot(density(post.misha.5$BUGSoutput$sims.list$c))
+
+#estimate log-normal parameters for each, but they are correlated! should use a correlated structure!
+a.param <- elnorm(post.misha.5$BUGSoutput$sims.list$a[,1])
+b.param <- elnorm(post.misha.5$BUGSoutput$sims.list$b[,1])
+c.param <- elnorm(post.misha.5$BUGSoutput$sims.list$c[,1])
+
+#log transform posterior distribution
+log.a <- log(post.misha.5$BUGSoutput$sims.list$a)
+log.b <- log(post.misha.5$BUGSoutput$sims.list$b)
+log.c <- log(post.misha.5$BUGSoutput$sims.list$c)
+turnover.params.mu <- c(mean(log.a), mean(log.b), mean(log.c))
+
+turnover.params<- data.frame(log.a, log.b, log.c)
+#parameters are correlated, calculate v.cov matrix
+turnover.params.vcov <- var(turnover.params)
+
+#check the log-normal fit using q-q plots
+qqPlot(post.misha.5$BUGSoutput$sims.list$a[,1],distribution = "lnorm",
+       param.list=list(mean=a.param$parameters[1],sd=a.param$parameters[2]),add.line=T)
+
+qqPlot(post.misha.5$BUGSoutput$sims.list$b[,1],distribution = "lnorm",
+       param.list=list(mean=b.param$parameters[1],sd=b.param$parameters[2]),add.line=T)
+
+qqPlot(post.misha.5$BUGSoutput$sims.list$c[,1],distribution = "lnorm",
+       param.list=list(mean=c.param$parameters[1],sd=c.param$parameters[2]),add.line=T)
