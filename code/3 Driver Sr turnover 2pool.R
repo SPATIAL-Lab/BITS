@@ -208,16 +208,16 @@ parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","dist.index",
                 "Sr.pre", "Ps", "Fin","Pb", "Fb", "Re.mean", "switch","dist",
                 "flux.ratio", "pool.ratio","Body.mass")
 ##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 800, n.mea = n.mea, 
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
            R0 = R0, Re = Re, s.intv = s.intv)
 
 #Start time
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 5e3
-n.burnin = 1e3
-n.thin = floor(n.iter-n.burnin)/400
+n.iter = 2e3
+n.burnin = 2e2
+n.thin = floor(n.iter-n.burnin)/600
 
 #Run it
 post.misha.woint3 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS wo intake model3.R", 
@@ -236,8 +236,8 @@ load("out/post.misha.woint3.RData")
 traplot(post.misha.woint3,parms = c("flux.ratio", "pool.ratio"))
 traplot(post.misha.woint3,parms = c("a", "b","c"))
 
-summary(post.misha.woint$BUGSoutput$sims.list$switch)
-summary(post.misha.woint$BUGSoutput$sims.list$Ivo.rate)
+summary(post.misha.woint3$BUGSoutput$sims.list$switch)
+summary(post.misha.woint3$BUGSoutput$sims.list$Ivo.rate)
 
 #make a contour map
 # contour.flux.pool <- kde2d(post.misha.5$BUGSoutput$sims.list$flux.ratio[,1], 
@@ -246,23 +246,23 @@ summary(post.misha.woint$BUGSoutput$sims.list$Ivo.rate)
 # contour(contour.flux.pool,lwd = 1.5, add = TRUE, labcex = 1)
 
 #plotting some parameters
-plot(density(post.misha.woint$BUGSoutput$sims.list$Ivo.rate))
-map_estimate(post.misha.woint$BUGSoutput$sims.list$Pb) #1.22 mmol
-plot(density(post.misha.woint$BUGSoutput$sims.list$Pb))
-map_estimate(post.misha.woint$BUGSoutput$sims.list$Ps) #1.03 mmol
-map_estimate(post.misha.woint$BUGSoutput$sims.list$Fin) #0.03 mmol/day
-plot(density(post.misha.woint$BUGSoutput$sims.list$Fin))
-map_estimate(post.misha.woint$BUGSoutput$sims.list$Fb) #0.00561 mmol/day
-plot(density(post.misha.woint$BUGSoutput$sims.list$Fb))
+plot(density(post.misha.woint3$BUGSoutput$sims.list$Ivo.rate))
+map_estimate(post.misha.woint3$BUGSoutput$sims.list$Pb) #1.27 mmol
+plot(density(post.misha.woint3$BUGSoutput$sims.list$Pb))
+map_estimate(post.misha.woint3$BUGSoutput$sims.list$Ps) #1.05 mmol
+map_estimate(post.misha.woint3$BUGSoutput$sims.list$Fin) #0.02 mmol/day
+plot(density(post.misha.woint3$BUGSoutput$sims.list$Fin))
+map_estimate(post.misha.woint3$BUGSoutput$sims.list$Fb) #0.00520 mmol/day
+plot(density(post.misha.woint3$BUGSoutput$sims.list$Fb))
 
-plot(density(post.misha.woint$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
+plot(density(post.misha.woint3$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
      ylim = c(0, 4), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
-lines(density(post.misha.woint$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
+lines(density(post.misha.woint$BUGSoutput3$sims.list$Pb), lwd = 2, col = plot.col[6])
 legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
 
-plot(density(post.misha.woint$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.1),
+plot(density(post.misha.woint3$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.1),
      ylim = c(0, 80), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
-lines(density(post.misha.woint$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
+lines(density(post.misha.woint$BUGSoutput3$sims.list$Fb), lwd = 2, col = plot.col[6])
 legend(0.06, 80, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
 
 #a/b = Fin/Fb
@@ -276,56 +276,46 @@ abline(h = Re, lwd = 2, lty = 2)
 MCMC.dist.plot(post.misha.woint3$BUGSoutput$sims.list$Rs.m,
                post.misha.woint3$BUGSoutput$sims.list$dist)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
-post.misha.woint.Rs.m.89<- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$Rs.m, 0.89)
+post.misha.woint3.Rs.m.89<- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$Rs.m, 0.89)
 #extract median distance from MCMC(t) results
 med.dist.woint3<- MCMC.dist.median(post.misha.woint3$BUGSoutput$sims.list$dist)
-lines(med.dist.woint3, post.misha.woint.Rs.m.89[[1]], lwd = 1, col = "cyan")
-lines(med.dist.woint3, post.misha.woint.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(med.dist.woint3, post.misha.woint.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
+lines(med.dist.woint3, post.misha.woint3.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(med.dist.woint3, post.misha.woint3.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(med.dist.woint3, post.misha.woint3.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
 
 ####check the Rin values####
-plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
+plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.tl.plot(post.misha.woint3$BUGSoutput$sims.list$Rin,t)
-post.misha.woint.Rin.89<- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$Rin, 0.89)
-lines(1:t, post.misha.woint.Rin.89[[1]], lwd = 1, col = "cyan")
-lines(1:t, post.misha.woint.Rin.89[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(1:t, post.misha.woint.Rin.89[[3]], lwd = 1, lty = 2, col = "cyan")
+post.misha.woint3.Rin.89<- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$Rin, 0.89)
+lines(1:t, post.misha.woint3.Rin.89[[1]], lwd = 2, col = "firebrick4")
+lines(1:t, post.misha.woint3.Rin.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:t, post.misha.woint3.Rin.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
 
 #reconstructed Rs.m history
-plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
+plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 MCMC.tl.plot(post.misha.woint3$BUGSoutput$sims.list$Rs.m,t)
-lines(1:t, post.misha.woint.Rs.m.89[[1]], lwd = 1, col = "cyan")
-lines(1:t, post.misha.woint.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(1:t, post.misha.woint.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
-
-plot(density(post.misha.woint$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
-     ylim = c(0, 3), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
-lines(density(post.misha.woint$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
-legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
-
-plot(density(post.misha.4$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.4),
-     ylim = c(0, 20), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
-lines(density(post.misha.4$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
-legend(0.3, 20, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+lines(1:t, post.misha.woint3.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(1:t, post.misha.woint3.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(1:t, post.misha.woint3.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
 
 #check parameters a, b, and c
-plot(density(post.misha.5$BUGSoutput$sims.list$a))
-plot(density(post.misha.5$BUGSoutput$sims.list$b))
-plot(density(post.misha.5$BUGSoutput$sims.list$c))
+par(mfrow = c(1,3))
+plot(density(post.misha.woint3$BUGSoutput$sims.list$a))
+plot(density(post.misha.woint3$BUGSoutput$sims.list$b))
+plot(density(post.misha.woint3$BUGSoutput$sims.list$c))
 
 #estimate log-normal parameters for each, but they are correlated! should use a correlated structure!
-a.param <- elnorm(post.misha.5$BUGSoutput$sims.list$a[,1])
-b.param <- elnorm(post.misha.5$BUGSoutput$sims.list$b[,1])
-c.param <- elnorm(post.misha.5$BUGSoutput$sims.list$c[,1])
+a.param <- elnorm(post.misha.woint3$BUGSoutput$sims.list$a[,1])
+b.param <- elnorm(post.misha.woint3$BUGSoutput$sims.list$b[,1])
+c.param <- elnorm(post.misha.woint3$BUGSoutput$sims.list$c[,1])
 
 #log transform posterior distribution
-log.a <- log(post.misha.5$BUGSoutput$sims.list$a)
-log.b <- log(post.misha.5$BUGSoutput$sims.list$b)
-log.c <- log(post.misha.5$BUGSoutput$sims.list$c)
+log.a <- log(post.misha.woint3$BUGSoutput$sims.list$a[,1])
+log.b <- log(post.misha.woint3$BUGSoutput$sims.list$b[,1])
+log.c <- log(post.misha.woint3$BUGSoutput$sims.list$c[,1])
 turnover.params.mu <- c(mean(log.a), mean(log.b), mean(log.c))
 
 turnover.params<- data.frame(log.a, log.b, log.c)
@@ -333,11 +323,12 @@ turnover.params<- data.frame(log.a, log.b, log.c)
 turnover.params.vcov <- var(turnover.params)
 
 #check the log-normal fit using q-q plots
-qqPlot(post.misha.5$BUGSoutput$sims.list$a[,1],distribution = "lnorm",
+qqPlot(post.misha.woint3$BUGSoutput$sims.list$a[,1],distribution = "lnorm",
        param.list=list(mean=a.param$parameters[1],sd=a.param$parameters[2]),add.line=T)
 
-qqPlot(post.misha.5$BUGSoutput$sims.list$b[,1],distribution = "lnorm",
+qqPlot(post.misha.woint3$BUGSoutput$sims.list$b[,1],distribution = "lnorm",
        param.list=list(mean=b.param$parameters[1],sd=b.param$parameters[2]),add.line=T)
 
-qqPlot(post.misha.5$BUGSoutput$sims.list$c[,1],distribution = "lnorm",
+qqPlot(post.misha.woint3$BUGSoutput$sims.list$c[,1],distribution = "lnorm",
        param.list=list(mean=c.param$parameters[1],sd=c.param$parameters[2]),add.line=T)
+

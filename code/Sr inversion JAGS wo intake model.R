@@ -1,42 +1,32 @@
 model {
   ######inversion######
   for (i in 1:n.mea){
+    #dist[1:t] is a descending sequence
     
+    #Evaluating the mean of neighbouring data points
+    #this can accommodate variable growth rate of tusk/enamel
+    #the following "<" logical operations create vectors with 1s and 0s,
+    #dist.mea is used as reference; if dist falls within the bracket, then 1s will be recorded
+    #then inprod()/sum() is used to calculate the mean of all data points within the bracket
+    
+    Rs.eva[i] <- inprod(Rs.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
     R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
   }
-
-  #The data we used here is a 100 point average, at 100 micron interval
-  for (i in 2:n.mea){ #it is safe to evaluate the sequence at the second measurement
-    for(j in 1:n.days.bef.aft){
-      Rs.bef[i, j] <- Rs.m[mod.index[i] - j]
-      Rs.aft[i, j] <- Rs.m[mod.index[i] + j]
-    }
-    Rs.eva[i] <- (Rs.m[mod.index[i]] + sum(Rs.bef[i,]) + sum(Rs.aft[i,]))/(2*n.days.bef.aft + 1)
+  
+  #Data model priors for ivory growth
+  for (i in 2:t){
+    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
+    dist[i] <- dist[i - 1] - Ivo.rate[i] #simulate daily distance increment
   }
   
+  dist[1] <- 8000#maximum distance from the pulp cavity in microns
   
-  Rs.eva[1] <- Rs.m [1]
-  
-  #also record modeled distance from pulp cavity
-  mod.dist <- max.dist.mic - dist.index * Ivo.rate
-  
-  #converting distance values to a set of indexes (integer)
-  #mod.index is measured in days 
-  mod.index <- round(dist.index) + 1
-  
-  dist.index <- (max.dist.mic - dist.mea)/Ivo.rate 
-  
-  max.dist.mic = 7800 #maximum distance from the pulp cavity in microns
-  
-  #Data model of ivory
-  #Priors for ivory sampling
-  #assuming laser ablation has no averaging effects, which samples daily Rs values
+  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
   
   #Parameters for the ivory growth rate of the subject
-  Ivo.rate ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
-  Ivo.rate.mean <- 20.1 #microns per day
-  Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
+  Ivo.rate.mean <- 19.9 #microns per day
+  Ivo.rate.pre <- 1/5.4^2 # 1 sd = 5.4 according to Uno 2012
 
   for (i in 2:t){
     #serum ratio
@@ -48,15 +38,17 @@ model {
   
   # assuming the starting value of the two pools are close to the starting Rin value
   #e.g., close to equilibrium with Rin
-  Rb.m[1] ~ dnorm(Rs.m[1], Sr.pre.b) #use a different error term for bone
-  Rs.m[1] ~ dnorm(Rin.m[1], Rin.m.pre)
+  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) #T(0.700, 0.720)#use a different error term for bone
+  Rs.m[1] ~ dnorm(Rin.m[1], Sr.pre.s)
   
   #generate null input series
   for (i in 2:t){
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i]
     
-    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre)
+    Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
+    
+    #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre)
     
     #autocorrelation structure of cps (change per step)
     #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre)
@@ -67,86 +59,65 @@ model {
     #including a sharp increase in input values during the switch, and steady values before and after
     #Rin.m.cps.ac[i] ~ dnorm(Rin.m.cps.ac[i - 1], Rin.m.cps.ac.pre)
   }
+  # initiate the series with an reasonable prior
+  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) T(0.700, 0.720)#allowed some variation
   
-  # initiate the series with an uninformative prior
-  Rin.m[1] ~ dunif(R0, Re) #any value between R0 and Re
+  Rin.int ~ dnorm(0.710, 1e5)  #a reasonable initial value
   
   #initial change per step
   Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   
-  #error of the input values, has to be a reasonable value, 1sd at 1e-5 for water measurements
-  Rin.m.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Rin)
-  Sr.pre.rate.Rin <- 1e-6
-  
-  #parameters for auto-correlation of change per step
-  #this is assumed to be a universal parameter of the entire sequence
-  Rin.m.cps.ac ~ dunif(0.01, 0.99)
-  
-  # Rin.m.cps.ac.pre ~ dgamma(Rin.m.cps.ac.pre.shp, Rin.m.cps.ac.pre.rate)
-  # 
-  # Rin.m.cps.ac.pre.shp = 20
-  # Rin.m.cps.ac.pre.rate = 2
-  
-  #try a less variable conbination
-  # Rin.m.cps.ac.pre.shp = 10
-  # Rin.m.cps.ac.pre.rate = 0.2
-  
+  Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
+  Rin.m.pre.shp = 100
+  Rin.m.pre.rate = 2e-5
 
   ####scaling parameters a, b, c to body mass of the subject#####
   #adjusting a, b and c to the body mass of the elephant investigated
   #rate ~ scale with e3/4 body mass (basal matabolic rate)
   #pool ~ scale with 1 body mass
   #a, b and c are rate/pool, so it should scale with -1/4 body mass
-  a.m <- a * (Body.mass.m/Body.mass)^-0.25
-  b.m <- b * (Body.mass.m/Body.mass)^-0.25
-  c.m <- c * (Body.mass.m/Body.mass)^-0.25
+  a.m <- a #* (Body.mass.m/Body.mass)^-0.25
+  b.m <- b #* (Body.mass.m/Body.mass)^-0.25
+  c.m <- c #* (Body.mass.m/Body.mass)^-0.25
   
   #For example, Mammuthus primigenius is estimated to be around 9500 +- 500 kg
   #for the purpose of demonstration, here we use the same parameters as in Misha
-  Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2)
-  Body.mass.m.mean <- 4800 # kg
-  Body.mass.m.sd <- 250 # kg
-  
-  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
-  Body.mass.mean <- 4800 # kg
-  Body.mass.sd <- 250 # kg
+  # Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2)
+  # Body.mass.m.mean <- 4800 # kg
+  # Body.mass.m.sd <- 250 # kg
+  # 
+  # Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
+  # Body.mass.mean <- 4800 # kg
+  # Body.mass.sd <- 250 # kg
   
   ########calibration process for parameters a, b, and c in misha######
   #Data eveluation
-  for (i in 1:n.cal){
 
+  for (i in 1:n.cal){
+    #dist[1:t] is a descending sequence
+    
+    #Evaluating the mean of neighbouring data points
+    #this can accommodate variable growth rate of tusk/enamel
+    #the following "<" logical operations create vectors with 1s and 0s,
+    #dist.mea is used as reference; if dist falls within the bracket, then 1s will be recorded
+    #then inprod()/sum() is used to calculate the mean of all data points within the bracket
+    
+    Rs.cal.eva[i] <- inprod(Rs.cal, ((dist.cal[i] + cal.intv/2) < dist.cal.m) - ((dist.cal[i] - cal.intv/2)  < dist.cal.m))/sum(((dist.cal[i] + cal.intv/2) < dist.cal.m) - ((dist.cal[i] - cal.intv/2)  < dist.cal.m))
     #evaluate its ratio
-    #R.sd.cal is from the measurement error
     R.cal[i] ~ dnorm(Rs.cal.eva[i], 1/R.sd.cal[i]^2)
   }
- 
-  #Evaluating the mean of neighbouring 7 data points, ~ 100 micron
-  for (i in 2:n.cal){ #it is safe to evaluate the sequence at the second measurement
-    for(j in 1:n.days.bef.aft.cal){
-      Rs.cal.bef[i, j] <- Rs.cal[mod.index.cal[i] - j]
-      Rs.cal.aft[i, j] <- Rs.cal[mod.index.cal[i] + j]
-    }
-    Rs.cal.eva[i] <- (Rs.cal[mod.index.cal[i]] + sum(Rs.cal.bef[i,]) + sum(Rs.cal.aft[i,]))/(2*n.days.bef.aft.cal + 1)
+  
+  #Data model priors for ivory growth
+  for (i in 2:t.cal){
+    Ivo.rate.cal[i] ~ dnorm(Ivo.rate.cal.mean, Ivo.rate.cal.pre) #ivory growth rate, micron/day
+    dist.cal.m[i] <- dist.cal.m[i - 1] - Ivo.rate.cal[i] #simulate daily distance increment
   }
   
-  Rs.cal.eva[1] <- Rs.cal[1]
+  dist.cal.m[1] <- 19200#maximum distance from the pulp cavity in microns
   
-  #also record modeled distance from pulp cavity
-  mod.dist.cal <- max.dist.cal - dist.index.cal * Ivo.rate.cal
+  Ivo.rate.cal[1] ~ dnorm(Ivo.rate.cal.mean, Ivo.rate.cal.pre) #ivory growth rate, micron/day
   
-  #converting distance values to a set of indexes (integer)
-  #mod.index is measured in days ~1:1050
-  mod.index.cal <- round(dist.index.cal) + 1
-  
-  dist.index.cal <- (max.dist.cal - dist.cal)/Ivo.rate.cal 
-  
-  max.dist.cal = 19200 #maximum distance from the pulp cavity in microns
-  
-  #Data model of ivory
-  #Priors for ivory sampling
-  #assuming laser ablation has no averaging effects
-
-  Ivo.rate.cal ~ dnorm(Ivo.rate.cal.mean, Ivo.rate.cal.pre) #ivory growth rate, micron/day
+  #Parameters for the ivory growth rate of the subject
   Ivo.rate.cal.mean <- 14.7 #microns per day
   Ivo.rate.cal.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
   
@@ -209,15 +180,12 @@ model {
   R0.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.R0)
   Sr.pre.rate.Re <- 2e-5
   Sr.pre.rate.R0 <- 2e-6
-
-  #precision for average Sr measurements in bone should be much smaller, here represented using rate
-  Sr.pre.b ~ dgamma(Sr.pre.shape, Sr.pre.rate.b)  
-  Sr.pre.rate.b <- 2e-6
   
-  #precition for average Sr measurements in ivory and serum is estimated
-  #based on 25 point average, which centers around 1e-4
-  Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s)
+  Sr.pre.b ~ dgamma(Rin.m.pre.shp, Sr.pre.b.rate)
+  Sr.pre.b.rate = 5e-7
+  
+  Sr.pre.s ~ dgamma(Rin.m.pre.shp, Sr.pre.s.rate)
+  Sr.pre.s.rate = 5e-6
   
   Sr.pre.shape <- 100
-  Sr.pre.rate.s <- 2e-5
 }

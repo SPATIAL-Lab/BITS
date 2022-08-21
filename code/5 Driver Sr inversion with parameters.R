@@ -11,12 +11,6 @@ library(EnvStats)
 plot.col<-viridis(7)
 
 setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
-misha <- read.csv("data/Misha ivory.csv")
-
-R.sd.mea <- misha$sd
-dist.mea <- misha$dist
-R.mea <- misha$mean
-n.mea = length(dist.mea)
 
 ########inversion model with calibration for either the one/two pool model#######
 #inversion based on micromill results
@@ -27,40 +21,32 @@ R.sd.mic <- rev(micromill$StdErr)
 dist.mic <- rev(micromill$dist)
 n.mic <- length(dist.mic)
 
-#calibration interval and sampling interval
-cal.intv <- 100
+Ivo.rate.mic <- 20
 
+#sample interval
 s.intv <- 400
 
-R0 <- 0.7071
-
-#Re is the mean ratio of end value  
-Re <- 0.7112
-
 #parameters to save
-parameters <- c("Ivo.rate", "Rs.cal", "Rb.cal", "mod.index.cal","mod.dist.cal","Rin.cal","a","b","c",
-                "Rs.m", "Rb.m","Rin.m","mod.index","mod.dist", "a.m", "b.m", "c.m","Rin.m.eps.ac",
-                "Ps", "Fin","Pb", "Fb", "Re.mean", "switch", "w.contrib", "h.contrib",
-                "flux.ratio", "pool.ratio")
+parameters <- c("Body.mass", "Body.mass.m","Rin.m.cps",
+                "Rs.m", "Rb.m","Rin.m","dist", "a.m", "b.m", "c.m","Rin.m.cps.ac")
 
 ##Data to pass to the model
-#compared to the turnover model that is essentially the .cal part here 
+#omitting the turnover model here simplifies the model run time
 #the inversion takes the measured value of potentially a different ivory series
-dat = list(R.cal = R.mea, dist.cal = dist.mea, R.sd.cal = R.sd.mea, t.cal = 800, n.cal = n.mea, 
-           R0 = R0,  Re = Re, cal.intv = cal.intv, s.intv = s.intv, 
+dat = list(s.intv = s.intv, 
            params.mu = turnover.params.mu, params.vcov = turnover.params.vcov,
-           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 800, n.mea = n.mic)
+           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 450, n.mea = n.mic)
 
 #Start time
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 5e3
-n.burnin = 1e3
+n.iter = 4e3
+n.burnin = 4e2
 n.thin = floor(n.iter-n.burnin)/600
 
 #Run it
-post.misha.inversion4 = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS v4.R", 
+post.misha.inv.p = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS with parameters.R", 
                                                    parameters.to.save = parameters, 
                                                    data = dat, n.chains=5, n.iter = n.iter, 
                                                    n.burnin = n.burnin, n.thin = n.thin))
@@ -68,35 +54,87 @@ post.misha.inversion4 = do.call(jags.parallel,list(model.file = "code/Sr inversi
 #Time taken
 proc.time() - t1 #~ 8 hours
 
-save(post.misha.inversion4, file = "out/post.misha.inversion4.RData")
+save(post.misha.inv.p, file = "out/post.misha.inv.p.RData")
 
-post.misha.inversion4$BUGSoutput$summary
+post.misha.inv.p$BUGSoutput$summary
 
-load("out/post.misha.inversion4.RData")
+load("out/post.misha.inv.p.RData")
 
-#plotting modeled serum values and checking the fit of the data
-plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
-MCMC.ts.Rs.cal.index.inversion4 <- MCMC.ts.dist(post.misha.inversion4$BUGSoutput$sims.list$Rs.cal, 
-                                                post.misha.inversion4$BUGSoutput$sims.list$mod.dist.cal,
-                                                post.misha.inversion4$BUGSoutput$sims.list$mod.index.cal)
-lines(misha$dist,misha$mean,lwd = 2, col = "red")
-MCMC.ts.Rs.89.inversion4 <- MCMC.ts(MCMC.ts.Rs.cal.index.inversion4)
+plot(density(post.misha.inv.p$BUGSoutput$sims.list$Rin.m.cps.ac))
+plot(density(post.misha.inv.p$BUGSoutput$sims.list$Rin.m.cps))
+plot(density(post.misha.inv.p$BUGSoutput$sims.list$Body.mass.m))
 
-lines(dist.mea, MCMC.ts.Rs.89.inversion4[[1]], lwd = 1, col = "cyan")
-lines(dist.mea, MCMC.ts.Rs.89.inversion4[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(dist.mea, MCMC.ts.Rs.89.inversion4[[3]], lwd = 1, lty = 2, col = "cyan")
-legend(12000, 0.709, c("measured ivory","modeled serum"),lwd = c(2, 1), col=c("red","cyan"))
-#end plot
-
-#plotting reconstructed Rin history
+#plotting reconstructed Rin.m history
 plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
-#converting micromill distance to days using rate Ivo.rate.mic
-lines(dist.mic/Ivo.rate.mic, R.mic, lwd = 2, col = "blue") #results from micromill
+#converting micromill distance to ~days using rate Ivo.rate.mic
+lines((max(dist.mic+200) - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue") #approximate results from micromill
 
-MCMC.ts.Rin.m.89.4 <- MCMC.ts(post.misha.inversion4$BUGSoutput$sims.list$Rin.m)
-lines(1:t,MCMC.ts.Rin.m.89.4[[1]],lwd = 2, col = "firebrick4")
-lines(1:t,MCMC.ts.Rin.m.89.4[[2]], lwd = 1, lty = 2, col = "firebrick4")
-lines(1:t,MCMC.ts.Rin.m.89.4[[3]], lwd = 1, lty = 2, col = "firebrick4")
+MCMC.inv.p.Rin.m.50 <- MCMC.CI.bound(post.misha.inv.p$BUGSoutput$sims.list$Rin.m, 0.5)
+lines(1:t,MCMC.inv.p.Rin.m.50[[1]],lwd = 2, col = "firebrick4")
+lines(1:t,MCMC.inv.p.Rin.m.50[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:t,MCMC.inv.p.Rin.m.50[[3]], lwd = 1, lty = 2, col = "firebrick4")
+legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
+
+####brownian motion per step model####
+micromill <- read.csv("data/Misha micromill.csv")
+
+R.mic <- rev(micromill$X87Sr.86Sr)
+R.sd.mic <- rev(micromill$StdErr)
+dist.mic <- rev(micromill$dist)
+n.mic <- length(dist.mic)
+
+Ivo.rate.mic <- 20
+
+#sample interval
+s.intv <- 400
+
+#parameters to save
+parameters <- c("Body.mass", "Body.mass.m","Rin.m.cps",
+                "Rs.m", "Rb.m","Rin.m","dist", "a.m", "b.m", "c.m","Rin.m.cps.ac")
+
+##Data to pass to the model
+#omitting the turnover model here simplifies the model run time
+#the inversion takes the measured value of potentially a different ivory series
+dat = list(s.intv = s.intv, 
+           params.mu = turnover.params.mu, params.vcov = turnover.params.vcov,
+           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 450, n.mea = n.mic)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 4e3
+n.burnin = 4e2
+n.thin = floor(n.iter-n.burnin)/600
+
+#Run it
+post.misha.inv.bm = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS BM with parameters.R", 
+                                              parameters.to.save = parameters, 
+                                              data = dat, n.chains=5, n.iter = n.iter, 
+                                              n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 8 hours
+
+save(post.misha.inv.bm, file = "out/post.misha.inv.bm.RData")
+
+post.misha.inv.bm$BUGSoutput$summary
+
+load("out/post.misha.inv.bm.RData")
+
+#plotting modeled serum values mapped onto ivory and checking the fit of the data
+
+plot(density(post.misha.inv.bm$BUGSoutput$sims.list$Rin.m.cps.ac))
+plot(density(post.misha.inv.bm$BUGSoutput$sims.list$Rin.m.cps))
+plot(density(post.misha.inv.bm$BUGSoutput$sims.list$Body.mass.m))
+
+#plotting reconstructed Rin.m history
+plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
+#converting micromill distance to ~days using rate Ivo.rate.mic
+lines((max(dist.mic+200) - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue") #approximate results from micromill
+
+MCMC.inv.bm.Rin.m.89 <- MCMC.CI.bound(post.misha.inv.bm$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:t,MCMC.inv.bm.Rin.m.89[[1]],lwd = 2, col = "firebrick4")
+lines(1:t,MCMC.inv.bm.Rin.m.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:t,MCMC.inv.bm.Rin.m.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
 legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))

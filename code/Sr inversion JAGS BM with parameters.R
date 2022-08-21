@@ -2,7 +2,7 @@ model {
   ######inversion######
 
   for (i in 1:n.mea){
-    #dist[1:t] is a descending sequence, no negative value is allowed
+    #dist[1:t] is a descending sequence
     
     #Evaluating the mean of neighbouring data points
     #this can accommodate variable growth rate of tusk/enamel
@@ -26,8 +26,8 @@ model {
   Ivo.rate[1] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
   
   #Parameters for the ivory growth rate of the subject
-  Ivo.rate.mean <- 20 #microns per day
-  Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
+  Ivo.rate.mean <- 19.9 #microns per day
+  Ivo.rate.pre <- 1/5.4^2 # 1 sd = 5.4 according to Uno 2012
   
   for (i in 2:t){
     #serum ratio
@@ -39,7 +39,7 @@ model {
   
   # assuming the starting value of the two pools are close to the starting Rin value
   #e.g., close to equilibrium with Rin
-  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) T(0.705, 0.714)#set a limit to the starting bone value
+  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) #T(0.700, 0.720)#use a different error term for bone
   Rs.m[1] ~ dnorm(Rin.m[1], Sr.pre.s)
   
   #generate null input time series
@@ -47,10 +47,10 @@ model {
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i] 
     
-    #Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
+    Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
     
     #autocorrelation structure of cps (change per step)
-    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre) T(-1e-4, 1e-4)
+    #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre) T(-5e-4, 5e-4)
     
     #autocorrelation term is also a time series with an autocorrelation structure
     #it is centered around the previous step with some variation allowed
@@ -61,12 +61,12 @@ model {
   
   #it can also be modeled as a sequence with independent values
   #the initial value is from an uninformative distribution
-  Rin.m.cps.ac ~ dunif(0.01, 1)
+  #Rin.m.cps.ac ~ dunif(0.01, 1)
   
   # initiate the series with an reasonable prior
-  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre)
+  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) T(0.700, 0.720)#allowed some variation
   
-  Rin.int = 0.710 #initial value
+  Rin.int ~ dnorm(0.710, 1e5)  #a reasonable initial value
   
   #initial change per step centered around 0
   Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
@@ -75,11 +75,11 @@ model {
   Sr.pre.b.rate = 5e-7
   
   Sr.pre.s ~ dgamma(Rin.m.pre.shp, Sr.pre.s.rate)
-  Sr.pre.s.rate = 2e-6
+  Sr.pre.s.rate = 5e-6
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 1e-5
+  Rin.m.pre.rate = 2e-5
   
   # Rin.m.cps.ac.pre ~ dgamma(Rin.m.cps.ac.pre.shp, Rin.m.cps.ac.pre.rate)
   # 
