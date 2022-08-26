@@ -17,17 +17,13 @@ model {
   
   #Data model priors for ivory growth
   for (i in 2:t){
-    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
+    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
     dist[i] <- dist[i - 1] - Ivo.rate[i] #simulate daily distance increment
   }
   
-  dist[1] <- 8000#maximum distance from the pulp cavity in microns
+  dist[1] <- max.dist.mea#maximum distance from the pulp cavity in microns
   
-  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
-  
-  #Parameters for the ivory growth rate of the subject
-  Ivo.rate.mean <- 19.9 #microns per day
-  Ivo.rate.pre <- 1/5.4^2 # 1 sd = 5.4 according to Uno 2012
+  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
   
   for (i in 2:t){
     #serum ratio
@@ -64,9 +60,9 @@ model {
   #Rin.m.cps.ac ~ dunif(0.01, 1)
   
   # initiate the series with an reasonable prior
-  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) T(0.700, 0.720)#allowed some variation
+  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) #allowed some variation
   
-  Rin.int ~ dnorm(0.710, 1e5)  #a reasonable initial value
+  Rin.int ~ dnorm(0.709, 1e4)  #a reasonable initial value
   
   #initial change per step centered around 0
   Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)

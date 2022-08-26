@@ -16,17 +16,13 @@ model {
   
   #Data model priors for ivory growth
   for (i in 2:t){
-    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
+    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
     dist[i] <- dist[i - 1] - Ivo.rate[i] #simulate daily distance increment
   }
   
-  dist[1] <- 8000#maximum distance from the pulp cavity in microns
+  dist[1] <- max.dist.mea#maximum distance from the pulp cavity in microns
   
-  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
-  
-  #Parameters for the ivory growth rate of the subject
-  Ivo.rate.mean <- 19.9 #microns per day
-  Ivo.rate.pre <- 1/5.4^2 # 1 sd = 5.4 according to Uno 2012
+  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
 
   for (i in 2:t){
     #serum ratio
@@ -76,19 +72,19 @@ model {
   #rate ~ scale with e3/4 body mass (basal matabolic rate)
   #pool ~ scale with 1 body mass
   #a, b and c are rate/pool, so it should scale with -1/4 body mass
-  a.m <- a #* (Body.mass.m/Body.mass)^-0.25
-  b.m <- b #* (Body.mass.m/Body.mass)^-0.25
-  c.m <- c #* (Body.mass.m/Body.mass)^-0.25
+  a.m <- a * (Body.mass.m/Body.mass)^-0.25
+  b.m <- b * (Body.mass.m/Body.mass)^-0.25
+  c.m <- c * (Body.mass.m/Body.mass)^-0.25
   
   #For example, Mammuthus primigenius is estimated to be around 9500 +- 500 kg
   #for the purpose of demonstration, here we use the same parameters as in Misha
-  # Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2)
-  # Body.mass.m.mean <- 4800 # kg
-  # Body.mass.m.sd <- 250 # kg
-  # 
-  # Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
-  # Body.mass.mean <- 4800 # kg
-  # Body.mass.sd <- 250 # kg
+  Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2) T(2000, 8000)
+  Body.mass.m.mean <- 4800 # kg
+  Body.mass.m.sd <- 250 # kg
+
+  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2) T(2000, 8000)
+  Body.mass.mean <- 4800 # kg
+  Body.mass.sd <- 250 # kg
   
   ########calibration process for parameters a, b, and c in misha######
   #Data eveluation
@@ -109,17 +105,13 @@ model {
   
   #Data model priors for ivory growth
   for (i in 2:t.cal){
-    Ivo.rate.cal[i] ~ dnorm(Ivo.rate.cal.mean, Ivo.rate.cal.pre) #ivory growth rate, micron/day
+    Ivo.rate.cal[i] ~ dnorm(Ivo.rate.cal.mean, 1/Ivo.rate.cal.sd^2) #ivory growth rate, micron/day
     dist.cal.m[i] <- dist.cal.m[i - 1] - Ivo.rate.cal[i] #simulate daily distance increment
   }
   
-  dist.cal.m[1] <- 19200#maximum distance from the pulp cavity in microns
+  dist.cal.m[1] <- max.dist.cal#maximum distance from the pulp cavity in microns
   
-  Ivo.rate.cal[1] ~ dnorm(Ivo.rate.cal.mean, Ivo.rate.cal.pre) #ivory growth rate, micron/day
-  
-  #Parameters for the ivory growth rate of the subject
-  Ivo.rate.cal.mean <- 14.7 #microns per day
-  Ivo.rate.cal.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
+  Ivo.rate.cal[1] ~ dnorm(Ivo.rate.cal.mean, 1/Ivo.rate.cal.sd^2) #ivory growth rate, micron/day
   
   #generate time series
   for (i in 2:t.cal){

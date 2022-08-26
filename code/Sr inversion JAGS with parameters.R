@@ -17,17 +17,13 @@ model {
   
   #Data model priors for ivory growth
   for (i in 2:t){
-    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
+    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
     dist[i] <- dist[i - 1] - Ivo.rate[i] #simulate daily distance increment
   }
   
-  dist[1] <- 8000#maximum distance from the pulp cavity in microns
+  dist[1] <- max.dist.mea#maximum distance from the pulp cavity in microns
   
-  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
-  
-  #Parameters for the ivory growth rate of the subject
-  Ivo.rate.mean <- 20 #microns per day
-  Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
+  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
   
   for (i in 2:t){
     #serum ratio
@@ -39,7 +35,7 @@ model {
   
   # assuming the starting value of the two pools are close to the starting Rin value
   #e.g., close to equilibrium with Rin
-  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) T(0.705, 0.714)#set a limit to the starting bone value
+  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) #T(0.705, 0.714)#set a limit to the starting bone value
   Rs.m[1] ~ dnorm(Rin.m[1], Sr.pre.s)
   
   #generate null input time series
@@ -50,7 +46,7 @@ model {
     #Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
     
     #autocorrelation structure of cps (change per step)
-    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre) T(-1e-4, 1e-4)
+    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre) T(-4e-4, 4e-4)
     
     #autocorrelation term is also a time series with an autocorrelation structure
     #it is centered around the previous step with some variation allowed
@@ -66,7 +62,7 @@ model {
   # initiate the series with an reasonable prior
   Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre)
   
-  Rin.int = 0.710 #initial value
+  Rin.int ~ dnorm(0.709, 1e4)  #a reasonable initial value
   
   #initial change per step centered around 0
   Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
@@ -75,11 +71,11 @@ model {
   Sr.pre.b.rate = 5e-7
   
   Sr.pre.s ~ dgamma(Rin.m.pre.shp, Sr.pre.s.rate)
-  Sr.pre.s.rate = 2e-6
+  Sr.pre.s.rate = 5e-6
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 1e-5
+  Rin.m.pre.rate = 2e-5
   
   # Rin.m.cps.ac.pre ~ dgamma(Rin.m.cps.ac.pre.shp, Rin.m.cps.ac.pre.rate)
   # 
