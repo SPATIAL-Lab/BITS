@@ -64,3 +64,47 @@ MCMC.dist.median <- function(MCMC.res){
   }
   return(MCMC.res.med)
 }
+
+pri.multi.norm.den <- function(X.min,X.max,mu,vcov){
+  require(OpenMx)
+  X.range <- X.max - X.min
+  X.interval <- X.range/512
+  X.multinorm <- seq(from = X.min, to = X.max, by = X.interval)
+  dim.vcov <- dim(vcov)
+  
+  #initiate density matrix
+  density <- as.data.frame(matrix(0, nrow=length(X.multinorm), ncol = dim.vcov[1]))
+  
+  #initiate index matrix
+  index <- as.data.frame(matrix(nrow=dim.vcov[1], ncol = 2))
+  for (i in 1: dim.vcov[1]){
+    index[1,i] <- X.min
+    index[2,i] <- X.max
+  }
+  
+  for (i in 1: dim.vcov[1]){
+    for(j in 2:length(X.multinorm)){
+      #assigning new values
+      index[1,i] <- X.multinorm[j-1]
+      index[2,i] <- X.multinorm[j]
+      #integrating one interval for density[i]
+      density[i,j-1] <- omxMnor(vcov,mu,index[1,],index[2,])
+    }
+    #revert to the default values
+    index[1,i] <- X.min
+    index[2,i] <- X.max
+  }
+  
+  #scaling density values to 1
+  density.sc <- density[,]/X.interval
+  
+  #monitoring the density scaling approximation
+  #the sum should be close to 1
+  
+  for (i in 1: dim.vcov[1]){
+    print(sum(density[i,]))
+  }
+  
+  results<-list(x = (X.multinorm[1:512]+ X.interval/2), y = density.sc)
+  return(results)
+}

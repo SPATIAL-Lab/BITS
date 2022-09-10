@@ -43,7 +43,9 @@ model {
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i] 
     
-    Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
+    #Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion, gaussian error term
+    
+    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-2e-3, 2e-3) #Brownian motion, cauchy error term
     
     #autocorrelation structure of cps (change per step)
     #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre) T(-5e-4, 5e-4)
@@ -65,7 +67,9 @@ model {
   Rin.int ~ dnorm(0.709, 1e4)  #a reasonable initial value
   
   #initial change per step centered around 0
-  Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
+  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-2e-3, 2e-3)
+  
+  #Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   
   Sr.pre.b ~ dgamma(Rin.m.pre.shp, Sr.pre.b.rate)
   Sr.pre.b.rate = 5e-7
@@ -75,7 +79,7 @@ model {
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 2e-5
+  Rin.m.pre.rate = 5e-8
   
   # Rin.m.cps.ac.pre ~ dgamma(Rin.m.cps.ac.pre.shp, Rin.m.cps.ac.pre.rate)
   # 
