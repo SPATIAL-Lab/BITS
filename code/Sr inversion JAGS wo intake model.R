@@ -11,7 +11,7 @@ model {
     
     Rs.eva[i] <- inprod(Rs.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
-    R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
+    R.mea[i] ~ dnorm(Rs.eva[i], 1/(R.sd.mea[i])^2)
   }
   
   #Data model priors for ivory growth
@@ -42,49 +42,47 @@ model {
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i]
     
-    Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
+    #Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
     
-    #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre)
-    
-    #autocorrelation structure of cps (change per step)
-    #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre)
-    
-    #autocorrelation term is also a time series with an autocorrelation structure
-    #it is centered around the previous step with some variation allowed
-    #this is used to accommodate the wide range of autocorrelation values in the actual data
-    #including a sharp increase in input values during the switch, and steady values before and after
-    #Rin.m.cps.ac[i] ~ dnorm(Rin.m.cps.ac[i - 1], Rin.m.cps.ac.pre)
+    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3) #Brownian motion, cauchy error term
+
   }
   # initiate the series with an reasonable prior
-  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) T(0.700, 0.720)#allowed some variation
+  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) #allowed some variation
   
-  Rin.int ~ dnorm(0.710, 1e5)  #a reasonable initial value
+  Rin.int ~ dnorm(0.710, 1/0.01^2)  #a reasonable initial value
   
   #initial change per step
-  Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
+  #Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
+  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3)
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 2e-5
+  #Rin.m.pre.rate = 2e-5
+  Rin.m.pre.rate = 5e-8
 
   ####scaling parameters a, b, c to body mass of the subject#####
   #adjusting a, b and c to the body mass of the elephant investigated
   #rate ~ scale with e3/4 body mass (basal matabolic rate)
   #pool ~ scale with 1 body mass
   #a, b and c are rate/pool, so it should scale with -1/4 body mass
-  a.m <- a * (Body.mass.m/Body.mass)^-0.25
-  b.m <- b * (Body.mass.m/Body.mass)^-0.25
-  c.m <- c * (Body.mass.m/Body.mass)^-0.25
+  a.m <- a # * (Body.mass.m/Body.mass)^-0.25
+  b.m <- b # * (Body.mass.m/Body.mass)^-0.25
+  c.m <- c # * (Body.mass.m/Body.mass)^-0.25
   
-  #For example, Mammuthus primigenius is estimated to be around 9500 +- 500 kg
-  #for the purpose of demonstration, here we use the same parameters as in Misha
-  Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2) T(2000, 8000)
-  Body.mass.m.mean <- 4800 # kg
-  Body.mass.m.sd <- 250 # kg
-
-  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2) T(2000, 8000)
-  Body.mass.mean <- 4800 # kg
-  Body.mass.sd <- 250 # kg
+  # a.m <- a * (Body.mass.m/Body.mass)^-0.25
+  # b.m <- b * (Body.mass.m/Body.mass)^-0.25
+  # c.m <- c * (Body.mass.m/Body.mass)^-0.25
+  # 
+  # #For example, Mammuthus primigenius is estimated to be around 9500 +- 500 kg
+  # #for the purpose of demonstration, here we use the same parameters as in Misha
+  # Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2) T(2000, 8000)
+  # Body.mass.m.mean <- 4800 # kg
+  # Body.mass.m.sd <- 250 # kg
+  # 
+  # Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2) T(2000, 8000)
+  # Body.mass.mean <- 4800 # kg
+  # Body.mass.sd <- 250 # kg
   
   ########calibration process for parameters a, b, and c in misha######
   #Data eveluation
@@ -127,7 +125,7 @@ model {
   c.coef ~ dunif(0.01, 1)
   b <- a * b.coef
   b.coef ~ dunif(0.01, 1)
-  a ~ dunif(0.01, 0.2)
+  a ~ dunif(0, 0.2) #based on one pool model estimates
 
   #model initial values for bone and serum
   

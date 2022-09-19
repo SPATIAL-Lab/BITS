@@ -296,10 +296,10 @@ lines(1:t, post.misha.woint3.Rin.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
 plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.tl.plot(post.misha.woint3$BUGSoutput$sims.list$Rs.m,t)
-lines(1:t, post.misha.woint3.Rs.m.89[[1]], lwd = 1, col = "cyan")
-lines(1:t, post.misha.woint3.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(1:t, post.misha.woint3.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
+MCMC.tl.plot(post.misha.woint3$BUGSoutput$sims.list$Rs.m,750)
+lines(1:750, post.misha.woint3.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(1:750, post.misha.woint3.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(1:750, post.misha.woint3.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
 
 #check parameters a, b, and c
 par(mfrow = c(1,3))
@@ -332,3 +332,12 @@ qqPlot(post.misha.woint3$BUGSoutput$sims.list$b[,1],distribution = "lnorm",
 qqPlot(post.misha.woint3$BUGSoutput$sims.list$c[,1],distribution = "lnorm",
        param.list=list(mean=c.param$parameters[1],sd=c.param$parameters[2]),add.line=T)
 
+#plot prior distributions
+abc.prior.params <- pri.multi.norm.den(-10,0,turnover.params.mu,turnover.params.vcov)
+par(mfrow=c(1,3))
+plot(abc.prior.params$x,abc.prior.params$y[1,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "a", ylab= "density")
+plot(abc.prior.params$x,abc.prior.params$y[2,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "b", ylab= "density")
+plot(abc.prior.params$x,abc.prior.params$y[3,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "c", ylab= "density")

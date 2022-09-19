@@ -35,8 +35,8 @@ model {
   
   # assuming the starting value of the two pools are close to the starting Rin value
   #e.g., close to equilibrium with Rin
-  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) #T(0.700, 0.720)#use a different error term for bone
-  Rs.m[1] ~ dnorm(Rin.m[1], Sr.pre.s)
+  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) T(0.700, 0.720)#use a different error term for bone
+  Rs.m[1] ~ dnorm(Rin.m[1], Sr.pre.s) T(0.700, 0.720)
   
   #generate null input time series
   for (i in 2:t){
@@ -45,29 +45,17 @@ model {
     
     #Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion, gaussian error term
     
-    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-2e-3, 2e-3) #Brownian motion, cauchy error term
-    
-    #autocorrelation structure of cps (change per step)
-    #Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac[i], Rin.m.pre) T(-5e-4, 5e-4)
-    
-    #autocorrelation term is also a time series with an autocorrelation structure
-    #it is centered around the previous step with some variation allowed
-    #this is used to accommodate the wide range of autocorrelation values in the actual data
-    #including a sharp increase in input values during the switch, and steady values before and after
-    # Rin.m.cps.ac[i] ~ dnorm(Rin.m.cps.ac[i - 1], Rin.m.cps.ac.pre)
+    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3) #Brownian motion, cauchy error term
   }
-  
-  #it can also be modeled as a sequence with independent values
-  #the initial value is from an uninformative distribution
-  #Rin.m.cps.ac ~ dunif(0.01, 1)
   
   # initiate the series with an reasonable prior
   Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) #allowed some variation
   
   Rin.int ~ dnorm(0.709, 1e4)  #a reasonable initial value
+  #Rin.int ~ dunif(0.700, 0.800)
   
   #initial change per step centered around 0
-  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-2e-3, 2e-3)
+  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3)
   
   #Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   
@@ -80,12 +68,6 @@ model {
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
   Rin.m.pre.rate = 5e-8
-  
-  # Rin.m.cps.ac.pre ~ dgamma(Rin.m.cps.ac.pre.shp, Rin.m.cps.ac.pre.rate)
-  # 
-  # Rin.m.cps.ac.pre.shp = 20
-  # Rin.m.cps.ac.pre.rate = 0.1
-  
 
   ####scaling parameters a, b, c to body mass of the subject#####
   #adjusting a, b and c to the body mass of the elephant investigated
@@ -109,7 +91,7 @@ model {
   # 
   #perhaps use body mass ratio?
   
-  a.m <- exp(params[1])
+  a.m <- exp(params[1]) 
     
   b.m <- exp(params[2])
     

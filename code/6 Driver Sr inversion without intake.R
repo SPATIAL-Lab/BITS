@@ -80,37 +80,33 @@ post.misha.inversion.woi = do.call(jags.parallel,list(model.file = "code/Sr inve
                                                    n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 10 hours
+proc.time() - t1 #~ 15 hours
 
-save(post.misha.inversion.woi, file = "out/post.misha.inversion.woi.RData")
+save(post.mic.inversion.woi, file = "out/post.mic.inversion.woi.RData")
 
-post.misha.inversion.woi$BUGSoutput$summary
+post.mic.inversion.woi$BUGSoutput$summary
 
-load("out/post.misha.inversion.woi.RData")
+load("out/post.mic.inversion.woi.RData")
 
-plot(density(post.misha.inversion.woi$BUGSoutput$sims.list$a))
+plot(density(post.mic.inversion.woi$BUGSoutput$sims.list$a))
 
 #plot calibration curve
+par(mfrow=c(1,1))
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 
-MCMC.dist.plot(post.misha.inversion.woi$BUGSoutput$sims.list$Rs.cal,
-               post.misha.inversion.woi$BUGSoutput$sims.list$dist.cal.m)
+MCMC.dist.plot(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.cal,
+               post.mic.inversion.woi$BUGSoutput$sims.list$dist.cal.m)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
-post.misha.inversion.woi.Rs.cal.89<- MCMC.CI.bound(post.misha.inversion.woi$BUGSoutput$sims.list$Rs.cal, 0.89)
-
-med.dist.inversion.woi<- MCMC.dist.median(post.misha.inversion.woi$BUGSoutput$sims.list$dist.cal.m)
-lines(med.dist.inversion.woi, post.misha.inversion.woi.Rs.cal.89[[1]], lwd = 1, col = "cyan")
-lines(med.dist.inversion.woi, post.misha.inversion.woi.Rs.cal.89[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(med.dist.inversion.woi, post.misha.inversion.woi.Rs.cal.89[[3]], lwd = 1, lty = 2, col = "cyan")
+post.mic.inversion.woi.Rs.cal.89<- MCMC.CI.bound(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.cal, 0.89)
 
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
 #converting micromill distance to days using rate Ivo.rate.mic
 lines((max(dist.mic+200) - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue")#results from micromill
 
-MCMC.ts.Rin.m.89.woi <- MCMC.ts(post.misha.inversion.woi$BUGSoutput$sims.list$Rin.m)
+MCMC.ts.Rin.m.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Rin.m)
 lines(1:t,MCMC.ts.Rin.m.89.woi[[1]],lwd = 2, col = "firebrick4")
 lines(1:t,MCMC.ts.Rin.m.89.woi[[2]], lwd = 1, lty = 2, col = "firebrick4")
 lines(1:t,MCMC.ts.Rin.m.89.woi[[3]], lwd = 1, lty = 2, col = "firebrick4")
@@ -170,17 +166,32 @@ post.misha.inversion.woi = do.call(jags.parallel,list(model.file = "code/Sr inve
                                                       n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 10 hours
+proc.time() - t1 #~ 19 hours
 
 save(post.misha.inversion.woi, file = "out/post.misha.inversion.woi.RData")
 
 post.misha.inversion.woi$BUGSoutput$summary
 
 load("out/post.misha.inversion.woi.RData")
+par(mfrow=c(1,3))
+plot(abc.prior.params$x,abc.prior.params$y[1,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "a", ylab= "density")
+lines(density(log(post.misha.inversion.woi$BUGSoutput$sims.list$a.m)), col = "red", lwd = 2)
+
+plot(abc.prior.params$x,abc.prior.params$y[2,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "b", ylab= "density")
+lines(density(log(post.misha.inversion.woi$BUGSoutput$sims.list$b.m)), col = "red", lwd = 2)
+
+plot(abc.prior.params$x,abc.prior.params$y[3,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "c", ylab= "density")
+lines(density(log(post.misha.inversion.woi$BUGSoutput$sims.list$c.m)), col = "red", lwd = 2)
 
 plot(density(post.misha.inversion.woi$BUGSoutput$sims.list$a))
+plot(density(post.misha.inversion.woi$BUGSoutput$sims.list$b))
+plot(density(post.misha.inversion.woi$BUGSoutput$sims.list$c))
 
 #plot calibration curve
+par(mfrow=c(1,1))
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
@@ -188,6 +199,7 @@ abline(h = Re, lwd = 2, lty = 2)
 MCMC.dist.plot(post.misha.inversion.woi$BUGSoutput$sims.list$Rs.cal,
                post.misha.inversion.woi$BUGSoutput$sims.list$dist.cal.m)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
+
 post.misha.inversion.woi.Rs.cal.89<- MCMC.CI.bound(post.misha.inversion.woi$BUGSoutput$sims.list$Rs.cal, 0.89)
 
 med.dist.inversion.woi<- MCMC.dist.median(post.misha.inversion.woi$BUGSoutput$sims.list$dist)
@@ -198,10 +210,14 @@ lines(med.dist.inversion.woi, post.misha.inversion.woi.Rs.cal.89[[3]], lwd = 1, 
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
 #converting micromill distance to days using rate Ivo.rate.mic
-lines((max(misha$dist)-misha$dist)/Ivo.rate.cal.mean,misha$mean,lwd = 2, col = "blue")
+
+MCMC.ts.Rin.cal.89.woi <- MCMC.ts(post.misha.inversion.woi$BUGSoutput$sims.list$Rin.cal)
+lines(1:t,MCMC.ts.Rin.cal.89.woi[[1]],lwd = 2, col = "blue")
+lines(1:t,MCMC.ts.Rin.cal.89.woi[[2]], lwd = 1, lty = 2, col = "blue")
+lines(1:t,MCMC.ts.Rin.cal.89.woi[[3]], lwd = 1, lty = 2, col = "blue")
 
 MCMC.ts.Rin.m.89.woi <- MCMC.ts(post.misha.inversion.woi$BUGSoutput$sims.list$Rin.m)
 lines(1:t,MCMC.ts.Rin.m.89.woi[[1]],lwd = 2, col = "firebrick4")
 lines(1:t,MCMC.ts.Rin.m.89.woi[[2]], lwd = 1, lty = 2, col = "firebrick4")
 lines(1:t,MCMC.ts.Rin.m.89.woi[[3]], lwd = 1, lty = 2, col = "firebrick4")
-legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
+legend(0, 0.716, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
