@@ -117,10 +117,14 @@ MCMC.ts.Rs.m.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.m)
 MCMC.ts.Rb.m.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Rb.m)
 
 plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="ivory rate")
+lines((max.dist.mea - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue")#results from micromill
 lines(1:t,MCMC.ts.Rs.m.89.woi[[1]],lwd = 2, col = "firebrick4")
+lines(1:t,MCMC.ts.Rs.m.89.woi[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:t,MCMC.ts.Rs.m.89.woi[[3]], lwd = 1, lty = 2, col = "firebrick4")
+points((max.dist.mea - dist.mic)/Ivo.rate.mic + 1, R.mic)
 
 MCMC.ts.Ivo.rate.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Ivo.rate)
-plot(density(MCMC.ts.Ivo.rate.89.woi[[1]]))
+
 plot(0,0, xlim = c(1,t), ylim = c(10, 25), xlab = "days", ylab ="ivory rate")
 lines(1:t,MCMC.ts.Ivo.rate.89.woi[[1]],lwd = 2, col = "firebrick4")
 

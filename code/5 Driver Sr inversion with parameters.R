@@ -17,7 +17,7 @@ setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 micromill <- read.csv("data/Misha micromill.csv")
 
 R.mic <- rev(micromill$X87Sr.86Sr)
-R.sd.mic <- rev(micromill$StdErr)
+R.sd.mic <- rev(micromill$Sd)
 dist.mic <- rev(micromill$dist)
 n.mic <- length(dist.mic)
 
@@ -427,22 +427,22 @@ legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue
 micromill <- read.csv("data/Misha micromill.csv")
 
 R.mic <- rev(micromill$X87Sr.86Sr)
-R.sd.mic <- rev(micromill$StdErr)
+R.sd.mic <- rev(micromill$Sd)
 dist.mic <- rev(micromill$dist)
 n.mic <- length(dist.mic)
 
 #sample interval
 s.intv <- 400
 
-max.dist.mea <- 8000
+max.dist.mea <- 8500 #add a bit of uncertainty before the evaluation
 
 Ivo.rate.mean <- 19.9
 
 Ivo.rate.sd <- 5.4
 
 #parameters to save
-parameters <- c("Body.mass", "Body.mass.m","Rin.m.cps",
-                "Rs.m", "Rb.m","Rin.m","dist", "a.m", "b.m", "c.m","Rin.m.cps.ac")
+parameters <- c("Body.mass","Rin.m.cps",
+                "Rs.m", "Rb.m","Rin.m","dist", "a.m", "b.m", "c.m")
 
 ##Data to pass to the model
 #omitting the turnover model here simplifies the model run time
@@ -451,7 +451,7 @@ dat = list(s.intv = s.intv,
            params.mu = turnover.params.mu, params.vcov = turnover.params.vcov,
            Ivo.rate.mean = Ivo.rate.mean, Ivo.rate.sd = Ivo.rate.sd,
            max.dist.mea = max.dist.mea,
-           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 500, n.mea = n.mic)
+           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 550, n.mea = n.mic)
 
 
 
@@ -459,52 +459,63 @@ dat = list(s.intv = s.intv,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 4e3
-n.burnin = 4e2
+n.iter = 4e4
+n.burnin = 4e3
 n.thin = floor(n.iter-n.burnin)/500
 
 #Run it
-post.misha.inv.bmca = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS BM with parameters.R", 
+post.mic.inv.bmca = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS BM with parameters.R", 
                                                  parameters.to.save = parameters, 
-                                                 data = dat, n.chains=5, n.iter = n.iter, 
+                                                 data = dat, n.chains=4, n.iter = n.iter, 
                                                  n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 8 hours
+proc.time() - t1 #~ 1.5 hours
 
-save(post.misha.inv.bmca, file = "out/post.misha.inv.bm.RData")
+save(post.mic.inv.bmca, file = "out/post.mic.inv.bm.RData")
 
-post.misha.inv.bmca$BUGSoutput$summary
+post.mic.inv.bmca$BUGSoutput$summary
 
-load("out/post.misha.inv.bmca.RData")
+load("out/post.mic.inv.bmca.RData")
 
 #plotting modeled serum values mapped onto ivory and checking the fit of the data
 
-plot(density(post.misha.inv.bmca$BUGSoutput$sims.list$Rin.m.cps))
-plot(density(post.misha.inv.bmca$BUGSoutput$sims.list$Body.mass.m))
+plot(density(post.mic.inv.bmca$BUGSoutput$sims.list$Rin.m.cps))
+plot(density(post.mic.inv.bmca$BUGSoutput$sims.list$Body.mass.m))
 
 #plotting reconstructed Rin.m history
 par(mfrow=c(1,1))
-plot(0,0, xlim = c(1,500), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,550), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-lines((max(dist.mic+200) - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue") #approximate results from micromill
+lines((max.dist.mea - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue") #approximate results from micromill
 
-MCMC.inv.bmca.Rin.m.89 <- MCMC.CI.bound(post.misha.inv.bmca$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:500,MCMC.inv.bmca.Rin.m.89[[1]],lwd = 2, col = "firebrick4")
-lines(1:500,MCMC.inv.bmca.Rin.m.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
-lines(1:500,MCMC.inv.bmca.Rin.m.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
+MCMC.inv.bmca.Rin.m.89 <- MCMC.CI.bound(post.mic.inv.bmca$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:550,MCMC.inv.bmca.Rin.m.89[[1]],lwd = 2, col = "firebrick4")
+lines(1:550,MCMC.inv.bmca.Rin.m.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:550,MCMC.inv.bmca.Rin.m.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
 legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
 
 par(mfrow=c(1,1))
-plot(0,0, xlim = c(1,500), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,550), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-lines((max(dist.mic+200) - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue") #approximate results from micromill
+lines((max.dist.mea - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue") #approximate results from micromill
 
-MCMC.inv.bmca.Rb.m.89 <- MCMC.CI.bound(post.misha.inv.bmca$BUGSoutput$sims.list$Rb.m, 0.89)
-lines(1:500,MCMC.inv.bmca.Rb.m.89[[1]],lwd = 2, col = "firebrick4")
-lines(1:500,MCMC.inv.bmca.Rb.m.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
-lines(1:500,MCMC.inv.bmca.Rb.m.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
-legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
+MCMC.inv.bmca.Rs.m.89 <- MCMC.CI.bound(post.mic.inv.bmca$BUGSoutput$sims.list$Rs.m, 0.89)
+lines(1:550,MCMC.inv.bmca.Rs.m.89[[1]],lwd = 2, col = "firebrick4")
+lines(1:550,MCMC.inv.bmca.Rs.m.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:550,MCMC.inv.bmca.Rs.m.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
+legend(0, 0.716, c("Micromill","Reconstructed Rs"),lwd = c(2, 2), col=c("blue","firebrick4"))
+
+par(mfrow=c(1,1))
+plot(0,0, xlim = c(1,550), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
+#converting micromill distance to ~days using rate Ivo.rate.mic
+lines((max.dist.mea - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue") #approximate results from micromill
+
+MCMC.inv.bmca.Rb.m.89 <- MCMC.CI.bound(post.mic.inv.bmca$BUGSoutput$sims.list$Rb.m, 0.89)
+lines(1:550,MCMC.inv.bmca.Rb.m.89[[1]],lwd = 2, col = "firebrick4")
+lines(1:550,MCMC.inv.bmca.Rb.m.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:550,MCMC.inv.bmca.Rb.m.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
+legend(0, 0.716, c("Micromill","Reconstructed Rb"),lwd = c(2, 2), col=c("blue","firebrick4"))
 
 #check prior vs posterior params a, b, and c
 abc.prior.params <- pri.multi.norm.den(-10,0,turnover.params.mu,turnover.params.vcov)
@@ -512,12 +523,12 @@ par(mfrow=c(1,3))
 
 plot(abc.prior.params$x,abc.prior.params$y[1,], col = "blue", lwd = 2, type="l",
      xlim = c(-10,0), xlab = "a", ylab= "density")
-lines(density(log(post.misha.inv.bmca$BUGSoutput$sims.list$a.m)), col = "red", lwd = 2)
+lines(density(log(post.mic.inv.bmca$BUGSoutput$sims.list$a.m)), col = "red", lwd = 2)
 
 plot(abc.prior.params$x,abc.prior.params$y[2,], col = "blue", lwd = 2, type="l",
      xlim = c(-10,0), xlab = "b", ylab= "density")
-lines(density(log(post.misha.inv.bmca$BUGSoutput$sims.list$b.m)), col = "red", lwd = 2)
+lines(density(log(post.mic.inv.bmca$BUGSoutput$sims.list$b.m)), col = "red", lwd = 2)
 
 plot(abc.prior.params$x,abc.prior.params$y[3,], col = "blue", lwd = 2, type="l",
      xlim = c(-10,0), xlab = "c", ylab= "density")
-lines(density(log(post.misha.inv.bmca$BUGSoutput$sims.list$c.m)), col = "red", lwd = 2)
+lines(density(log(post.mic.inv.bmca$BUGSoutput$sims.list$c.m)), col = "red", lwd = 2)
