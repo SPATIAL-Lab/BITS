@@ -25,7 +25,7 @@ n.cal = length(dist.cal)
 micromill <- read.csv("data/Misha micromill.csv")
 
 R.mic <- rev(micromill$X87Sr.86Sr)
-R.sd.mic <- rev(micromill$StdErr)
+R.sd.mic <- rev(micromill$Sd)
 dist.mic <- rev(micromill$dist)
 n.mic <- length(dist.mic)
 
@@ -37,7 +37,7 @@ Re <- 0.7112
 
 max.dist.cal <- 19200
 
-max.dist.mea <- 8000
+max.dist.mea <- 8200
 
 s.intv <- 400
 
@@ -63,18 +63,18 @@ dat = list(R.cal = R.cal, dist.cal = dist.cal, R.sd.cal = R.sd.cal, t.cal = 750,
            max.dist.cal = max.dist.cal, max.dist.mea = max.dist.mea,
            Ivo.rate.cal.mean = Ivo.rate.cal.mean, Ivo.rate.cal.sd = Ivo.rate.cal.sd,
            Ivo.rate.mean = Ivo.rate.mean, Ivo.rate.sd = Ivo.rate.sd,
-           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 450, n.mea = n.mic)
+           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 500, n.mea = n.mic)
 
 #Start time
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 4e3
-n.burnin = 4e2
-n.thin = floor(n.iter-n.burnin)/600
+n.iter = 1e4
+n.burnin = 2e3
+n.thin = floor(n.iter-n.burnin)/400
 
 #Run it
-post.misha.inversion.woi = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS wo intake model.R", 
+post.mic.inversion.woi = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS wo intake model.R", 
                                                    parameters.to.save = parameters, 
                                                    data = dat, n.chains=5, n.iter = n.iter, 
                                                    n.burnin = n.burnin, n.thin = n.thin))
@@ -99,12 +99,13 @@ abline(h = Re, lwd = 2, lty = 2)
 MCMC.dist.plot(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.cal,
                post.mic.inversion.woi$BUGSoutput$sims.list$dist.cal.m)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
+
 post.mic.inversion.woi.Rs.cal.89<- MCMC.CI.bound(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.cal, 0.89)
 
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
 #converting micromill distance to days using rate Ivo.rate.mic
-lines((max(dist.mic+200) - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue")#results from micromill
+lines((max.dist.mea - dist.mic)/Ivo.rate.mic + 1, R.mic, lwd = 2, col = "blue")#results from micromill
 
 MCMC.ts.Rin.m.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Rin.m)
 lines(1:t,MCMC.ts.Rin.m.89.woi[[1]],lwd = 2, col = "firebrick4")
@@ -112,6 +113,30 @@ lines(1:t,MCMC.ts.Rin.m.89.woi[[2]], lwd = 1, lty = 2, col = "firebrick4")
 lines(1:t,MCMC.ts.Rin.m.89.woi[[3]], lwd = 1, lty = 2, col = "firebrick4")
 legend(0, 0.716, c("Micromill","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
 
+MCMC.ts.Rs.m.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.m)
+MCMC.ts.Rb.m.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Rb.m)
+
+plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="ivory rate")
+lines(1:t,MCMC.ts.Rs.m.89.woi[[1]],lwd = 2, col = "firebrick4")
+
+MCMC.ts.Ivo.rate.89.woi <- MCMC.ts(post.mic.inversion.woi$BUGSoutput$sims.list$Ivo.rate)
+plot(density(MCMC.ts.Ivo.rate.89.woi[[1]]))
+plot(0,0, xlim = c(1,t), ylim = c(10, 25), xlab = "days", ylab ="ivory rate")
+lines(1:t,MCMC.ts.Ivo.rate.89.woi[[1]],lwd = 2, col = "firebrick4")
+
+par(mfrow=c(1,3))
+
+plot(abc.prior.params$x,abc.prior.params$y[1,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "a", ylab= "density")
+lines(density(log(post.mic.inversion.woi$BUGSoutput$sims.list$a.m)), col = "red", lwd = 2)
+
+plot(abc.prior.params$x,abc.prior.params$y[2,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "b", ylab= "density")
+lines(density(log(post.mic.inversion.woi$BUGSoutput$sims.list$b.m)), col = "red", lwd = 2)
+
+plot(abc.prior.params$x,abc.prior.params$y[3,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "c", ylab= "density")
+lines(density(log(post.mic.inversion.woi$BUGSoutput$sims.list$c.m)), col = "red", lwd = 2)
 
 ########inversion model with calibration#######
 #inversion based on laser ablation results
@@ -208,16 +233,16 @@ lines(med.dist.inversion.woi, post.misha.inversion.woi.Rs.cal.89[[2]], lwd = 1, 
 lines(med.dist.inversion.woi, post.misha.inversion.woi.Rs.cal.89[[3]], lwd = 1, lty = 2, col = "cyan")
 
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
-#converting micromill distance to days using rate Ivo.rate.mic
-
+plot(0,0, xlim = c(1,750), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+points((max(misha$dist)-misha$dist)/14.7,misha$mean, pch= 18)
+#converting misha distance to days using rate Ivo.rate
 MCMC.ts.Rin.cal.89.woi <- MCMC.ts(post.misha.inversion.woi$BUGSoutput$sims.list$Rin.cal)
-lines(1:t,MCMC.ts.Rin.cal.89.woi[[1]],lwd = 2, col = "blue")
-lines(1:t,MCMC.ts.Rin.cal.89.woi[[2]], lwd = 1, lty = 2, col = "blue")
-lines(1:t,MCMC.ts.Rin.cal.89.woi[[3]], lwd = 1, lty = 2, col = "blue")
+lines(1:750,MCMC.ts.Rin.cal.89.woi[[1]],lwd = 2, col = "blue")
+lines(1:750,MCMC.ts.Rin.cal.89.woi[[2]], lwd = 1, lty = 2, col = "blue")
+lines(1:750,MCMC.ts.Rin.cal.89.woi[[3]], lwd = 1, lty = 2, col = "blue")
 
 MCMC.ts.Rin.m.89.woi <- MCMC.ts(post.misha.inversion.woi$BUGSoutput$sims.list$Rin.m)
-lines(1:t,MCMC.ts.Rin.m.89.woi[[1]],lwd = 2, col = "firebrick4")
-lines(1:t,MCMC.ts.Rin.m.89.woi[[2]], lwd = 1, lty = 2, col = "firebrick4")
-lines(1:t,MCMC.ts.Rin.m.89.woi[[3]], lwd = 1, lty = 2, col = "firebrick4")
-legend(0, 0.716, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
+lines(1:750,MCMC.ts.Rin.m.89.woi[[1]],lwd = 2, col = "firebrick4")
+lines(1:750,MCMC.ts.Rin.m.89.woi[[2]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:750,MCMC.ts.Rin.m.89.woi[[3]], lwd = 1, lty = 2, col = "firebrick4")
+legend(0, 0.715, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))

@@ -32,6 +32,14 @@ model {
     #bone ratios
     Rb.m[i] <- Rb.m[i - 1] + c.m * (Rs.m[i - 1] - Rb.m[i - 1])
   }
+  a.m <- exp(params[1]) 
+  
+  b.m <- exp(params[2])
+  
+  c.m <- exp(params[3])
+  
+  #supply the model with estimated parameters
+  params ~ dmnorm.vcov(params.mu, params.vcov)
   
   # assuming the starting value of the two pools are close to the starting Rin value
   #e.g., close to equilibrium with Rin
@@ -91,14 +99,4 @@ model {
   # 
   #perhaps use body mass ratio?
   
-  a.m <- exp(params[1]) 
-    
-  b.m <- exp(params[2])
-    
-  c.m <- exp(params[3])
-  
-  #supply the model with estimated parameters
-  params ~ dmnorm.vcov(params.mu, params.vcov)
-
-
 }
