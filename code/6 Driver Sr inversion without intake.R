@@ -37,7 +37,7 @@ Re <- 0.7112
 
 max.dist.cal <- 19200
 
-max.dist.mea <- 8200
+max.dist.mea <- 12400
 
 s.intv <- 400
 
@@ -63,7 +63,7 @@ dat = list(R.cal = R.cal, dist.cal = dist.cal, R.sd.cal = R.sd.cal, t.cal = 750,
            max.dist.cal = max.dist.cal, max.dist.mea = max.dist.mea,
            Ivo.rate.cal.mean = Ivo.rate.cal.mean, Ivo.rate.cal.sd = Ivo.rate.cal.sd,
            Ivo.rate.mean = Ivo.rate.mean, Ivo.rate.sd = Ivo.rate.sd,
-           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 500, n.mea = n.mic)
+           R.mea = R.mic, dist.mea = dist.mic, R.sd.mea = R.sd.mic, t = 700, n.mea = n.mic)
 
 #Start time
 t1 = proc.time()
@@ -74,21 +74,21 @@ n.burnin = 2e3
 n.thin = floor(n.iter-n.burnin)/400
 
 #Run it
-post.mic.inversion.woi = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS wo intake model.R", 
+post.mic.inv.woi = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS wo intake model.R", 
                                                    parameters.to.save = parameters, 
                                                    data = dat, n.chains=5, n.iter = n.iter, 
                                                    n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 15 hours
+proc.time() - t1 #~ 25 hours
 
-save(post.mic.inversion.woi, file = "out/post.mic.inversion.woi.RData")
+save(post.mic.inv.woi, file = "out/post.mic.inv.woi.RData")
 
-post.mic.inversion.woi$BUGSoutput$summary
+post.mic.inv.woi$BUGSoutput$summary
 
-load("out/post.mic.inversion.woi.RData")
+load("out/post.mic.inv.woi.RData")
 
-plot(density(post.mic.inversion.woi$BUGSoutput$sims.list$a))
+plot(density(post.mic.inv.woi$BUGSoutput$sims.list$a))
 
 #plot calibration curve
 par(mfrow=c(1,1))
@@ -96,11 +96,11 @@ plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab 
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 
-MCMC.dist.plot(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.cal,
-               post.mic.inversion.woi$BUGSoutput$sims.list$dist.cal.m)
+MCMC.dist.plot(post.mic.inv.woi$BUGSoutput$sims.list$Rs.cal,
+               post.mic.inv.woi$BUGSoutput$sims.list$dist.cal.m)
 lines(misha$dist,misha$mean,lwd = 2, col = "red")
 
-post.mic.inversion.woi.Rs.cal.89<- MCMC.CI.bound(post.mic.inversion.woi$BUGSoutput$sims.list$Rs.cal, 0.89)
+post.mic.inversion.woi.Rs.cal.89<- MCMC.CI.bound(post.mic.inv.woi$BUGSoutput$sims.list$Rs.cal, 0.89)
 
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,t), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
