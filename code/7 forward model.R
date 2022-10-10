@@ -3,6 +3,7 @@
 ####helper functions###
 ###Function 1 create input time series in number of days#####
 #function to generate a number of switches between Sr 87/86 values a and b
+
 initiate.switch <- function(t, n.switch, day.switch, a, gap, duration){
 
     #initial vector
@@ -132,8 +133,6 @@ for (i in 1:n.cal){
   Rs.cal.eva[i] <- (Se.bone.res[[1]] %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
 }
 
-
-
 plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="120 day")
 #converting micromill distance to ~days using rate Ivo.rate.mic
 lines(1:t, input.120)
@@ -155,8 +154,106 @@ lines(dist.mic, Rs.cal.eva, lwd = 2, col = "red") #approximate results from micr
 points(dist.mic, R.mic)
 
 Rs.cal
+#think about three switches, synthetic series to demonstrate the carry over effect
+#Mid -> low -> mid -> High -> Mid, 90 day interval
 
+syn.mid <- 0.709
+syn.high <- 0.713
+syn.low <- 0.705
 
+syn.input.120 <- c(rep(syn.mid,120), rep(syn.low,120), rep(syn.mid,120), rep(syn.high,120), rep(syn.mid,120))
+
+length(syn.input)
+
+Se.bone.res <- Se.bone.forw.m(t = length(syn.input), input = syn.input, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res[[1]]
+Se.bone.res[[2]]
+
+#micromill parameters
+max.dist.cal <- 12000
+
+Ivo.rate.cal.mean <- 19.9
+Ivo.rate.cal.sd <- 5.4
+
+cal.intv <- 1000
+
+dist.cal <- seq(12000, 0, by = - cal.intv)
+
+n.cal <- length(dist.cal)
+
+dist.cal.m <- rep(0,length(syn.input)) #initiate dist
+
+dist.cal.m[1] <- max.dist.cal#maximum distance from the pulp cavity in microns
+
+Ivo.rate.cal <- rnorm(length(syn.input), Ivo.rate.cal.mean, Ivo.rate.cal.sd) #ivory growth rate, micron/day
+# Ivo.rate.cal <- MCMC.ts.Ivo.rate.89.woi[[1]]
+
+#model ivory growth
+for (i in 2:length(syn.input)){
+  dist.cal.m[i] <- dist.cal.m[i - 1] - Ivo.rate.cal[i] #simulate daily distance increment
+}
+
+#model averaging
+Rs.cal.eva <- rep(0,n.cal)#initiate vector
+for (i in 1:n.cal){
+  vect.upp <- as.integer((dist.cal[i] + cal.intv/2) < dist.cal.m)
+  vect.low <- as.integer((dist.cal[i] - cal.intv/2) < dist.cal.m)
+  Rs.cal.eva[i] <- (Se.bone.res[[1]] %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
+}
+
+plot(0,0, xlim = c(1,length(syn.input)), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",main="90 day")
+#converting micromill distance to ~days using rate Ivo.rate.mic
+lines(1:length(syn.input), syn.input)
+lines(1:length(syn.input),Se.bone.res[[1]],lwd=2, col = "blue")
+points((max(dist.cal) - dist.cal)/Ivo.rate.mic + 1, Rs.cal.eva, lwd = 2, col = "red")
+
+###############synthetic input 30
+syn.input.30 <- c(rep(syn.mid,30), rep(syn.low,30), rep(syn.mid,30), rep(syn.high,30), rep(syn.mid,30))
+syn.input.30 <- rep(syn.input.30,3)
+
+length(syn.input)
+
+Se.bone.res <- Se.bone.forw.m(t = length(syn.input.30), input = syn.input.30, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res[[1]]
+Se.bone.res[[2]]
+
+#micromill parameters
+max.dist.cal <- 12000
+
+Ivo.rate.cal.mean <- 19.9
+Ivo.rate.cal.sd <- 5.4
+
+cal.intv <- 1000
+
+dist.cal <- seq(12000, 0, by = - cal.intv)
+
+n.cal <- length(dist.cal)
+
+dist.cal.m <- rep(0,length(syn.input.30)) #initiate dist
+
+dist.cal.m[1] <- max.dist.cal#maximum distance from the pulp cavity in microns
+
+Ivo.rate.cal <- rnorm(length(syn.input.30), Ivo.rate.cal.mean, Ivo.rate.cal.sd) #ivory growth rate, micron/day
+# Ivo.rate.cal <- MCMC.ts.Ivo.rate.89.woi[[1]]
+
+#model ivory growth
+for (i in 2:length(syn.input.30)){
+  dist.cal.m[i] <- dist.cal.m[i - 1] - Ivo.rate.cal[i] #simulate daily distance increment
+}
+
+#model averaging
+Rs.cal.eva <- rep(0,n.cal)#initiate vector
+for (i in 1:n.cal){
+  vect.upp <- as.integer((dist.cal[i] + cal.intv/2) < dist.cal.m)
+  vect.low <- as.integer((dist.cal[i] - cal.intv/2) < dist.cal.m)
+  Rs.cal.eva[i] <- (Se.bone.res[[1]] %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
+}
+
+plot(0,0, xlim = c(1,length(syn.input.30)), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",main="90 day")
+#converting micromill distance to ~days using rate Ivo.rate.mic
+lines(1:length(syn.input.30), syn.input.30)
+lines(1:length(syn.input.30),Se.bone.res[[1]],lwd=2, col = "blue")
+points((max(dist.cal) - dist.cal)/Ivo.rate.mic + 1, Rs.cal.eva, lwd = 2, col = "red")
 #######forward model with prescribed input values of dietary switch####
 
 

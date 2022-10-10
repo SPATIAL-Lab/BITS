@@ -74,7 +74,7 @@ model {
   # adjusting a, b and c to the body mass of the elephant investigated
   # rate ~ scale with e3/4 body mass (basal matabolic rate)
   # pool ~ scale with 1 body mass
-  # a, b and c are rate/pool, so it should scale with -1/4 body mass
+  # a, b and c are rate/pool, so they should scale with -1/4 body mass
   a.m <- a * ((Body.mass.ratio)^-0.25)
   b.m <- b * ((Body.mass.ratio)^-0.25)
   c.m <- c * ((Body.mass.ratio)^-0.25)
