@@ -68,193 +68,202 @@ Se.bone.forw.m <- function(t, input, a, b, c, Rs.int, Rb.int){
   return(list(Rs, Rb))
 }
 
+
+###function 3: ivory growth simulation using mean and sd of growth rate####
+
+gorwth.sim <- function(t, max.dist, rate, rate.sd){
+  dist.m <- rep(0,t) #initiate dist
+  
+  dist.m[1] <- max.dist#maximum distance from the pulp cavity in microns
+  
+  #generate random rates
+  Ivo.rate <- rnorm(t, rate, rate.sd) #ivory growth rate, micron/day
+  
+  #model ivory growth
+  for (i in 2:t){
+    dist.m[i] <- dist.m[i - 1] - Ivo.rate[i] #simulate daily distance increment
+  }
+  return(dist.m)
+}
+
+###function 4: model micromill results given growth rate and sampling interval####
+micromill.sim <- function(max.dist, intv, dist.m, Rs.m){
+  dist.mic <- seq(max.dist, 0, by = - intv)
+  n.mic <- length(dist.mic)
+  #model averaging
+  Rs.eva <- rep(0, n.mic)#initiate vector
+  for (i in 1:n.mic){
+    vect.upp <- as.integer((dist.mic[i] + intv/2) < dist.m)
+    vect.low <- as.integer((dist.mic[i] - intv/2) < dist.m)
+    Rs.eva[i] <- (Rs.m %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
+  }
+  return(list(dist.mic, Rs.eva))
+}
+
+####begin forward model####
+
+#1 check turnover parameters#
 #parameters a, b, and c from parameter estimates in file 3
-params.forw.m <- mvrnorm(1, mu = turnover.params.mu, Sigma = turnover.params.vcov)
 
-a <- exp(params.forw.m[1])# a can be substituted
+#2 extract turnover parameters, use MAP in the forward model
+a <- MCMC.CI.a[[1]]
+b <- MCMC.CI.b[[1]]
+c <- MCMC.CI.c[[1]]
 
-b <- exp(params.forw.m[2])
-
-c <- exp(params.forw.m[3])
-
-#number of days in the simulation
+#3 number of days in the simulation
 t <- 700
+
+#4 generate input series with fixed durations#
 input.120 <- initiate.switch(t, n.switch=5, day.switch=100, a=0.707, gap=0.003, duration=120)
-plot(1:t,input,type="l")
 
-
-###function 3: model micromill results given growth rate and sampling interval####
-###1 declaration of fixed parameters, no stocastic relationships!!!
-#try to use micromill parameters
-
-#micromill parameters
-max.dist.cal <- 12000
-
-Ivo.rate.cal.mean <- 19.9
-Ivo.rate.cal.sd <- 5.4
-
-cal.intv <- 1000
-
-dist.cal <- seq(12000, 0, by = - cal.intv)
-
-n.cal <- length(dist.cal)
-
-
-
-turnover.params.mu
-turnover.params.vcov
-
-#model components:
-
-input.120
-
+#5 generate serum and bone series based on input series and turnover parameters#
 Se.bone.res <- Se.bone.forw.m(t = 700, input = input.120, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
-Se.bone.res[[1]]
-Se.bone.res[[2]]
 
+#6 ivory growth parameters, unit in microns
+max.dist <- 12000 
+Ivo.rate.mean <- 19.9 #microns per day
+Ivo.rate.sd <- 5.4
 
-dist.cal.m <- rep(0,t) #initiate dist
+#7 ivory growth simulation, returns a distance vector of length t
+ivo.dist.m <- gorwth.sim(t = 700, max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
 
-dist.cal.m[1] <- max.dist.cal#maximum distance from the pulp cavity in microns
+#8 micromill parameter: milling width in microns
+intv <- 1000
 
-Ivo.rate.cal <- rnorm(t, Ivo.rate.cal.mean, Ivo.rate.cal.sd) #ivory growth rate, micron/day
-# Ivo.rate.cal <- MCMC.ts.Ivo.rate.89.woi[[1]]
+#9 micromill averaging simulation, returns a list of two vectors
+#first vector is micromill distance, the center of the milling width
+#second vector is
+res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m, Rs.m = Se.bone.res[[1]])
+######end of forward model######
 
-#model ivory growth
-for (i in 2:t){
-  dist.cal.m[i] <- dist.cal.m[i - 1] - Ivo.rate.cal[i] #simulate daily distance increment
-}
-
-#model averaging
-Rs.cal.eva <- rep(0,n.cal)#initiate vector
-for (i in 1:n.cal){
-  vect.upp <- as.integer((dist.cal[i] + cal.intv/2) < dist.cal.m)
-  vect.low <- as.integer((dist.cal[i] - cal.intv/2) < dist.cal.m)
-  Rs.cal.eva[i] <- (Se.bone.res[[1]] %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
-}
-
+###plots###
+#plot input, serum history, and simulated micromill values
 plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="120 day")
-#converting micromill distance to ~days using rate Ivo.rate.mic
 lines(1:t, input.120)
-lines(1:t,Se.bone.res[[1]],lwd=2, col = "blue")
-points((max(dist.cal) - dist.cal)/Ivo.rate.mic + 1, Rs.cal.eva, lwd = 2, col = "red")
-
-plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="100 day")
+lines(1:t, Se.bone.res[[1]],lwd=2, col = "blue")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-lines(1:t, input.50)
-lines(1:t,Se.bone.res[[1]],lwd=2, col = "blue")
-points((max(dist.cal) - dist.cal)/Ivo.rate.mic + 1, Rs.cal.eva, lwd = 2, col = "red")
+points((max(res.mic[[1]]) - res.mic[[1]])/Ivo.rate.mean + 1, res.mic[[2]], lwd = 2, col = "red")
 
-#plot distance
-plot(0,0, xlim = c(8000,-1000), ylim = c(0.705, 0.716), xlab = "dist", ylab ="Sr 87/86",
-     main="a = 0.02, rate.mean = 19.9")
-#converting micromill distance to ~days using rate Ivo.rate.mic
-lines(dist.cal.m, Rs.cal, lwd = 2, col = "blue") 
-lines(dist.mic, Rs.cal.eva, lwd = 2, col = "red") #approximate results from micromill
-points(dist.mic, R.mic)
+#plot simulated ivory measurement with distance in the x axis
+plot(0,0, xlim = c(max(res.mic[[1]]),-1000), ylim = c(0.706, 0.711), xlab = "dist", ylab ="Sr 87/86",
+     main="")
+lines(ivo.dist.m, Se.bone.res[[1]], lwd = 2, col = "blue") 
+points(res.mic[[1]], res.mic[[2]], col = "red")
 
-Rs.cal
-#think about three switches, synthetic series to demonstrate the carry over effect
+#########Forward model to demonstrate carry over effect, synthetic input 120 days interval#######
+####begin forward model####
+
+#1 check turnover parameters#
+#parameters a, b, and c from parameter estimates in file 3
+
+#2 extract turnover parameters, use MAP in the forward model
+a <- MCMC.CI.a[[1]]
+b <- MCMC.CI.b[[1]]
+c <- MCMC.CI.c[[1]]
+
+#3 number of days in the simulation
+
+
+#4 generate input series with fixed durations#
 #Mid -> low -> mid -> High -> Mid, 90 day interval
-
 syn.mid <- 0.709
 syn.high <- 0.713
 syn.low <- 0.705
 
 syn.input.120 <- c(rep(syn.mid,120), rep(syn.low,120), rep(syn.mid,120), rep(syn.high,120), rep(syn.mid,120))
 
-length(syn.input)
+#5 generate serum and bone series based on input series and turnover parameters#
+Se.bone.res <- Se.bone.forw.m(t = length(syn.input.120), input = syn.input.120, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
 
-Se.bone.res <- Se.bone.forw.m(t = length(syn.input), input = syn.input, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
-Se.bone.res[[1]]
-Se.bone.res[[2]]
+#6 ivory growth parameters, unit in microns
+max.dist <- 12000 
+Ivo.rate.mean <- 19.9 #microns per day
+Ivo.rate.sd <- 5.4
 
-#micromill parameters
-max.dist.cal <- 12000
+#7 ivory growth simulation, returns a distance vector of length t
+ivo.dist.m <- gorwth.sim(t = length(syn.input.120), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
 
-Ivo.rate.cal.mean <- 19.9
-Ivo.rate.cal.sd <- 5.4
+#8 micromill parameter: milling width in microns
+intv <- 1000
 
-cal.intv <- 1000
+#9 micromill averaging simulation, returns a list of two vectors
+#first vector is micromill distance, the center of the milling width
+#second vector is
+res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m, Rs.m = Se.bone.res[[1]])
+######end of forward model######
 
-dist.cal <- seq(12000, 0, by = - cal.intv)
-
-n.cal <- length(dist.cal)
-
-dist.cal.m <- rep(0,length(syn.input)) #initiate dist
-
-dist.cal.m[1] <- max.dist.cal#maximum distance from the pulp cavity in microns
-
-Ivo.rate.cal <- rnorm(length(syn.input), Ivo.rate.cal.mean, Ivo.rate.cal.sd) #ivory growth rate, micron/day
-# Ivo.rate.cal <- MCMC.ts.Ivo.rate.89.woi[[1]]
-
-#model ivory growth
-for (i in 2:length(syn.input)){
-  dist.cal.m[i] <- dist.cal.m[i - 1] - Ivo.rate.cal[i] #simulate daily distance increment
-}
-
-#model averaging
-Rs.cal.eva <- rep(0,n.cal)#initiate vector
-for (i in 1:n.cal){
-  vect.upp <- as.integer((dist.cal[i] + cal.intv/2) < dist.cal.m)
-  vect.low <- as.integer((dist.cal[i] - cal.intv/2) < dist.cal.m)
-  Rs.cal.eva[i] <- (Se.bone.res[[1]] %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
-}
-
-plot(0,0, xlim = c(1,length(syn.input)), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",main="90 day")
+###plots###
+#plot input, serum history, and simulated micromill values
+plot(0,0, xlim = c(1,length(syn.input.120)), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",main="120 day")
+lines(1:length(syn.input.120), syn.input.120)
+lines(1:length(syn.input.120), Se.bone.res[[1]],lwd=2, col = "blue")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-lines(1:length(syn.input), syn.input)
-lines(1:length(syn.input),Se.bone.res[[1]],lwd=2, col = "blue")
-points((max(dist.cal) - dist.cal)/Ivo.rate.mic + 1, Rs.cal.eva, lwd = 2, col = "red")
+points((max(res.mic[[1]]) - res.mic[[1]])/Ivo.rate.mean + 1, res.mic[[2]], lwd = 2, col = "red")
 
-###############synthetic input 30
+#plot simulated ivory measurement with distance in the x axis
+plot(0,0, xlim = c(max(res.mic[[1]]),-1000), ylim = c(syn.low, syn.high), xlab = "dist", ylab ="Sr 87/86",
+     main="")
+lines(ivo.dist.m, Se.bone.res[[1]], lwd = 2, col = "blue") 
+points(res.mic[[1]], res.mic[[2]], col = "red")
+
+
+###############synthetic input 30 day interval to demonstrate carry over effect########
+####begin forward model####
+
+#1 check turnover parameters#
+#parameters a, b, and c from parameter estimates in file 3
+
+#2 extract turnover parameters, use MAP in the forward model
+a <- MCMC.CI.a[[1]]
+b <- MCMC.CI.b[[1]]
+c <- MCMC.CI.c[[1]]
+
+#3 number of days in the simulation
+
+
+#4 generate input series with fixed durations#
+#Mid -> low -> mid -> High -> Mid, 90 day interval
+syn.mid <- 0.709
+syn.high <- 0.713
+syn.low <- 0.705
+
 syn.input.30 <- c(rep(syn.mid,30), rep(syn.low,30), rep(syn.mid,30), rep(syn.high,30), rep(syn.mid,30))
 syn.input.30 <- rep(syn.input.30,3)
 
-length(syn.input)
-
+#5 generate serum and bone series based on input series and turnover parameters#
 Se.bone.res <- Se.bone.forw.m(t = length(syn.input.30), input = syn.input.30, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
-Se.bone.res[[1]]
-Se.bone.res[[2]]
 
-#micromill parameters
-max.dist.cal <- 12000
+#6 ivory growth parameters, unit in microns
+max.dist <- 12000 
+Ivo.rate.mean <- 19.9 #microns per day
+Ivo.rate.sd <- 5.4
 
-Ivo.rate.cal.mean <- 19.9
-Ivo.rate.cal.sd <- 5.4
+#7 ivory growth simulation, returns a distance vector of length t
+ivo.dist.m <- gorwth.sim(t = length(syn.input.30), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
 
-cal.intv <- 1000
+#8 micromill parameter: milling width in microns
+intv <- 1000
 
-dist.cal <- seq(12000, 0, by = - cal.intv)
+#9 micromill averaging simulation, returns a list of two vectors
+#first vector is micromill distance, the center of the milling width
+#second vector is
+res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m, Rs.m = Se.bone.res[[1]])
+######end of forward model######
 
-n.cal <- length(dist.cal)
-
-dist.cal.m <- rep(0,length(syn.input.30)) #initiate dist
-
-dist.cal.m[1] <- max.dist.cal#maximum distance from the pulp cavity in microns
-
-Ivo.rate.cal <- rnorm(length(syn.input.30), Ivo.rate.cal.mean, Ivo.rate.cal.sd) #ivory growth rate, micron/day
-# Ivo.rate.cal <- MCMC.ts.Ivo.rate.89.woi[[1]]
-
-#model ivory growth
-for (i in 2:length(syn.input.30)){
-  dist.cal.m[i] <- dist.cal.m[i - 1] - Ivo.rate.cal[i] #simulate daily distance increment
-}
-
-#model averaging
-Rs.cal.eva <- rep(0,n.cal)#initiate vector
-for (i in 1:n.cal){
-  vect.upp <- as.integer((dist.cal[i] + cal.intv/2) < dist.cal.m)
-  vect.low <- as.integer((dist.cal[i] - cal.intv/2) < dist.cal.m)
-  Rs.cal.eva[i] <- (Se.bone.res[[1]] %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
-}
-
-plot(0,0, xlim = c(1,length(syn.input.30)), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",main="90 day")
-#converting micromill distance to ~days using rate Ivo.rate.mic
+###plots###
+#plot input, serum history, and simulated micromill values
+plot(0,0, xlim = c(1,length(syn.input.30)), ylim = c(syn.low, syn.high), 
+     xlab = "days", ylab ="Sr 87/86",main="30 day")
 lines(1:length(syn.input.30), syn.input.30)
-lines(1:length(syn.input.30),Se.bone.res[[1]],lwd=2, col = "blue")
-points((max(dist.cal) - dist.cal)/Ivo.rate.mic + 1, Rs.cal.eva, lwd = 2, col = "red")
-#######forward model with prescribed input values of dietary switch####
+lines(1:length(syn.input.30), Se.bone.res[[1]],lwd=2, col = "blue")
+#converting micromill distance to ~days using rate Ivo.rate.mic
+points((max(res.mic[[1]]) - res.mic[[1]])/Ivo.rate.mean + 1, res.mic[[2]], lwd = 2, col = "red")
+
+#plot simulated ivory measurement with distance in the x axis
+plot(0,0, xlim = c(max(res.mic[[1]]),-1000), ylim = c(syn.low, syn.high), xlab = "dist", ylab ="Sr 87/86",
+     main="")
+lines(ivo.dist.m, Se.bone.res[[1]], lwd = 2, col = "blue") 
+points(res.mic[[1]], res.mic[[2]], col = "red")
 
 
 ######Forward model with prescribed bone value#####

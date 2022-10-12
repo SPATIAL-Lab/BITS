@@ -269,7 +269,7 @@ lines(misha$dist,misha$mean,lwd = 2, col = "red")
 post.mamm.inv.woi.Rs.cal.89<- MCMC.CI.bound(post.mamm.inv.woi$BUGSoutput$sims.list$Rs.cal, 0.89)
 
 #plotting reconstructed Rin.m history
-plot(0,0, xlim = c(1,500), ylim = c(0.706, 0.716), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,550), ylim = c(0.706, 0.716), xlab = "days", ylab ="Sr 87/86")
 #converting micromill distance to ~days using rate Ivo.rate.mic
 lines((max.dist.mea - sub.mm.sim.avg.dist)/mean.wooller.rate + 1, sub.mm.sim.avg.sr, lwd = 2, col = "blue") #approximate results from micromill
 
@@ -277,4 +277,15 @@ MCMC.inv.mamm.woi.Rin.m.89 <- MCMC.CI.bound(post.mamm.inv.woi$BUGSoutput$sims.li
 lines(1:550,MCMC.inv.mamm.woi.Rin.m.89[[1]],lwd = 2, col = "firebrick4")
 lines(1:550,MCMC.inv.mamm.woi.Rin.m.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
 lines(1:550,MCMC.inv.mamm.woi.Rin.m.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
-legend(0, 0.716, c("Mammoth LA 500 micron Averaged","Reconstructed input"),lwd = c(2, 2), col=c("blue","firebrick4"))
+legend(0, 0.716, c("Mammoth LA 500 micron averaged","Reconstructed intake"),lwd = c(2, 2), col=c("blue","firebrick4"))
+
+###plot possible bone history###
+plot(0,0, xlim = c(1,550), ylim = c(0.706, 0.716), xlab = "days", ylab ="Sr 87/86")
+#converting micromill distance to ~days using rate Ivo.rate.mic
+lines((max.dist.mea - sub.mm.sim.avg.dist)/mean.wooller.rate + 1, sub.mm.sim.avg.sr, lwd = 2, col = "blue") #approximate results from micromill
+
+MCMC.inv.mamm.woi.Rb.m.89 <- MCMC.CI.bound(post.mamm.inv.woi$BUGSoutput$sims.list$Rb.m, 0.89)
+lines(1:550,MCMC.inv.mamm.woi.Rb.m.89[[1]],lwd = 2, col = "firebrick2")
+lines(1:550,MCMC.inv.mamm.woi.Rb.m.89[[2]], lwd = 1, lty = 2, col = "firebrick2")
+lines(1:550,MCMC.inv.mamm.woi.Rb.m.89[[3]], lwd = 1, lty = 2, col = "firebrick2")
+legend(0, 0.716, c("Mammoth LA 500 micron averaged","Reconstructed bone pool"),lwd = c(2, 2), col=c("blue","firebrick2"))

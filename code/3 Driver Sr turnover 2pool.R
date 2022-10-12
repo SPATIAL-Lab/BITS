@@ -307,6 +307,11 @@ plot(density(post.misha.woint3$BUGSoutput$sims.list$a))
 plot(density(post.misha.woint3$BUGSoutput$sims.list$b))
 plot(density(post.misha.woint3$BUGSoutput$sims.list$c))
 
+###MAP estimates, and 89% CI for parameters a, b, and c
+MCMC.CI.a <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$a, 0.89)
+MCMC.CI.b <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$b, 0.89)
+MCMC.CI.c <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$c, 0.89)
+
 #estimate log-normal parameters for each, but they are correlated! should use a correlated structure!
 a.param <- elnorm(post.misha.woint3$BUGSoutput$sims.list$a[,1])
 b.param <- elnorm(post.misha.woint3$BUGSoutput$sims.list$b[,1])
