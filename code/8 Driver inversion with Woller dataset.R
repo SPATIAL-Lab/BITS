@@ -289,3 +289,17 @@ lines(1:550,MCMC.inv.mamm.woi.Rb.m.89[[1]],lwd = 2, col = "firebrick2")
 lines(1:550,MCMC.inv.mamm.woi.Rb.m.89[[2]], lwd = 1, lty = 2, col = "firebrick2")
 lines(1:550,MCMC.inv.mamm.woi.Rb.m.89[[3]], lwd = 1, lty = 2, col = "firebrick2")
 legend(0, 0.716, c("Mammoth LA 500 micron averaged","Reconstructed bone pool"),lwd = c(2, 2), col=c("blue","firebrick2"))
+
+par(mfrow=c(1,3))
+
+plot(abc.prior.params$x,abc.prior.params$y[1,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "a", ylab= "density")
+lines(density(log(post.mamm.inv.woi$BUGSoutput$sims.list$a)), col = "red", lwd = 2)
+
+plot(abc.prior.params$x,abc.prior.params$y[2,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "b", ylab= "density")
+lines(density(log(post.mamm.inv.woi$BUGSoutput$sims.list$b)), col = "red", lwd = 2)
+
+plot(abc.prior.params$x,abc.prior.params$y[3,], col = "blue", lwd = 2, type="l",
+     xlim = c(-10,0), xlab = "c", ylab= "density")
+lines(density(log(post.mamm.inv.woi$BUGSoutput$sims.list$c)), col = "red", lwd = 2)

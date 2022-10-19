@@ -42,8 +42,6 @@ model {
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i]
     
-    #Rin.m.cps[i] ~ dnorm(0, Rin.m.pre) #Brownian motion
-    
     Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3) #Brownian motion, cauchy error term
 
   }
@@ -53,7 +51,6 @@ model {
   Rin.int ~ dnorm(0.710, 1/0.01^2)  #a reasonable initial value
   
   #initial change per step
-  #Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3)
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)

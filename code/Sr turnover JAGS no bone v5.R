@@ -24,39 +24,21 @@ model {
 
   #Data evaluation
   for (i in 1:n.mea){
-
+    
+    Rs.eva[i] <- inprod(Rs.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
-    R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
-  }
-  #problem, 1 in 8 values are wasted
- 
-  #Evaluating the mean of neighboring 7 data points, ~ 100 micron
-  for (i in 2:(n.mea)){
-    Rs.eva[i] <- (Rs.m[mod.index[i]] + Rs.m[mod.index[i]+1] + Rs.m[mod.index[i]-1]+
-                    Rs.m[mod.index[i]+2] + Rs.m[mod.index[i]-2]+
-                    Rs.m[mod.index[i]+3] + Rs.m[mod.index[i]-3])/7
+    R.mea[i] ~ dnorm(Rs.eva[i], 1/(R.sd.mea[i])^2)
   }
   
-  Rs.eva[1] <- Rs.m [1]
+  #Data model priors for ivory growth
+  for (i in 2:t){
+    Ivo.rate[i] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
+    dist[i] <- dist[i - 1] - Ivo.rate[i] #simulate daily distance increment
+  }
   
-  #also record modeled distance from pulp cavity
-  mod.dist <- max.dist - dist.index * Ivo.rate
+  dist[1] <- max.dist.mea#maximum distance from the pulp cavity in microns
   
-  #converting distance values to a set of indexes (integer)
-  #mod.index is measured in days ~1:1050
-  mod.index <- round(dist.index) + 1
-  
-  dist.index <- (max.dist - dist.mea)/Ivo.rate 
-  
-  max.dist = 19200 #maximum distance from the pulp cavity in microns
-  
-  #Data model of ivory
-  #Priors for ivory sampling
-  #assuming laser ablation has no averaging effects
-
-  Ivo.rate ~ dnorm(Ivo.rate.mean, Ivo.rate.pre) #ivory growth rate, micron/day
-  Ivo.rate.mean <- 14.7 #microns per day
-  Ivo.rate.pre <- 1/0.6^2 # 1 sd = 0.6 according to Uno 2012
+  Ivo.rate[1] ~ dnorm(Ivo.rate.mean, 1/Ivo.rate.sd^2) #ivory growth rate, micron/day
   
   #generate time series
   for (i in 2:t){
@@ -105,7 +87,7 @@ model {
   
   Re.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Re)
   
-  Sr.pre.rate.Re <- 1e-5
+  Sr.pre.rate.Re <- 2e-5
   
   R0.mean ~ dnorm(R0, R0.pre) #R0.mean is modeled to be fixed
 
@@ -180,7 +162,7 @@ model {
   
   beta.pel ~ dnorm(40, 1/1^2)
   
-  #Ca absorption rate of hay is estimated to be 60 +- 2%
+  #Ca absorption rate of hay is estimated to be 60 +- 3%
   diges.h ~ dnorm(0.6, 1/0.03^2)
   
   #Ca absorption rate of pellet is assumed to be slightly higher 70% (15% fiber)
@@ -209,24 +191,6 @@ model {
     c.Sr.hay[i] = Sr.hay.m[i] * c.hay.m[i] #product of concentration and Sr
     
   }
-  
-  #time series for Sr ratio of feed and pellet
-  # for(i in 2:t){
-  #   
-  #   pel.r[i] <- pel.r[i - 1] + pel.r.cps[i]
-  #   
-  #   pel.r.cps[i] ~ dnorm(pel.r.cps[i - 1] * pel.r.cps.ac, pel.r.pre)
-  #   
-  # }
-  # pel.r.cps[1] ~ dnorm(0, pel.r.pre)
-  # 
-  # pel.r.cps.ac ~ dunif(0.01, 0.99)
-  # 
-  # pel.r.pre ~ dgamma(pel.r.pre.shape, pel.r.pre.rate)
-  # 
-  # pel.r.pre.shape = 100
-  # 
-  # pel.r.pre.rate = 1
     
   Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
   Body.mass.mean <- 4800 # kg

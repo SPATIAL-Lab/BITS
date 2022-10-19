@@ -288,9 +288,9 @@ plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86"
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 post.misha.woint3.Rin.89<- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$Rin, 0.89)
-lines(1:t, post.misha.woint3.Rin.89[[1]], lwd = 2, col = "firebrick4")
-lines(1:t, post.misha.woint3.Rin.89[[2]], lwd = 1, lty = 2, col = "firebrick4")
-lines(1:t, post.misha.woint3.Rin.89[[3]], lwd = 1, lty = 2, col = "firebrick4")
+lines(1:t, post.misha.woint3.Rin.89[[1]], lwd = 2, col = "ff00ffff")
+lines(1:t, post.misha.woint3.Rin.89[[2]], lwd = 1, lty = 2, col = "ff00ffff")
+lines(1:t, post.misha.woint3.Rin.89[[3]], lwd = 1, lty = 2, col = "ff00ffff")
 
 #reconstructed Rs.m history
 plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
@@ -340,9 +340,311 @@ qqPlot(post.misha.woint3$BUGSoutput$sims.list$c[,1],distribution = "lnorm",
 #plot prior distributions
 abc.prior.params <- pri.multi.norm.den(-10,0,turnover.params.mu,turnover.params.vcov)
 par(mfrow=c(1,3))
-plot(abc.prior.params$x,abc.prior.params$y[1,], col = "blue", lwd = 2, type="l",
+plot(abc.prior.params$x,abc.prior.params$y[1,], col = "00b4ffff", lwd = 2, type="l",
      xlim = c(-10,0), xlab = "a", ylab= "density")
-plot(abc.prior.params$x,abc.prior.params$y[2,], col = "blue", lwd = 2, type="l",
+plot(abc.prior.params$x,abc.prior.params$y[2,], col = "00b4ffff", lwd = 2, type="l",
      xlim = c(-10,0), xlab = "b", ylab= "density")
-plot(abc.prior.params$x,abc.prior.params$y[3,], col = "blue", lwd = 2, type="l",
+plot(abc.prior.params$x,abc.prior.params$y[3,], col = "00b4ffff", lwd = 2, type="l",
      xlim = c(-10,0), xlab = "c", ylab= "density")
+
+######50 pt average raw Misha data#####
+##calculate 50 point average to reduce data amount
+misha.raw <- read.csv("data/Misha raw.csv")
+misha.raw.Sr <- misha.raw$X87Sr.86Sr
+misha.raw.dist <- misha.raw$dist
+
+n.avg <- 50 #now many data points to average
+n <- floor(length(misha.raw$X87Sr.86Sr)/n.avg) #99 data points, discard the last <100 data points
+
+#initiate vectors
+n.avg.misha.50.sr <- rep(0, n)
+n.sd.misha.50.sr <- rep(0, n)
+
+n.avg.misha.50.dist <- rep(0, n)
+
+for(i in 1:n){
+        x <- ((i-1)*n.avg + 1):(i*n.avg)
+        n.avg.misha.50.sr[i] <- mean(misha.raw.Sr[x])
+        n.sd.misha.50.sr[i] <- sd(misha.raw.Sr[x])
+        
+        n.avg.misha.50.dist[i] <- mean(misha.raw.dist[x])#mean and median are the same
+}
+
+plot(n.avg.misha.50.dist, n.avg.misha.50.sr, main="50 pt average",
+     xlim=c(max(n.avg.misha.50.dist),min(n.avg.misha.50.dist)))
+lines(n.avg.misha.50.dist, n.avg.misha.50.sr)
+hist(n.sd.misha.50.sr)
+###prep data###
+R.sd.mea <- n.sd.misha.50.sr
+dist.mea <- n.avg.misha.50.dist
+R.mea <- n.avg.misha.50.sr
+n.mea = length(n.avg.misha.50.sr)
+
+R0 <- 0.707
+
+#Re is the mean ratio of end value  
+Re <- 0.7112
+s.intv <- mean(dist.mea[1:(n.mea - 1)] - dist.mea[2:n.mea])
+
+Ivo.rate.mean <- 14.7 #microns per day
+Ivo.rate.sd <- 0.6
+max.dist.mea <- max(n.avg.misha.50.dist) + 300
+#parameters to save
+parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","dist.index",
+                "Sr.pre", "Ps", "Fin","Pb", "Fb", "Re.mean", "switch","dist",
+                "flux.ratio", "pool.ratio","Body.mass")
+##Data to pass to the model
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 760, n.mea = n.mea, 
+           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
+           Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 2e3
+n.burnin = 2e2
+n.thin = floor(n.iter-n.burnin)/600
+
+#Run it
+post.misha.fdnb2 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS wo intake model3.R", 
+                                               parameters.to.save = parameters, 
+                                               data = dat, n.chains=5, n.iter = n.iter, 
+                                               n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 13.5 hours
+
+post.misha.fdnb2$BUGSoutput$summary
+
+save(post.misha.fdnb2, file = "out/post.misha.fdnb2.RData")
+load("out/post.misha.fdnb2.RData")
+
+traplot(post.misha.fdnb2,parms = c("flux.ratio", "pool.ratio"))
+traplot(post.misha.fdnb2,parms = c("a", "b","c"))
+
+summary(post.misha.fdnb2$BUGSoutput$sims.list$switch)
+summary(post.misha.fdnb2$BUGSoutput$sims.list$Ivo.rate)
+
+#make a contour map
+# contour.flux.pool <- kde2d(post.misha.5$BUGSoutput$sims.list$flux.ratio[,1], 
+#                            post.misha.5$BUGSoutput$sims.list$pool.ratio[,1], n = 64)
+# image(contour.flux.pool, col=viridis(64), xlab="Flux ratio: Fs/Fb", ylab="Pool ratio: Ps/Pb",xlim =c(0,200))
+# contour(contour.flux.pool,lwd = 1.5, add = TRUE, labcex = 1)
+
+#plotting some parameters
+plot(density(post.misha.fdnb2$BUGSoutput$sims.list$Ivo.rate))
+map_estimate(post.misha.fdnb2$BUGSoutput$sims.list$Pb) #0.004 mmol
+plot(density(post.misha.fdnb2$BUGSoutput$sims.list$Pb))
+map_estimate(post.misha.fdnb2$BUGSoutput$sims.list$Ps) #0.66 mmol
+map_estimate(post.misha.fdnb2$BUGSoutput$sims.list$Fin) #0.01 mmol/day
+plot(density(post.misha.fdnb2$BUGSoutput$sims.list$Fin))
+map_estimate(post.misha.fdnb2$BUGSoutput$sims.list$Fb) #0.0035 mmol/day
+plot(density(post.misha.fdnb2$BUGSoutput$sims.list$Fb))
+
+plot(density(post.misha.fdnb2$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
+     ylim = c(0, 4), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
+lines(density(post.misha.fdnb2$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
+legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+
+plot(density(post.misha.fdnb2$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.1),
+     ylim = c(0, 80), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
+lines(density(post.misha.fdnb2$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
+legend(0.06, 80, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+
+#a/b = Fin/Fb
+#c/b = Ps/Pb
+
+#plotting modeled serum values mapped onto ivory and checking the fit of the data
+plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+
+MCMC.dist.plot(post.misha.fdnb2$BUGSoutput$sims.list$Rs.m,
+               post.misha.fdnb2$BUGSoutput$sims.list$dist)
+lines(n.avg.misha.50.dist,n.avg.misha.50.sr,lwd = 2, col = "red")
+
+post.misha.fdnb2.Rs.m.89<- MCMC.CI.bound(post.misha.fdnb2$BUGSoutput$sims.list$Rs.m, 0.89)
+#extract median distance from MCMC(t) results
+med.dist.fdnb2<- MCMC.dist.median(post.misha.fdnb2$BUGSoutput$sims.list$dist)
+lines(med.dist.fdnb2, post.misha.fdnb2.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(med.dist.fdnb2, post.misha.fdnb2.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(med.dist.fdnb2, post.misha.fdnb2.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
+
+#plot bone pool values
+plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+
+MCMC.dist.plot(post.misha.fdnb2$BUGSoutput$sims.list$Rb.m,
+               post.misha.fdnb2$BUGSoutput$sims.list$dist)
+lines(n.avg.misha.50.dist,n.avg.misha.50.sr,lwd = 2, col = "red")
+
+####check the Rin values####
+plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+post.misha.fdnb2.Rin.89<- MCMC.CI.bound(post.misha.fdnb2$BUGSoutput$sims.list$Rin, 0.89)
+lines(1:t, post.misha.fdnb2.Rin.89[[1]], lwd = 2, col = "ff00ffff")
+lines(1:t, post.misha.fdnb2.Rin.89[[2]], lwd = 1, lty = 2, col = "ff00ffff")
+lines(1:t, post.misha.fdnb2.Rin.89[[3]], lwd = 1, lty = 2, col = "ff00ffff")
+
+#reconstructed Rs.m history
+plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+MCMC.tl.plot(post.misha.fdnb2$BUGSoutput$sims.list$Rs.m,750)
+lines(1:750, post.misha.fdnb2.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(1:750, post.misha.fdnb2.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(1:750, post.misha.fdnb2.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
+
+##############################no prior constrain on bone pool size#############
+####also use 25 point average plus cut off at 14000#
+#one pool scenario is supported#
+misha.raw <- read.csv("data/Misha raw.csv")
+misha.raw.Sr <- misha.raw$X87Sr.86Sr
+misha.raw.dist <- misha.raw$dist
+
+n.avg <- 25 #now many data points to average
+n <- floor(length(misha.raw$X87Sr.86Sr)/n.avg) #99 data points, discard the last <100 data points
+
+#initiate vectors
+n.avg.misha.25.sr <- rep(0, n)
+n.sd.misha.25.sr <- rep(0, n)
+
+n.avg.misha.25.dist <- rep(0, n)
+
+for(i in 1:n){
+        x <- ((i-1)*n.avg + 1):(i*n.avg)
+        n.avg.misha.25.sr[i] <- mean(misha.raw.Sr[x])
+        n.sd.misha.25.sr[i] <- sd(misha.raw.Sr[x])
+        
+        n.avg.misha.25.dist[i] <- mean(misha.raw.dist[x])#mean and median are the same
+}
+
+plot(n.avg.misha.25.dist, n.avg.misha.25.sr, main="25 pt average",
+     xlim=c(max(n.avg.misha.25.dist),min(n.avg.misha.25.dist)))
+lines(n.avg.misha.25.dist, n.avg.misha.25.sr)
+
+###prep data###
+R.sd.mea <- n.sd.misha.25.sr[1:200]
+dist.mea <- n.avg.misha.25.dist[1:200]
+R.mea <- n.avg.misha.25.sr[1:200]
+n.mea = length(n.avg.misha.25.sr[1:200])
+
+R0 <- 0.707
+
+#Re is the mean ratio of end value  
+Re <- 0.7112
+s.intv <- mean(dist.mea[1:(n.mea - 1)] - dist.mea[2:n.mea])
+
+Ivo.rate.mean <- 14.7 #microns per day
+Ivo.rate.sd <- 0.6
+max.dist.mea <- max(n.avg.misha.25.dist) + 300
+#parameters to save
+parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","dist.index",
+                "Sr.pre", "Ps", "Fin","Pb", "Fb", "Re.mean", "switch","dist",
+                "flux.ratio", "pool.ratio","Body.mass")
+##Data to pass to the model
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 400, n.mea = n.mea, 
+           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
+           Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 2e3
+n.burnin = 4e2
+n.thin = floor(n.iter-n.burnin)/400
+
+#Run it
+post.misha.fdnbh = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS wo intake model3.R", 
+                                              parameters.to.save = parameters, 
+                                              data = dat, n.chains=5, n.iter = n.iter, 
+                                              n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 3.5 hours
+
+post.misha.fdnbh$BUGSoutput$summary
+
+save(post.misha.fdnbh, file = "out/post.misha.fdnbh.RData")
+load("out/post.misha.fdnbh.RData")
+
+traplot(post.misha.fdnbh,parms = c("flux.ratio", "pool.ratio"))
+traplot(post.misha.fdnbh,parms = c("a", "b","c"))
+
+summary(post.misha.fdnbh$BUGSoutput$sims.list$switch)
+summary(post.misha.fdnbh$BUGSoutput$sims.list$Ivo.rate)
+
+#make a contour map
+# contour.flux.pool <- kde2d(post.misha.5$BUGSoutput$sims.list$flux.ratio[,1], 
+#                            post.misha.5$BUGSoutput$sims.list$pool.ratio[,1], n = 64)
+# image(contour.flux.pool, col=viridis(64), xlab="Flux ratio: Fs/Fb", ylab="Pool ratio: Ps/Pb",xlim =c(0,200))
+# contour(contour.flux.pool,lwd = 1.5, add = TRUE, labcex = 1)
+
+#plotting some parameters
+plot(density(post.misha.fdnbh$BUGSoutput$sims.list$Ivo.rate))
+map_estimate(post.misha.fdnbh$BUGSoutput$sims.list$Pb) #0.007 mmol
+plot(density(post.misha.fdnbh$BUGSoutput$sims.list$Pb))
+map_estimate(post.misha.fdnbh$BUGSoutput$sims.list$Ps) #0.66 mmol
+map_estimate(post.misha.fdnbh$BUGSoutput$sims.list$Fin) #0.02 mmol/day
+plot(density(post.misha.fdnbh$BUGSoutput$sims.list$Fin))
+map_estimate(post.misha.fdnbh$BUGSoutput$sims.list$Fb) #0.007 mmol/day
+plot(density(post.misha.fdnbh$BUGSoutput$sims.list$Fb))
+
+plot(density(post.misha.fdnbh$BUGSoutput$sims.list$Ps), type = "l", lwd = 2, xlim = c(0, 12),
+     ylim = c(0, 4), col = plot.col[2], xlab = "Pool size (mmol)", main = "")
+lines(density(post.misha.fdnbh$BUGSoutput$sims.list$Pb), lwd = 2, col = plot.col[6])
+legend(8, 3, c("Serum","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+
+plot(density(post.misha.fdnbh$BUGSoutput$sims.list$Fin), type = "l", lwd = 2, xlim = c(0, 0.1),
+     ylim = c(0, 80), col = plot.col[2], xlab = "Sr Flux (mmol/day)", main = "")
+lines(density(post.misha.fdnbh$BUGSoutput$sims.list$Fb), lwd = 2, col = plot.col[6])
+legend(0.06, 80, c("Intake","Bone"),lwd = c(2, 2), col = plot.col[c(2, 6)])
+
+#a/b = Fin/Fb
+#c/b = Ps/Pb
+
+#plotting modeled serum values mapped onto ivory and checking the fit of the data
+plot(0,0, xlim = c(20000,13000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+
+MCMC.dist.plot(post.misha.fdnbh$BUGSoutput$sims.list$Rs.m,
+               post.misha.fdnbh$BUGSoutput$sims.list$dist)
+lines(n.avg.misha.25.dist[1:200],n.avg.misha.25.sr[1:200],lwd = 2, col = "red")
+
+plot(0,0, xlim = c(20000,13000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+
+MCMC.dist.plot(post.misha.fdnbh$BUGSoutput$sims.list$Rb.m,
+               post.misha.fdnbh$BUGSoutput$sims.list$dist)
+lines(n.avg.misha.25.dist[1:200],n.avg.misha.25.sr[1:200],lwd = 2, col = "red")
+
+post.misha.fdnbh.Rs.m.89<- MCMC.CI.bound(post.misha.fdnbh$BUGSoutput$sims.list$Rs.m, 0.89)
+#extract median distance from MCMC(t) results
+med.dist.fdnbh<- MCMC.dist.median(post.misha.fdnbh$BUGSoutput$sims.list$dist)
+lines(med.dist.fdnbh, post.misha.fdnbh.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(med.dist.fdnbh, post.misha.fdnbh.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(med.dist.fdnbh, post.misha.fdnbh.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
+
+####check the Rin values####
+plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+post.misha.fdnbh.Rin.89<- MCMC.CI.bound(post.misha.fdnbh$BUGSoutput$sims.list$Rin, 0.89)
+lines(1:t, post.misha.fdnbh.Rin.89[[1]], lwd = 2, col = "ff00ffff")
+lines(1:t, post.misha.fdnbh.Rin.89[[2]], lwd = 1, lty = 2, col = "ff00ffff")
+lines(1:t, post.misha.fdnbh.Rin.89[[3]], lwd = 1, lty = 2, col = "ff00ffff")
+
+#reconstructed Rs.m history
+plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+MCMC.tl.plot(post.misha.fdnbh$BUGSoutput$sims.list$Rs.m,750)
+lines(1:750, post.misha.fdnb2.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(1:750, post.misha.fdnb2.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(1:750, post.misha.fdnb2.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")

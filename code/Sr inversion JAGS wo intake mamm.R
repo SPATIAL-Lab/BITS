@@ -111,7 +111,7 @@ model {
   c.coef ~ dunif(0.01, 1)
   b <- a * b.coef
   b.coef ~ dunif(0.01, 1)
-  a ~ dunif(0, 0.2) #based on one pool model estimates
+  a ~ dunif(0, 0.5) #based on one pool model estimates
 
   #model initial values for bone and serum
   
