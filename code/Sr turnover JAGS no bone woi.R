@@ -80,7 +80,7 @@ model {
   err.date <- 2 
   
   #suspected date of the switch
-  date <- 104
+  date <- 85
   
   #allowing some uncertainty in R0 values
   R0.mean ~ dnorm(R0, R0.pre)

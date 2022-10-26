@@ -67,13 +67,13 @@ model {
   }#can use three parameters instead
   
   #define the three parameters with uninformative priors
-  c <- b * c.coef
-  c.coef ~ dunif(0.01, 1)
+  # c <- b * c.coef
+  # c.coef ~ dunif(0.01, 1)
   b <- a * b.coef
   b.coef ~ dunif(0.01, 1)
   a ~ dunif(0.001, 1)
   
-  # c ~ dunif(0.0001, 1)
+  c ~ dunif(0.0001, 1)
   # b ~ dunif(0.001, 1)
   # a ~ dunif(0.001, 1)
 
@@ -107,7 +107,7 @@ model {
   err.date <- 2 
   
   #suspected date of the switch
-  date <- 104
+  date <- 85
 
   #allowing some uncertainty in R0 values
   R0.mean ~ dnorm(R0, R0.pre)

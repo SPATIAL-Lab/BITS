@@ -85,10 +85,10 @@ n.mea = length(dist.mea)
 #adding the model component of food and water mixture as intake#
 intake <- read.csv("data/intake.csv")
 
-Hay <- intake[which(intake$type=="H"),]
-Pellet <- intake[which(intake$type=="P"),]
-Supplement <- intake[which(intake$type=="S"),]
-Water <- intake[which(intake$type=="W"),]
+Hay <- subset(intake, intake$type=="H")
+Pellet <- subset(intake, intake$type=="P")
+Supplement <- subset(intake, intake$type=="S")
+Water <- subset(intake, intake$type=="W")
 
 #estimate mean and sd for hay Sr87/86
 Sr.hay <- enorm(Hay$X87Sr.86Sr)

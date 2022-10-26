@@ -722,7 +722,12 @@ abline(h = Re, lwd = 2, lty = 2)
 
 MCMC.dist.plot(post.misha.fdnbhr$BUGSoutput$sims.list$Rs.m,
                post.misha.fdnbhr$BUGSoutput$sims.list$dist)
+points(n.avg.misha.25.dist[index.25.anom.remv1], n.avg.misha.25.sr[index.25.anom.remv1],
+      pch=18, col = "#00b4ffff")
+points(n.avg.misha.25.dist[index.25.anom.remv2], n.avg.misha.25.sr[index.25.anom.remv2],
+       pch=18, col = "#00b4ffff")
+
 lines(n.avg.misha.25.dist[index.25.anom.remv1], n.avg.misha.25.sr[index.25.anom.remv1],
-      lwd = 2, col = "red")
+      lwd=1.5, col = "#00b4ffff")
 lines(n.avg.misha.25.dist[index.25.anom.remv2], n.avg.misha.25.sr[index.25.anom.remv2],
-      lwd = 2, col = "red")
+      lwd=1.5, col = "#00b4ffff")

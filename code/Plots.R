@@ -22,10 +22,10 @@ plot(misha.raw$dist, misha.raw$X87Sr.86Sr, col=alpha("black",0.25),pch=16,
 lines(n.avg.misha.25.dist, n.avg.misha.25.sr,col="#00b4ffff",lwd=1.5)
 points(n.avg.misha.25.dist, n.avg.misha.25.sr, col="#00b4ffff",pch=18)
 dev.off()
-#Panel b: range of measured water and 
+#Panel b: range of measured water and food values?
 intake <- read.csv("data/intake.csv")
 
-
+##### dot plot for measured food and water values######
 stripchart(X87Sr.86Sr ~ type, data = intake, ylim=c(0.705,0.714), vertical=TRUE, method = "stack", pch=19,
            main = "", xlab = "Intake Type", ylab = "Sr 87/86")
 ## Then compute the group-wise medians
@@ -33,9 +33,6 @@ int.med <- tapply(intake[,"X87Sr.86Sr"], intake[,"type"], median)
 ## Now add line segments corresponding to the group-wise medians
 loc <- 1:length(int.med)
 segments(loc-0.3, int.med, loc+0.3, int.med, col="red", lwd=3)
-
-
-boxplot(data=intake, X87Sr.86Sr ~ type)
 
 
 ########Figure 4 ##############
@@ -86,7 +83,10 @@ lines(density(post.misha.fdnbhr$BUGSoutput$sims.list$c, from = 0),lwd = 2, col =
 #second, parameter a of the 1 pool model
 lines(density(post.misha.fdnb1pr$BUGSoutput$sims.list$a),lwd = 2, col = plot.col.6[2])
 
-###MAP estimates, and 89% CI for parameters a, b, and c, report in table 1
+#try correlation between a and b (bivariate plot? or just ratio of b/a (small number), or scatter plot?)
+post.misha.fdnbhr$BUGSoutput$sims.list$b/post.misha.fdnbhr$BUGSoutput$sims.list$a
+
+###MAP estimates, and 89% CI for parameters a, b, and c, report in table 1?
 MCMC.CI.a <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$a, 0.89)
 MCMC.CI.b <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$b, 0.89)
 MCMC.CI.c <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$c, 0.89)
@@ -137,9 +137,11 @@ legend(0, 0.715, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("bl
 
 ######Figure 7###########
 #Results reconstructed input using forward model simulated ivory (serum) data
-#panel a, synthetic input data with 120 day and 60 day intermediate values
+#panel a, synthetic input data with 30 day shortest intervals
 #panel b, synthetic input data with 60 day shorter intervals
-#panel c, synthetic input data with 30 day shortest intervals
+#panel c, synthetic input data with 120 day and 60 day intermediate values, to show carry over effect
+
+
 
 
 ########Figure 8 ##############
@@ -147,13 +149,63 @@ legend(0, 0.715, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("bl
 svg(filename = "out/Fig 8 raw.svg",
     width = 8, height = 5.6, pointsize = 12)
 
-plot(Wooller.sub.raw$wooller.micron, Wooller.sub.raw$Sr_Seg01, col=alpha("black",0.25),pch=16,
-     xlim=c(500000,400000),ylim=c(0.705,0.714),main="LA-ICP-MS raw data & 25 pt average",
+plot(Wooller.sub.raw$Dist_Seg01 *10000, Wooller.sub.raw$Sr_Seg01, col=alpha("black",0.25),pch=16,
+     xlim=c(500000,425000),ylim=c(0.708,0.715),main="LA-ICP-MS raw data & 25 pt average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
 lines(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr,col="#00b4ffff",lwd=1.5)
 points(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr, col="#00b4ffff",pch=18)
 dev.off()
 
 ##panel b, reconstructed series with days in the x axis
+plot(0,0, xlim = c(1,550), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+#converting misha distance to days using rate Ivo.rate
+points((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
+       sub.mm.sim.avg.sr, pch= 18, col="#00b3ffff")
+lines((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
+      sub.mm.sim.avg.sr, lwd= 1.5, col="#00b3ffff")
+#estimated input series
+MCMC.ts.Rin.m.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "magenta")
+lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
+legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
 
 ##panel c, posterior distribution of parameters 1) BM, 2) a, 3) half-life, compared to Misha
+#BM
+plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$Body.mass.m), 
+     xlim = c(2000,9000),lwd=1.5,col="red")
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$Body.mass),
+      lwd=1.5, col="blue")
+#a
+plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m), 
+     xlim = c(0.01, 0.06),lwd=1.5,col="red")
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a),
+      lwd=1.5, col="blue")
+#half-life = ln(2)/rate
+plot(density(log(2)/post.misha.invmamm.param$BUGSoutput$sims.list$a.m), 
+     xlim = c(20, 60),lwd=1.5,col="red")
+lines(density(log(2)/post.misha.invmamm.param$BUGSoutput$sims.list$a),
+      lwd=1.5, col="blue")
+
+
+####supplementary figures######
+#######Fig S1 Position of cracks and how they have little effect on measured Sr 87/86######
+
+#######Fig S2 Log-normal goodness of fit for parameter a#######
+#check q-q plot for fit
+qqPlot(post.misha.fdnb1pr$BUGSoutput$sims.list$a[,1],distribution = "lnorm",
+       param.list=list(mean=a.param.nb1pr$parameters[1],sd=a.param.nb1pr$parameters[2]),add.line=T)
+
+#######Fig S3 results of intake model###########
+#use a different JAGS file for evaluation!
+
+#######Fig S4 sensitivity test 1 Sensitivity to excursion
+#excursion makes rate parameter smaller
+
+#######Fig S5 sensitivity test 2 Sensitivity to switch date
+#how do you determine switch date?
+
+######Fig S6: Sensitivity test 3 Sensitivity to precision terms?
+
+
+

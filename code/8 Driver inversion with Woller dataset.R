@@ -47,7 +47,7 @@ wooller.micron <- Wooller$Dist_Seg01*10000
 # 
 # plot(sub.n.avg.dist, sub.n.avg.sr, type="l", xlim=c(max(sub.n.avg.dist),min(sub.n.avg.dist)))
 
-#foward model simulating micromill results (400 micron band)
+#foward model simulating micromill results (500 micron band)
 mm.bwidth <- 500 #microns
 index.wooller.dist<- ceiling(wooller.micron/mm.bwidth) #this is about the same as averaging per 100 data points!
 
@@ -94,7 +94,7 @@ plot(3:27,wooller.rate[3:27])
 
 mean.wooller.rate*365*28 #this is close to the total length of the tusk at 1.7 meters
 
-####subseting the entire dataset (300 is too many, try 150)
+####subseting the entire dataset (150 data points)
 sub <- 851:1000
 sub.mm.sim.avg.dist <- rev(mm.sim.avg.Wooller.dist[sub])
 sub.mm.sim.avg.sr <- rev(mm.sim.avg.Wooller.sr[sub])
@@ -102,6 +102,8 @@ sub.mm.sim.sd.sr <- rev(mm.sim.sd.Wooller.sr[sub])
 
 plot(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr, type="l", 
      xlim=c(max(sub.mm.sim.avg.dist),min(sub.mm.sim.avg.dist)))
+#back to raw data, which is in the dist
+Wooller.sub.raw <- subset(Wooller, (wooller.micron> min(sub.mm.sim.avg.dist -250)) & (wooller.micron< 250 + max(sub.mm.sim.avg.dist)))
 
 ##body mass scaling is embedded in the JAGS model##
 ####scaling parameters a, b, c to body mass of the subject#####
@@ -303,3 +305,77 @@ lines(density(log(post.mamm.inv.woi$BUGSoutput$sims.list$b)), col = "red", lwd =
 plot(abc.prior.params$x,abc.prior.params$y[3,], col = "blue", lwd = 2, type="l",
      xlim = c(-10,0), xlab = "c", ylab= "density")
 lines(density(log(post.mamm.inv.woi$BUGSoutput$sims.list$c)), col = "red", lwd = 2)
+
+######inversion of Mammoth record with one pool and parameter#######
+Ivo.rate.mean <- mean.wooller.rate #microns per day
+Ivo.rate.sd <- sd.wooller.rate
+
+R.sd.mea <- sub.mm.sim.sd.sr
+dist.mea <- sub.mm.sim.avg.dist
+R.mea <- sub.mm.sim.avg.sr
+n.mea = length(sub.mm.sim.avg.sr)
+
+s.intv <- mm.bwidth
+
+max.dist.mea <- max(sub.mm.sim.avg.dist)+ 8000 #add some distance before the simulation
+
+#parameter a from Misha
+a.mean <- a.param.nb1pr$parameters[1]
+a.sd <- a.param.nb1pr$parameters[2]
+
+parameters <- c("Ivo.rate", "Rs.cal", "dist.cal.m","dist","Rin.cal","a",
+                "Rs.m","Rin.m", "a.m","Body.mass.m", "Body.mass")
+
+##Data to pass to the model
+#compared to the turnover model that is essentially the .cal part here 
+#the inversion takes the measured value of potentially a different ivory series
+dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, a.mean=a.mean, a.sd=a.sd,
+            Ivo.rate.mean = Ivo.rate.mean, Ivo.rate.sd = Ivo.rate.sd,
+            R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 550, n.mea = n.mea)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 2e3
+n.burnin = 4e2
+n.thin = floor(n.iter-n.burnin)/400
+
+#Run it
+post.misha.invmamm.param = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS 1p param mamm.R", 
+                                                      parameters.to.save = parameters, 
+                                                      data = dat, n.chains=5, n.iter = n.iter, 
+                                                      n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 12 hours
+
+save(post.misha.invmamm.param, file = "out/post.misha.invmamm.param.RData")
+
+post.misha.invmamm.param$BUGSoutput$summary
+
+load("out/post.misha.invmamm.param.RData")
+
+plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$Ivo.rate))
+
+#check prior vs posterior parameters
+plot(seq(0.015,0.045,0.0001), dlnorm(seq(0.015,0.045,0.0001),a.mean,a.sd), col = "blue", lwd = 2, type="l",
+     xlim = c(0.015,0.045), xlab = "a", ylab= "density")
+lines(density(post.misha.fdnb1pr$BUGSoutput$sims.list$a), col = "red", lwd = 2)
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a), col = "red", lwd = 2,lty=2)
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m), col = "black", lwd = 2)
+#slight deviation from prior
+
+#plotting reconstructed Rin history
+plot(0,0, xlim = c(1,550), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+#converting misha distance to days using rate Ivo.rate
+points((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
+       sub.mm.sim.avg.sr, pch= 18, col="#00b3ffff")
+lines((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
+      sub.mm.sim.avg.sr, lwd= 1.5, col="#00b3ffff")
+#estimated input series
+MCMC.ts.Rin.m.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "magenta")
+lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
+legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))

@@ -53,15 +53,4 @@ model {
   
   a ~ dnorm(a.mean, 1/a.sd^2)
     
-  ########calibration process for parameter a in misha######
-
-  #precision for average Sr measurements in bone should be much smaller
-  Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s) 
-  
-  Sr.pre.shape <- 100
-  Sr.pre.rate.s <- 5e-6
-    
-  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
-  Body.mass.mean <- 3000 # kg
-  Body.mass.sd <- 250 # kg
 }
