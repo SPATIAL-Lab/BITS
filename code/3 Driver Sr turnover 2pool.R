@@ -216,8 +216,8 @@ t1 = proc.time()
 
 set.seed(t1[3])
 n.iter = 2e3
-n.burnin = 2e2
-n.thin = floor(n.iter-n.burnin)/600
+n.burnin = 4e2
+n.thin = floor(n.iter-n.burnin)/400
 
 #Run it
 post.misha.woint3 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS wo intake model3.R", 
@@ -652,12 +652,12 @@ n.mea = length(n.avg.misha.25.sr.rmv)
 R0 <- 0.707
 
 #Re is the mean ratio of end value  
-Re <- 0.7112
-s.intv <- mean(dist.mea[1:(n.mea - 1)] - dist.mea[2:n.mea])
+Re <- 0.711
+s.intv <- 26.2
 
 Ivo.rate.mean <- 14.7 #microns per day
 Ivo.rate.sd <- 0.6
-max.dist.mea <- max(n.avg.misha.25.dist) + 300
+max.dist.mea <- max(n.avg.misha.25.dist) + 30
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","dist.index",
                 "Sr.pre", "Ps", "Fin","Pb", "Fb", "Re.mean", "switch","dist",
