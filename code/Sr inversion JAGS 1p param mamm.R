@@ -53,9 +53,19 @@ model {
   #pool ~ scale with 1 body mass
   #a, b and c are rate/pool, so it should scale with -1/4 body mass
   
-  a.m <- exp(a) * ((Body.mass.m/Body.mass)^-0.25)
+  # a.m <- exp(a) * ((Body.mass.m/Body.mass)^-0.25)
+  # 
+  # a ~ dnorm(a.mean, 1/a.sd^2)
   
-  a ~ dnorm(a.mean, 1/a.sd^2)
+  #a.m sampled from posterior distribution of a
+  # a.m <- inprod(c(0, a.post, 0), v.indx)
+  # v.indx <- c(rep(0, 1:(a.indx)), 1, rep(0, (a.indx+2):(a.leng+2)))
+
+  
+  a.m <- a.post[a.indx]* ((Body.mass.m/Body.mass)^-0.25)
+  
+  a.indx ~ dcat(rep(1, a.leng))
+  # a.indx ~ dsample(rep(1, a.leng),2)
   
   #For example, male Mammuthus primigenius is estimated to be around 7500 +- 500 kg
   #for the purpose of demonstration, here we use the same parameters as in Misha

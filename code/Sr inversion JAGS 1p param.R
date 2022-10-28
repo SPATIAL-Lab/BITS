@@ -47,10 +47,9 @@ model {
   Rin.m.pre.shp = 100
   Rin.m.pre.rate = 5e-8
   
-  ####scaling parameters a, b, c to body mass of the subject#####
-
-  a.m <- exp(a)
+  ####sample from posterior distribution of a#####
+  a.m <- a.post[a.indx]
   
-  a ~ dnorm(a.mean, 1/a.sd^2)
+  a.indx ~ dcat(rep(1, a.leng))
     
 }
