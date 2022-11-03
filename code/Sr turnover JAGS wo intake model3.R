@@ -67,15 +67,12 @@ model {
   }#can use three parameters instead
   
   #define the three parameters with uninformative priors
-  # c <- b * c.coef
-  # c.coef ~ dunif(0.01, 1)
+  #parameter constraints: a > b, because Fin > Fb; b ~ c because Pb ~ Ps ratio between 1:2.5 and 10:1
+  c <- b * c.coef
+  c.coef ~ dunif(0.1, 2.5) #sensitivity?
   b <- a * b.coef
-  b.coef ~ dunif(0.01, 1)
-  a ~ dunif(0.001, 1)
-  
-  c ~ dunif(0.0001, 1)
-  # b ~ dunif(0.001, 1)
-  # a ~ dunif(0.001, 1)
+  b.coef ~ dunif(0.0001, 1)
+  a ~ dunif(0.0001, 1)
 
   #model initial values for bone and serum
   #assume that bone value is similar to serum, but use a different error term

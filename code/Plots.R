@@ -1,6 +1,8 @@
 install.packages("Cairo")
 library(Cairo)
+library(scales)
 library(viridisLite)
+library(vioplot)
 
 plot.col.6 <- inferno(6)
 ########Figure 2 ##############
@@ -10,13 +12,19 @@ plot(n.avg.misha.25.dist, n.avg.misha.25.sr,col="#00b4ffff",type = "l",lwd=2,
      xlim=c(20000,8000),ylim=c(0.706,0.712),main="LA-ICP-MS 25 pt average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")
 
+#######plotting 50 pt average#######
+#540 * 360
+plot(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",type = "l",lwd=2,
+     xlim=c(20000,8000),ylim=c(0.706,0.712),main="LA-ICP-MS 50 pt average",
+     xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")
+
 ########Figure 3 ##############
 #######plotting 25 pt average#######
 #Panel a: 800 * 560
 
 svg(filename = "out/Fig 3 raw.svg",
          width = 8, height = 5.6, pointsize = 12)
-plot(misha.raw$dist, misha.raw$X87Sr.86Sr, col=alpha("black",0.25),pch=16,
+plot(misha.raw$dist, misha.raw$X87Sr.86Sr, col=alpha("black",0.2),pch=16,
      xlim=c(20000,8000),ylim=c(0.705,0.714),main="LA-ICP-MS raw data & 25 pt average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
 lines(n.avg.misha.25.dist, n.avg.misha.25.sr,col="#00b4ffff",lwd=1.5)
@@ -25,20 +33,43 @@ dev.off()
 #Panel b: range of measured water and food values?
 intake <- read.csv("data/intake.csv")
 
+#######plotting 50 pt average#######
+#Panel a: 800 * 560
+
+svg(filename = "out/Fig 3 raw50.svg",
+    width = 8, height = 5.6, pointsize = 12)
+plot(misha.raw$dist, misha.raw$X87Sr.86Sr, col=alpha("black",0.2),pch=16,
+     xlim=c(20000,8000),ylim=c(0.705,0.714),main="LA-ICP-MS raw data & 50 pt average",
+     xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
+lines(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",lwd=1.5)
+points(n.avg.misha.50.dist, n.avg.misha.50.sr, col="#00b4ffff",pch=18)
+dev.off()
+#Panel b: range of measured water and food values?
+intake <- read.csv("data/intake.csv")
+
 ##### dot plot for measured food and water values######
-stripchart(X87Sr.86Sr ~ type, data = intake, ylim=c(0.705,0.714), vertical=TRUE, method = "stack", pch=19,
-           main = "", xlab = "Intake Type", ylab = "Sr 87/86")
+#536h * 330w
+par(mar = c(5.1, 4.1, 4.1, 4.1))
+stripchart(X87Sr.86Sr ~ type, data = intake, ylim=c(0.705,0.714), vertical=TRUE, method = "jitter", pch=19,
+           cex=1, col=plot.col.6[4],main = "", xlab = "Intake Type", ylab = "Sr 87/86")
 ## Then compute the group-wise medians
 int.med <- tapply(intake[,"X87Sr.86Sr"], intake[,"type"], median)
 ## Now add line segments corresponding to the group-wise medians
 loc <- 1:length(int.med)
-segments(loc-0.3, int.med, loc+0.3, int.med, col="red", lwd=3)
-
-
+segments(loc-0.25, int.med, loc+0.25, int.med, col=plot.col.6[4], lwd=3)
+#concentrations in bar plots?
+intake.naomit<-na.omit(intake) #for concentration values
+stripchart(Sr_conc ~ type, data = intake.naomit, ylim=c(0,120), vertical=TRUE, method = "jitter", pch=18,
+           cex=1.2,col=plot.col.6[2],main = "", xlab = "", ylab = "",axes=F)
+int.med <- tapply(intake.naomit[,"Sr_conc"], intake.naomit[,"type"], median)
+## Now add line segments corresponding to the group-wise medians
+loc <- 1:length(int.med)
+segments(loc-0.25, int.med, loc+0.25, int.med, col=plot.col.6[2], lwd=3)
+axis(4,at=c(0, 20, 40, 60) )
 ########Figure 4 ##############
 #calibration curves of 2 pool vs 1 pool model
 #posterior distribution of parameters 
-#Two pool first
+#Two pool first 25 pt average
 plot(0,0, xlim = c(20000,13000), ylim = c(0.7066, 0.712), xlab = "distance", ylab ="Sr 87/86",
      main="Two-pool model")
 abline(h = R0, lwd = 2, lty = 2)
@@ -56,7 +87,7 @@ lines(n.avg.misha.25.dist[index.25.anom.remv1], n.avg.misha.25.sr[index.25.anom.
 lines(n.avg.misha.25.dist[index.25.anom.remv2], n.avg.misha.25.sr[index.25.anom.remv2],
       lwd=1.5, col = "#00b4ffff")
 
-# then one pool
+# then one pool, also use 25 pt average
 plot(0,0, xlim = c(20000,13000), ylim = c(0.7066, 0.712), xlab = "distance", ylab ="Sr 87/86",
      main="One-pool model")
 abline(h = R0, lwd = 2, lty = 2)
@@ -74,65 +105,122 @@ lines(n.avg.misha.25.dist[index.25.anom.remv1], n.avg.misha.25.sr[index.25.anom.
 lines(n.avg.misha.25.dist[index.25.anom.remv2], n.avg.misha.25.sr[index.25.anom.remv2],
       lwd=1.5, col = "#00b4ffff")
 
-#check parameters a, b, and c, also use 25 pt with excursion removed to estimate these 3 params.
-#first 3 params of the 2 pool model
-plot(density(post.misha.fdnbhr$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.08),ylim= c(0,120),
-     lwd = 2, col = plot.col.6[3])
-lines(density(post.misha.fdnbhr$BUGSoutput$sims.list$b, from = 0),lwd = 2, col = plot.col.6[4])
-lines(density(post.misha.fdnbhr$BUGSoutput$sims.list$c, from = 0),lwd = 2, col = plot.col.6[5])
-#second, parameter a of the 1 pool model
-lines(density(post.misha.fdnb1pr$BUGSoutput$sims.list$a),lwd = 2, col = plot.col.6[2])
+###########50 pt average curve
+#calibration curves of 2 pool vs 1 pool model
+#posterior distribution of parameters 
+#Two pool first 50 pt average
+plot(0,0, xlim = c(20000,8000), ylim = c(0.7066, 0.712), xlab = "distance", ylab ="Sr 87/86",
+     main="Two-pool model")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
 
-#try correlation between a and b (bivariate plot? or just ratio of b/a (small number), or scatter plot?)
-post.misha.fdnbhr$BUGSoutput$sims.list$b/post.misha.fdnbhr$BUGSoutput$sims.list$a
+MCMC.dist.plot(post.misha.pc2p$BUGSoutput$sims.list$Rs.m,
+               post.misha.pc2p$BUGSoutput$sims.list$dist)
+points(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
+       pch=18, col = "#00b4ffff")
+points(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
+       pch=18, col = "#00b4ffff")
 
-###MAP estimates, and 89% CI for parameters a, b, and c, report in table 1?
-MCMC.CI.a <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$a, 0.89)
-MCMC.CI.b <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$b, 0.89)
-MCMC.CI.c <- MCMC.CI.bound(post.misha.woint3$BUGSoutput$sims.list$c, 0.89)
+lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
+      lwd=1.5, col = "#00b4ffff")
+lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
+      lwd=1.5, col = "#00b4ffff")
 
-########Figure 5 ##############
-######panel a, plotting calibration curve, one pool model#####
-plot(0,0, xlim = c(20000,13000), ylim = c(0.706, 0.712), xlab = "distance", ylab ="Sr 87/86")
+# then one pool, also use 50 pt average, run line 600
+plot(0,0, xlim = c(20000,8000), ylim = c(0.7066, 0.712), xlab = "distance", ylab ="Sr 87/86",
+     main="One-pool model")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 
 MCMC.dist.plot(post.misha.fdnb1pr$BUGSoutput$sims.list$Rs.m,
                post.misha.fdnb1pr$BUGSoutput$sims.list$dist)
-lines(n.avg.misha.25.dist[index.25.anom.remv1], n.avg.misha.25.sr[index.25.anom.remv1],
+points(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
+       pch=18, col = "#00b4ffff")
+points(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
+       pch=18, col = "#00b4ffff")
+
+lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
+      lwd=1.5, col = "#00b4ffff")
+lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
+      lwd=1.5, col = "#00b4ffff")
+
+#Panel b: compare parameters a, b, and c, also use 25 pt with excursion removed to estimate these 3 params.
+#first 3 params of the 2 pool model
+plot(density(post.misha.pc2p$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.06),ylim= c(0,160),
+     lwd = 2, col = plot.col.6[3])
+lines(density(post.misha.pc2p$BUGSoutput$sims.list$b, from = 0),lwd = 2, col = plot.col.6[4])
+lines(density(post.misha.pc2p$BUGSoutput$sims.list$c, from = 0),lwd = 2, col = plot.col.6[5])
+#perhaps use pool size, instead
+#second, parameter a of the 1 pool model
+lines(density(post.misha.fdnb1pr$BUGSoutput$sims.list$a),lwd = 2, col = plot.col.6[2])
+legend(0.04, 160, c("a, Two-pool","b, Two-pool", "c, Two-pool", "a, One-pool"),
+       lwd = rep(2, 4), col=c(plot.col.6[3:5],plot.col.6[2]))
+
+##panel c, prior and posterior for Re between the models
+par(mfrow=c(1,2))
+plot(density(post.misha.pc2p$BUGSoutput$sims.list$Re.mean),col="red",xlim=c(0.7065,0.7075))#posterior
+lines(seq(0.706,0.708,0.00001),dnorm(seq(0.706,0.708,0.00001),mean = R0, sd= 1/sqrt(100/2e-6)))#prior
+
+plot(density(post.misha.fdnb1pr$BUGSoutput$sims.list$Re.mean),col="red",xlim=c(0.7095,0.7125))#posterior
+lines(seq(0.706,0.708,0.00001),dnorm(seq(0.706,0.708,0.00001),mean = R0, sd= 1/sqrt(100/2e-6)))#prior
+
+########Figure 5 ##############
+#panel a: pool ratio vs flux ratio
+plot(density(post.misha.pc2p$BUGSoutput$sims.list$pool.ratio[,1]),col=plot.col.6[2],xlim=c(0,15))#posterior
+lines(density(post.misha.pc2p$BUGSoutput$sims.list$flux.ratio[,1],to=50),col=plot.col.6[4])
+
+svg(filename = "out/Fig 5 bivar.svg",
+    width = 6, height = 6, pointsize = 12)
+par(mar = c(5.1, 5.1, 5.1, 5.1))
+# make a contour map of flux ratio and pool ratio
+contour.flux.pool <- kde2d(post.misha.pc2p$BUGSoutput$sims.list$flux.ratio[,1],
+                           post.misha.pc2p$BUGSoutput$sims.list$pool.ratio[,1], n = 100,
+                           lims = c(c(0,8), c(0,1.6)))
+image(contour.flux.pool, col=viridis(100), xlab="Flux ratio: Fs/Fb", ylab="Pool ratio: Ps/Pb")
+contour(contour.flux.pool,lwd = 1, add = TRUE, labcex = 0.8)
+dev.off()
+
+
+######panel a, plotting calibration curve, one pool model#####
+plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+
+MCMC.dist.plot(post.misha.pc2p$BUGSoutput$sims.list$Rs.m,
+               post.misha.pc2p$BUGSoutput$sims.list$dist)
+
+points(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
+       pch=18, col = "#00b4ffff")
+points(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
+       pch=18, col = "#00b4ffff")
+lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
       lwd = 2, col = "#00b4ffff")
-lines(n.avg.misha.25.dist[index.25.anom.remv2], n.avg.misha.25.sr[index.25.anom.remv2],
+lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
       lwd = 2, col = "#00b4ffff")
 
 ##panel b, plot rate estimate and half life
 plot(density(post.misha.fdnb1p50$BUGSoutput$sims.list$a))
 plot(density(post.misha.fdnb1p50$BUGSoutput$sims.list$h.l))
 
-##panel c, prior and posterior for R0 and Re
-plot(density(post.misha.fdnb1p$BUGSoutput$sims.list$R0.mean),col="red",xlim=c(0.7065,0.7075))#posterior
-lines(seq(0.706,0.708,0.00001),dnorm(seq(0.706,0.708,0.00001),mean = R0, sd= 1/sqrt(100/2e-6)))#prior
-
-plot(density(post.misha.fdnb1p$BUGSoutput$sims.list$Re.mean),col="red",xlim=c(0.7095,0.7125))#posterior
-lines(seq(0.7095,0.7125,0.00001),dnorm(seq(0.7095,0.7125,0.00001),mean = Re, sd= 1/sqrt(100/2e-5)))#prior
 
 ######Figure 6###########
 #Results reconstructed input using Misha LA-ICP-MS series (with excursion, 25 pt?)
 #days in x-axis, posterior of input (in calibration) vs reconstructed input (with excursion)
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,400), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,750), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
 #converting misha distance to days using rate Ivo.rate
 points((max(max.dist.mea)-n.avg.misha.25.dist.rmv)/14.7,n.avg.misha.25.sr.rmv, pch= 18, col="#00b3ffff")
 #Use posterior from the calibration run as reference, but use estimates, not posterior
-post.misha.fdnb1pr.Rin.89<- MCMC.CI.bound(post.misha.fdnb1pr$BUGSoutput$sims.list$Rin, 0.89)
-lines(1:400,post.misha.fdnb1pr.Rin.89[[1]],lwd = 2, col = "black")
-lines(1:400,post.misha.fdnb1pr.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
-lines(1:400,post.misha.fdnb1pr.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
+post.misha.pc2p.Rin.89<- MCMC.CI.bound(post.misha.fdnb1pr$BUGSoutput$sims.list$Rin, 0.89)
+lines(1:750,post.misha.fdnb1pr.Rin.89[[1]],lwd = 2, col = "black")
+lines(1:750,post.misha.fdnb1pr.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
+lines(1:750,post.misha.fdnb1pr.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
 
 #estimated input series
 MCMC.ts.Rin.m.inv1phr.param.89<- MCMC.CI.bound(post.misha.inv1phr.param$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:400,MCMC.ts.Rin.m.inv1phr.param.89[[1]],lwd = 2, col = "magenta")
-lines(1:400,MCMC.ts.Rin.m.inv1phr.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:400,MCMC.ts.Rin.m.inv1phr.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
+lines(1:750,MCMC.ts.Rin.m.inv1phr.param.89[[1]],lwd = 2, col = "magenta")
+lines(1:750,MCMC.ts.Rin.m.inv1phr.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:750,MCMC.ts.Rin.m.inv1phr.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(0, 0.715, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("black","magenta"))
 
 ######Figure 7###########
@@ -149,25 +237,25 @@ legend(0, 0.715, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("bl
 svg(filename = "out/Fig 8 raw.svg",
     width = 8, height = 5.6, pointsize = 12)
 
-plot(Wooller.sub.raw$Dist_Seg01 *10000, Wooller.sub.raw$Sr_Seg01, col=alpha("black",0.25),pch=16,
-     xlim=c(500000,425000),ylim=c(0.708,0.715),main="LA-ICP-MS raw data & 25 pt average",
+plot(Wooller.sub.raw$Dist_Seg01 *10000, Wooller.sub.raw$Sr_Seg01, col=alpha("black",0.2),pch=16,
+     xlim=c(500000,420000),ylim=c(0.706,0.715),main="LA-ICP-MS raw data & 25 pt average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
 lines(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr,col="#00b4ffff",lwd=1.5)
 points(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr, col="#00b4ffff",pch=18)
 dev.off()
 
 ##panel b, reconstructed series with days in the x axis
-plot(0,0, xlim = c(1,550), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,500), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
 #converting misha distance to days using rate Ivo.rate
-points((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
+points((max(sub.mm.sim.avg.dist)+ 300-sub.mm.sim.avg.dist)/mean.wooller.rate,
        sub.mm.sim.avg.sr, pch= 18, col="#00b3ffff")
-lines((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
+lines((max(sub.mm.sim.avg.dist)+ 300-sub.mm.sim.avg.dist)/mean.wooller.rate,
       sub.mm.sim.avg.sr, lwd= 1.5, col="#00b3ffff")
 #estimated input series
-MCMC.ts.Rin.m.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "magenta")
-lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:400,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
+MCMC.ts.Rin.m.misha.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:500,MCMC.ts.Rin.m.misha.invmamm.param.89[[1]],lwd = 2, col = "magenta")
+lines(1:500,MCMC.ts.Rin.m.misha.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:500,MCMC.ts.Rin.m.misha.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
 
 ##panel c, posterior distribution of parameters 1) BM, 2) a, 3) half-life, compared to Misha
@@ -178,8 +266,8 @@ lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$Body.mass),
       lwd=1.5, col="blue")
 #a
 plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m), 
-     xlim = c(0.01, 0.06),lwd=1.5,col="red")
-lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a),
+     xlim = c(0, 0.04),lwd=1.5,col="red")
+lines(density(exp(post.misha.invmamm.param$BUGSoutput$sims.list$a)),
       lwd=1.5, col="blue")
 #half-life = ln(2)/rate
 plot(density(log(2)/post.misha.invmamm.param$BUGSoutput$sims.list$a.m), 
