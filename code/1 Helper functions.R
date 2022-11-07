@@ -31,7 +31,7 @@ MCMC.dist.plot <- function(MCMC.res, MCMC.dist){#t is the number of days in the 
   n <- dim.MCMC[1] #number of iterations
   
   for(i in 1:n){
-    lines(MCMC.dist[i,], MCMC.res[i,], col = alpha("black", 0.02))
+    lines(MCMC.dist[i,], MCMC.res[i,], col = alpha("black", 0.06))
   }
   
 }

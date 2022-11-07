@@ -547,8 +547,8 @@ dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 2e3
-n.burnin = 4e2
+n.iter = 4e3
+n.burnin = 8e2
 n.thin = floor(n.iter-n.burnin)/400
 
 #Run it
@@ -577,10 +577,10 @@ lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m), col = "black",
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,500), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
 #converting misha distance to days using rate Ivo.rate
-points((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
-       sub.mm.sim.avg.sr, pch= 18, col="#00b3ffff")
-lines((max(max.dist.mea)-sub.mm.sim.avg.dist)/mean.wooller.rate,
-      sub.mm.sim.avg.sr, lwd= 1.5, col="#00b3ffff")
+points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
+       sub.mm.sim.avg.sr, pch= 18, col="#00b4ffff")
+lines((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
+      sub.mm.sim.avg.sr, lwd= 1.5, col="#00b4ffff")
 #estimated input series
 MCMC.ts.Rin.m.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
 lines(1:500,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "magenta")

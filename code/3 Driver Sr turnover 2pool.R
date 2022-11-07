@@ -397,7 +397,7 @@ Re <- 0.711
 s.intv <- 52.4
 
 Ivo.rate.mean <- 14.7 #microns per day
-Ivo.rate.sd <- 0.6
+Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","dist.index",
@@ -496,19 +496,19 @@ lines(n.avg.misha.50.dist.rmv,n.avg.misha.50.sr.rmv,lwd = 2, col = "#00b4ffff")
 plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-post.misha.fdnb2.Rin.89<- MCMC.CI.bound(post.misha.fdnb2$BUGSoutput$sims.list$Rin, 0.89)
-lines(1:t, post.misha.fdnb2.Rin.89[[1]], lwd = 2, col = "ff00ffff")
-lines(1:t, post.misha.fdnb2.Rin.89[[2]], lwd = 1, lty = 2, col = "ff00ffff")
-lines(1:t, post.misha.fdnb2.Rin.89[[3]], lwd = 1, lty = 2, col = "ff00ffff")
+post.misha.pc2p.Rin.89<- MCMC.CI.bound(post.misha.pc2p$BUGSoutput$sims.list$Rin, 0.89)
+lines(1:t, post.misha.pc2p.Rin.89[[1]], lwd = 2, col = "ff00ffff")
+lines(1:t, post.misha.pc2p.Rin.89[[2]], lwd = 1, lty = 2, col = "ff00ffff")
+lines(1:t, post.misha.pc2p.Rin.89[[3]], lwd = 1, lty = 2, col = "ff00ffff")
 
 #reconstructed Rs.m history
 plot(0,0, xlim = c(0,t), ylim = c(0.706, 0.713), xlab = "days", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-MCMC.tl.plot(post.misha.fdnb2$BUGSoutput$sims.list$Rs.m,750)
-lines(1:750, post.misha.fdnb2.Rs.m.89[[1]], lwd = 1, col = "cyan")
-lines(1:750, post.misha.fdnb2.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
-lines(1:750, post.misha.fdnb2.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
+MCMC.tl.plot(post.misha.pc2p$BUGSoutput$sims.list$Rs.m,750)
+lines(1:750, post.misha.pc2p.Rs.m.89[[1]], lwd = 1, col = "cyan")
+lines(1:750, post.misha.pc2p.Rs.m.89[[2]], lwd = 1, lty = 2, col = "cyan")
+lines(1:750, post.misha.pc2p.Rs.m.89[[3]], lwd = 1, lty = 2, col = "cyan")
 
 ##############################no prior constrain on bone pool size#############
 ####also use 25 point average plus cut off at 14000#
