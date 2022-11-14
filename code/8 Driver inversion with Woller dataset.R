@@ -535,8 +535,8 @@ b.post <- post.misha.pc2p$BUGSoutput$sims.list$b[,1]
 c.post <- post.misha.pc2p$BUGSoutput$sims.list$c[,1]
 post.leng <- length(a.post)
 
-parameters <- c("Ivo.rate", "Rs.cal", "dist.cal.m","dist","Rin.cal",
-                "Rs.m","Rin.m", "a.m","Body.mass.m", "Body.mass")
+parameters <- c("Ivo.rate","dist", "Rs.m","Rin.m", "Rb.m","a","b","c",
+               "a.m","b.m","c.m","Body.mass.m", "Body.mass")
 
 dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng, 
             a.post=a.post, b.post=b.post, c.post=c.post,
@@ -547,8 +547,8 @@ dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 4e3
-n.burnin = 8e2
+n.iter = 5e3
+n.burnin = 1e3
 n.thin = floor(n.iter-n.burnin)/400
 
 #Run it
@@ -573,6 +573,14 @@ plot(density(post.misha.pc2p$BUGSoutput$sims.list$a[,1]), col = "red", lwd = 2, 
      xlim = c(0.01,0.1), xlab = "a", ylab= "density")
 lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m), col = "black", lwd = 2)
 #slight deviation from prior
+
+plot(density(post.misha.pc2p$BUGSoutput$sims.list$c[,1]), col = "red", lwd = 2, type="l",
+     xlim = c(0,0.1), xlab = "c", ylab= "density")
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$c.m), col = "black", lwd = 2)
+#slight deviation from prior
+
+subset(post.misha.invmamm.param$BUGSoutput$summary,
+       rownames(post.misha.invmamm.param$BUGSoutput$summary)=="a.m")
 
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,500), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
