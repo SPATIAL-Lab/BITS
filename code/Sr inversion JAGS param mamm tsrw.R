@@ -44,20 +44,23 @@ model {
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i]
     
-    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3) #Brownian motion, cauchy error term
+    # Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3) #Brownian motion, cauchy error term
+    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre) T(-6e-3, 6e-3)
 
   }
+  Rin.m.cps.ac ~ dunif(0, 0.8)
   # initiate the series with an reasonable prior
   Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) #allowed some variation
   
   Rin.int ~ dnorm(0.710, 1/0.01^2)  #an uninformative initial value
   
   #initial change per step, with the maximum difference crossing a discrete Sr isotope boundary
-  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3)
+  # Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3)
+  Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 1e-7
+  Rin.m.pre.rate = 5e-7
   
   ####scaling parameters a, b, c to body mass of the subject#####
   a.m <- a * ((Body.mass.m/Body.mass)^exp.ab)

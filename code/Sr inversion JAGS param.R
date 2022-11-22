@@ -57,7 +57,7 @@ model {
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 5e-8
+  Rin.m.pre.rate = 1e-7
   
   #sampling from parameter posteriors from the calibration
   a.m <- a.post[indx]
