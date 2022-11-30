@@ -1,24 +1,4 @@
 model {
-  Fb <- b * Ps 
-  Fin <- a * Ps
-  Pb <- Ps * b / c
-  #pool size serum (mmol)
-  Ps <- S.vol * S.Ca * S.Sr.Ca.ratio # mmol ~1 mmol
-
-  #Sr/Ca ratio of serum is assumed to be the same as measured ivory
-  S.Sr.Ca.ratio ~ dnorm(S.Sr.Ca.mean, 1/S.Sr.Ca.sd^2)
-
-  S.Sr.Ca.mean <- 0.0011174 # mmol/mmol
-  S.Sr.Ca.sd <- 0.000108103 # mmol/mmol
-
-  #Serum Ca concentration
-  S.Ca ~ dnorm(S.Ca.mean, 1/S.Ca.sd^2)
-
-  S.Ca.mean <- 2.79 # mmol/L
-  S.Ca.sd <- 0.11 # mmol/L
-
-  #assuming serum volume is ~ 7% volume (L) of body mass (kg)
-  S.vol <- 0.07 * Body.mass # Liter
 
   flux.ratio <- a/b
   pool.ratio <- c/b
@@ -28,14 +8,14 @@ model {
     #dist[1:t] is a descending sequence, no negative value is allowed
 
     #Evaluating the mean of neighbouring data points
-    #this can accommodate variable growth rate of tusk/enamel
+    #this can accommodate variable growth rate of tusk
     #the following "<" logical operations create vectors with 1s and 0s,
     #dist.mea is used as reference; if dist falls within the bracket, then 1s will be recorded
     #then inprod()/sum() is used to calculate the mean of all data points within the bracket
 
-    Rs.eva[i] <- inprod(Rs.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
+    R1.eva[i] <- inprod(R1.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
-    R.mea[i] ~ dnorm(Rs.eva[i], 1/R.sd.mea[i]^2)
+    R.mea[i] ~ dnorm(R1.eva[i], 1/R.sd.mea[i]^2)
   }
   
   #Data model priors for ivory growth
@@ -53,21 +33,21 @@ model {
     #serum ratio
     #derivative of serum ratios is linearly correlated with the difference between serum and the two sources
     #the tow sources are bone and intake
-    #Rs.m[i] <- Rs.m[i-1] + Fb/Ps (Rb.m[i-1] - Rs.m[i-1]) + Fin/Ps (Rin[i-1] - Rs.m[i-1])
-    Rs.m[i] <- Rs.m[i - 1] + b * (Rb.m[i - 1] - Rs.m[i - 1]) + a * (Rin[i - 1] - Rs.m[i - 1])
-    #a/b = Fin/Fb
-    #c/b = Ps/Pb
+    #R1.m[i] <- R1.m[i-1] + F2/P1 (R2.m[i-1] - R1.m[i-1]) + Fin/P1 (Rin[i-1] - R1.m[i-1])
+    R1.m[i] <- R1.m[i - 1] + b * (R2.m[i - 1] - R1.m[i - 1]) + a * (Rin[i - 1] - R1.m[i - 1])
+    #a/b = Fin/F2
+    #c/b = P1/P2
     #also a > b
     #b < c
     #bone ratios
     #derivative of bone ratios is linearly correlated with the difference between serum and bone
-    #Rb.m[i] <- Rb.m[i-1] + Fb/Pb (Rs.m[i-1] - Rb.m[i-1])
-    Rb.m[i] <- Rb.m[i - 1] + c * (Rs.m[i - 1] - Rb.m[i - 1])
+    #R1.m[i] <- R1.m[i-1] + F2/P2 (R1.m[i-1] - R2.m[i-1])
+    R2.m[i] <- R2.m[i - 1] + c * (R1.m[i - 1] - R2.m[i - 1])
     
   }#can use three parameters instead
   
   #define the three parameters with uninformative priors
-  #parameter constraints: a > b, because Fin > Fb; b ~ c because Pb ~ Ps ratio between 1:2.5 and 10:1
+  #parameter constraints: a > b, because Fin > F2; b ~ c because P2 ~ P1 ratio between 1:2.5 and 10:1
   c <- b * c.coef
   c.coef ~ dunif(0.1, 2.5) #sensitivity?
   b <- a * b.coef
@@ -76,8 +56,8 @@ model {
 
   #model initial values for bone and serum
   #assume that bone value is similar to serum, but use a different error term
-  Rb.m[1] ~ dnorm(Rs.m[1], Sr.pre.b) 
-  Rs.m[1] ~ dnorm(R0.mean, R0.pre)
+  R2.m[1] ~ dnorm(R1.m[1], Sr.pre.2) 
+  R1.m[1] ~ dnorm(R0.mean, R0.pre)
   
   #generate time series of input values
   #Rin is the input ratio, which is modeled with a switch point in the time series
@@ -119,13 +99,13 @@ model {
 
   
   #precision for average Sr measurements in bone should be much smaller
-  Sr.pre.b ~ dgamma(Sr.pre.shape, Sr.pre.rate.b)  
-  Sr.pre.rate.b <- 5e-7
+  Sr.pre.2 ~ dgamma(Sr.pre.shape, Sr.pre.rate.2)  
+  Sr.pre.rate.2 <- 5e-7
   
-  Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s) 
+  Sr.pre.1 ~ dgamma(Sr.pre.shape, Sr.pre.rate.1) 
   
   Sr.pre.shape <- 100
-  Sr.pre.rate.s <- 5e-6
+  Sr.pre.rate.1 <- 5e-6
   
 
   Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)

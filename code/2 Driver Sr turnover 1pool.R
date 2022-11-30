@@ -101,8 +101,8 @@ Ivo.rate.mean <- 14.7 #microns per day
 Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.25.dist) + 30
 #parameters to save
-parameters <- c("a", "Ivo.rate", "Rs.m","Rin","dist","h.l",
-                "Sr.pre", "Ps", "Fin", "Re.mean", "R0.mean", "switch")
+parameters <- c("a", "Ivo.rate", "r1.m","Rin","dist","h.l",
+                "Sr.pre", "Re.mean", "R0.mean", "switch")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
            R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
@@ -130,98 +130,18 @@ post.misha.1p50r$BUGSoutput$summary
 save(post.misha.1p50r, file = "out/post.misha.1p50r.RData")
 load("out/post.misha.1p50r.RData")
 
-traplot(post.misha.1p50r,parms = c("flux.ratio", "pool.ratio"))
-traplot(post.misha.1p50r,parms = c("a", "b","c"))
-
 summary(post.misha.1p50r$BUGSoutput$sims.list$switch)
 summary(post.misha.1p50r$BUGSoutput$sims.list$Ivo.rate)
 
 #plotting some parameters
 plot(density(post.misha.1p50r$BUGSoutput$sims.list$Ivo.rate))
-map_estimate(post.misha.1p50r$BUGSoutput$sims.list$Ps) #0.66 mmol
-map_estimate(post.misha.1p50r$BUGSoutput$sims.list$Fin) #0.02 mmol/day
-map_estimate(post.misha.1p50r$BUGSoutput$sims.list$h.l) #36.7 day
-hdi(post.misha.1p50r$BUGSoutput$sims.list$Fin, 0.89)[[2]]
-hdi(post.misha.1p50r$BUGSoutput$sims.list$Fin, 0.89)[[3]]
-plot(density(post.misha.1p50r$BUGSoutput$sims.list$Fin))
-plot(density(post.misha.1p50r$BUGSoutput$sims.list$h.l))
+map_estimate(post.misha.1p50r$BUGSoutput$sims.list$h.l)
 
 #plotting modeled serum values mapped onto ivory and checking the fit of the data
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 
-MCMC.dist.plot(post.misha.1p50r$BUGSoutput$sims.list$Rs.m,
+MCMC.dist.plot(post.misha.1p50r$BUGSoutput$sims.list$r1.m,
                post.misha.1p50r$BUGSoutput$sims.list$dist)
-lines(n.avg.misha.50.dist,n.avg.misha.50.sr,lwd = 2, col = "red")
-
-#########1 pool turnover model with 50 pt average dataset###################
-###prep data###
-R.sd.mea <- n.sd.misha.50.sr
-dist.mea <- n.avg.misha.50.dist
-R.mea <- n.avg.misha.50.sr
-n.mea = length(n.avg.misha.50.sr)
-
-R0 <- 0.707
-
-#Re is the mean ratio of end value  
-Re <- 0.711
-s.intv <- 52.4
-
-Ivo.rate.mean <- 14.7 #microns per day
-Ivo.rate.sd <- 0.8
-max.dist.mea <- max(n.avg.misha.25.dist) + 30
-#parameters to save
-parameters <- c("a", "Ivo.rate", "Rs.m","Rin","dist","h.l",
-                "Sr.pre", "Ps", "Fin", "Re.mean", "R0.mean", "switch")
-##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
-           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
-           Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
-
-#Start time
-t1 = proc.time()
-
-set.seed(t1[3])
-n.iter = 2e3
-n.burnin = 4e2
-n.thin = floor(n.iter-n.burnin)/400
-
-#Run it
-post.misha.2p50 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone woi.R", 
-                                             parameters.to.save = parameters, 
-                                             data = dat, n.chains=5, n.iter = n.iter, 
-                                             n.burnin = n.burnin, n.thin = n.thin))
-
-#Time taken
-proc.time() - t1 #~ 3.5 hours
-
-post.misha.2p50$BUGSoutput$summary
-
-save(post.misha.2p50, file = "out/post.misha.2p50.RData")
-load("out/post.misha.2p50.RData")
-
-traplot(post.misha.2p50,parms = c("flux.ratio", "pool.ratio"))
-traplot(post.misha.2p50,parms = c("a"))
-
-summary(post.misha.2p50$BUGSoutput$sims.list$switch)
-summary(post.misha.2p50$BUGSoutput$sims.list$Ivo.rate)
-
-#plotting some parameters
-plot(density(post.misha.2p50$BUGSoutput$sims.list$Ivo.rate))
-map_estimate(post.misha.2p50$BUGSoutput$sims.list$Ps) #0.66 mmol
-map_estimate(post.misha.2p50$BUGSoutput$sims.list$Fin) #0.02 mmol/day
-map_estimate(post.misha.2p50$BUGSoutput$sims.list$h.l) #36.7 day
-hdi(post.misha.2p50$BUGSoutput$sims.list$Fin, 0.89)[[2]]
-hdi(post.misha.2p50$BUGSoutput$sims.list$Fin, 0.89)[[3]]
-plot(density(post.misha.2p50$BUGSoutput$sims.list$Fin))
-plot(density(post.misha.2p50$BUGSoutput$sims.list$h.l))
-
-#plotting modeled serum values mapped onto ivory and checking the fit of the data
-plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
-
-MCMC.dist.plot(post.misha.2p50$BUGSoutput$sims.list$Rs.m,
-               post.misha.2p50$BUGSoutput$sims.list$dist)
 lines(n.avg.misha.50.dist,n.avg.misha.50.sr,lwd = 2, col = "red")

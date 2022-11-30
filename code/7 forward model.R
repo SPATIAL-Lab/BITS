@@ -167,7 +167,7 @@ syn.low <- 0.707
 syn.input.150 <- c(rep(syn.mid,30), rep(syn.high,150),rep(syn.mid,30),rep(syn.low,150)  )
 syn.input.150 <- rep(syn.input.150,2)
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = length(syn.input.150), input = syn.input.150, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res150 <- Se.bone.forw.m(t = length(syn.input.150), input = syn.input.150, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
 
 #5 ivory growth parameters, unit in microns
 max.dist <- 18000 
@@ -175,7 +175,7 @@ Ivo.rate.mean <- 19.9 #microns per day
 Ivo.rate.sd <- 5.4
 
 #6 ivory growth simulation, returns a distance vector of length t
-ivo.dist.m <- gorwth.sim(t = length(syn.input.150), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
+ivo.dist.m150 <- gorwth.sim(t = length(syn.input.150), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
 
 #7 micromill parameter: milling width in microns
 intv <- 500
@@ -183,16 +183,19 @@ intv <- 500
 #8 micromill averaging simulation, returns a list of two vectors
 #first vector is micromill distance, the center of the milling width
 #second vector is
-res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m, Rs.m = Se.bone.res[[1]])
+res.mic150 <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m150, Rs.m = Se.bone.res150[[1]])
 ######end of forward model######
 
 ###plots###
 #plot input, serum history, and simulated micromill values
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",main="150 day")
+par(mfrow=c(4,1))
+
+plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",
+     main="150 + 30-day annual switch")
 lines(1:length(syn.input.150), syn.input.150)
-lines(1:length(syn.input.150), Se.bone.res[[1]],lwd=2, col = "#00b4ffff")
+lines(1:length(syn.input.150), Se.bone.res150[[1]],lwd=2, col = "#00b4ffff")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-# points((max(res.mic[[1]])+intv/2 - res.mic[[1]])/Ivo.rate.mean + 1, res.mic[[2]], lwd = 2, col = "red")
+# points((max(res.mic150[[1]])+intv/2 - res.mic150[[1]])/Ivo.rate.mean + 1, res.mic150[[2]], lwd = 2, col = "red")
 
 ##150 day switch ~85% of the variation
 
@@ -216,7 +219,7 @@ syn.low <- 0.707
 syn.input.120 <- c(rep(syn.mid,60), rep(syn.high,120),rep(syn.mid,60),rep(syn.low,120)  )
 syn.input.120 <- rep(syn.input.120,2)
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = length(syn.input.120), input = syn.input.120, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res120 <- Se.bone.forw.m(t = length(syn.input.120), input = syn.input.120, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
 
 #5 ivory growth parameters, unit in microns
 max.dist <- 18000 
@@ -224,7 +227,7 @@ Ivo.rate.mean <- 19.9 #microns per day
 Ivo.rate.sd <- 5.4
 
 #6 ivory growth simulation, returns a distance vector of length t
-ivo.dist.m <- gorwth.sim(t = length(syn.input.120), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
+ivo.dist.m120 <- gorwth.sim(t = length(syn.input.120), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
 
 #7 micromill parameter: milling width in microns
 intv <- 500
@@ -232,16 +235,17 @@ intv <- 500
 #8 micromill averaging simulation, returns a list of two vectors
 #first vector is micromill distance, the center of the milling width
 #second vector is
-res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m, Rs.m = Se.bone.res[[1]])
+res.mic120 <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m120, Rs.m = Se.bone.res120[[1]])
 ######end of forward model######
 
 ###plots###
 #plot input, serum history, and simulated micromill values
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",main="120 day")
+plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",
+     main="120 + 60-day annual switch")
 lines(1:length(syn.input.120), syn.input.120)
-lines(1:length(syn.input.120), Se.bone.res[[1]],lwd=2, col = "#00b4ffff")
+lines(1:length(syn.input.120), Se.bone.res120[[1]],lwd=2, col = "#00b4ffff")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-# points((max(res.mic[[1]])+intv/2 - res.mic[[1]])/Ivo.rate.mean + 1, res.mic[[2]], lwd = 2, col = "red")
+# points((max(res.mic120[[1]])+intv/2 - res.mic120[[1]])/Ivo.rate.mean + 1, res.mic120[[2]], lwd = 2, col = "red")
 
 ##120 day switch ~80% of the variation
 
@@ -267,7 +271,7 @@ syn.input.60 <- c(rep(syn.mid,30), rep(syn.high,60),rep(syn.mid,30),rep(syn.low,
 syn.input.60 <- rep(syn.input.60,4)
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = length(syn.input.60), input = syn.input.60, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res60 <- Se.bone.forw.m(t = length(syn.input.60), input = syn.input.60, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
 
 #5 ivory growth parameters, unit in microns
 max.dist <- 18000 
@@ -275,7 +279,7 @@ Ivo.rate.mean <- 19.9 #microns per day
 Ivo.rate.sd <- 5.4
 
 #6 ivory growth simulation, returns a distance vector of length t
-ivo.dist.m <- gorwth.sim(t = length(syn.input.60), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
+ivo.dist.m60 <- gorwth.sim(t = length(syn.input.60), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
 
 #7 micromill parameter: milling width in microns
 intv <- 500
@@ -283,18 +287,18 @@ intv <- 500
 #8 micromill averaging simulation, returns a list of two vectors
 #first vector is micromill distance, the center of the milling width
 #second vector is
-res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m, Rs.m = Se.bone.res[[1]])
+res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m60, Rs.m = Se.bone.res60[[1]])
 ######end of forward model######
 
 ###plots###
 #plot input, serum history, and simulated micromill values
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), 
-     xlab = "days", ylab ="Sr 87/86",main="60 day")
+     xlab = "days", ylab ="Sr 87/86",main="60 + 30-day semiannual switch")
 lines(1:length(syn.input.60), syn.input.60)
-lines(1:length(syn.input.60), Se.bone.res[[1]],lwd=2, col = "#00b4ffff")
-#lines(1:length(syn.input.30), Se.bone.res[[2]],lwd=2, col = "firebrick2")
+lines(1:length(syn.input.60), Se.bone.res60[[1]],lwd=2, col = "#00b4ffff")
+#lines(1:length(syn.input.30), Se.bone.res60[[2]],lwd=2, col = "firebrick2")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-# points((max(res.mic[[1]])+intv/2 - res.mic[[1]])/Ivo.rate.mean + 1, res.mic[[2]], lwd = 2, col = "red")
+# points((max(res.mic60[[1]])+intv/2 - res.mic60[[1]])/Ivo.rate.mean + 1, res.mic60[[2]], lwd = 2, col = "red")
 
 ##60 day switch ~65% of the variation
 ###############synthetic input 30 day interval to demonstrate carry over effect########
@@ -316,10 +320,11 @@ syn.high <- 0.711
 syn.low <- 0.707
 
 syn.input.90 <- c(rep(syn.high,90),rep(syn.low,90) )
-syn.input.90 <- rep(syn.input.90,6)
+syn.input.90 <- rep(syn.input.90,5)
+syn.input.90 <- syn.input.90[1:720]
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = length(syn.input.90), input = syn.input.90, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res90 <- Se.bone.forw.m(t = length(syn.input.90), input = syn.input.90, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
 
 #5 ivory growth parameters, unit in microns
 max.dist <- 18000 
@@ -327,7 +332,7 @@ Ivo.rate.mean <- 19.9 #microns per day
 Ivo.rate.sd <- 5.4
 
 #6 ivory growth simulation, returns a distance vector of length t
-ivo.dist.m <- gorwth.sim(t = length(syn.input.90), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
+ivo.dist.m90 <- gorwth.sim(t = length(syn.input.90), max.dist = max.dist, rate = Ivo.rate.mean, rate.sd = Ivo.rate.sd)
 
 #7 micromill parameter: milling width in microns
 intv <- 500
@@ -335,18 +340,18 @@ intv <- 500
 #8 micromill averaging simulation, returns a list of two vectors
 #first vector is micromill distance, the center of the milling width
 #second vector is
-res.mic <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m, Rs.m = Se.bone.res[[1]])
+res.mic90 <- micromill.sim(max.dist = max.dist, intv = intv, dist.m = ivo.dist.m90, Rs.m = Se.bone.res90[[1]])
 ######end of forward model######
 
 ###plots###
 #plot input, serum history, and simulated micromill values
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), 
-     xlab = "days", ylab ="Sr 87/86",main="90 day")
+     xlab = "days", ylab ="Sr 87/86",main="90 day semiannual switch with carryover")
 lines(1:length(syn.input.90), syn.input.90)
-lines(1:length(syn.input.90), Se.bone.res[[1]],lwd=2, col = "#00b4ffff")
-#lines(1:length(syn.input.30), Se.bone.res[[2]],lwd=2, col = "firebrick2")
+lines(1:length(syn.input.90), Se.bone.res90[[1]],lwd=2, col = "#00b4ffff")
+#lines(1:length(syn.input.30), Se.bone.res90[[2]],lwd=2, col = "firebrick2")
 #converting micromill distance to ~days using rate Ivo.rate.mic
-# points((max(res.mic[[1]])+intv/2 - res.mic[[1]])/Ivo.rate.mean + 1, res.mic[[2]], lwd = 2, col = "red")
+# points((max(res.mic90[[1]])+intv/2 - res.mic90[[1]])/Ivo.rate.mean + 1, res.mic90[[2]], lwd = 2, col = "red")
 
 ##30 day switch ~45% of the variation
 

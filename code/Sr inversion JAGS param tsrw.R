@@ -1,7 +1,7 @@
 model {
   ######inversion######
   for (i in 1:n.mea){
-    
+    #averaging data
     R1.eva[i] <- inprod(R1.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
     R.mea[i] ~ dnorm(R1.eva[i], 1/(R.sd.mea[i])^2)
@@ -44,54 +44,29 @@ model {
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i]
     
-    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3) #Brownian motion, cauchy error term
+    # Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3) #Brownian motion, cauchy error term
+    Rin.m.cps[i] ~ dnorm(Rin.m.cps[i - 1] * Rin.m.cps.ac, Rin.m.pre) T(-6e-3, 6e-3)
 
   }
+  Rin.m.cps.ac ~ dunif(0, 0.8)
   # initiate the series with an reasonable prior
   Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) #allowed some variation
   
   Rin.int ~ dnorm(0.710, 1/0.01^2)  #an uninformative initial value
   
-  #initial change per step, with the maximum difference crossing a discrete Sr isotope boundary
-  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3)
+  #initial change per step
+  # Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3)
+  Rin.m.cps[1] ~ dnorm(0, Rin.m.pre)
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 5e-8
+  Rin.m.pre.rate = 2e-7
   
-  ####scaling parameters a, b, c to body mass of the subject#####
-  a.m <- a * ((Body.mass.m/Body.mass)^exp.ab)
-  b.m <- b * ((Body.mass.m/Body.mass)^exp.ab)
-  # c.m <- c.post[indx]* ((Body.mass.m/Body.mass)^exp.c)
-  c.m <- c * ((Body.mass.m/Body.mass)^exp.ab)
-  
-  #calculation of exponents 
-  # exp.c <- exp.r.in - exp.bnbm
-  exp.ab <- exp.r.in - exp.smbm
-  
-  #adjusting a, b and c to the body mass of the elephant investigated
-  #rates scale with ~e 3/4 body mass (basal matabolic rate)
-  #pools scale with ~e 1 body mas, but bone has a slightly higher slope
-  #a, b and c are rate/pool, so it should scale with ~ -1/4 body mass
-  exp.r.in ~ dnorm(0.75, 1/0.05^2) #intake rates scales with BM allometrically
-  # exp.bnbm ~ dnorm(1.05, 1/0.05^2) #bone scales with BM allometrically (Christiansen 2002)
-  exp.smbm ~ dnorm(1, 1/0.05^2) #serum scales with BM isometrically
-  
-  a <- a.post[indx]
-  b <- b.post[indx]
-  c <- c.post[indx]
   #sampling from parameter posteriors from the calibration
+  a.m <- a.post[indx]
+  b.m <- b.post[indx]
+  c.m <- c.post[indx]
+  
   indx ~ dcat(rep(1, post.leng))
-  
-  #For example, male Mammuthus primigenius is estimated to be around 7500 +- 500 kg
-  #for the purpose of demonstration, here we use the same parameters as in Misha
-  Body.mass.m ~ dnorm(Body.mass.m.mean, 1/Body.mass.m.sd^2) T(6000, )
-  Body.mass.m.mean <- 7500 # kg
-  Body.mass.m.sd <- 500 # kg
-  
-  #body mass of Misha, used to scale parameters a, b and c
-  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2) T(2000, )
-  Body.mass.mean <- 3000 # kg
-  Body.mass.sd <- 150 # kg
   
 }

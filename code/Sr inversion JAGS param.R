@@ -2,9 +2,9 @@ model {
   ######inversion######
   for (i in 1:n.mea){
     #averaging data
-    Rs.eva[i] <- inprod(Rs.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
+    R1.eva[i] <- inprod(R1.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
-    R.mea[i] ~ dnorm(Rs.eva[i], 1/(R.sd.mea[i])^2)
+    R.mea[i] ~ dnorm(R1.eva[i], 1/(R.sd.mea[i])^2)
   }
   
   #Data model priors for ivory growth
@@ -19,32 +19,32 @@ model {
 
   for (i in 2:t){
     #serum ratio
-    Rs.m[i] <- Rs.m[i - 1] + b.m * (Rb.m[i - 1] - Rs.m[i - 1]) + a.m * (Rin.m[i - 1] - Rs.m[i - 1])
+    R1.m[i] <- R1.m[i - 1] + b.m * (R2.m[i - 1] - R1.m[i - 1]) + a.m * (Rin.m[i - 1] - R1.m[i - 1])
     
     #bone ratios
-    Rb.m[i] <- Rb.m[i - 1] + c.m * (Rs.m[i - 1] - Rb.m[i - 1])
+    R2.m[i] <- R2.m[i - 1] + c.m * (R1.m[i - 1] - R2.m[i - 1])
   }
   
   # assuming the starting value of the two pools are close to the starting Rin value
   #e.g., close to equilibrium with Rin
-  Rb.m[1] ~ dnorm(Rin.m[1], Sr.pre.b) #T(0.700, 0.720)#use a different error term for bone
-  Rs.m[1] ~ dnorm(Rin.m[1], Sr.pre.s)
+  R2.m[1] ~ dnorm(Rin.m[1], Sr.pre.2) #T(0.700, 0.720)#use a different error term for bone
+  R1.m[1] ~ dnorm(Rin.m[1], Sr.pre.1)
   
   #precision for average Sr measurements in bone should be much smaller
-  Sr.pre.b ~ dgamma(Sr.pre.shape, Sr.pre.rate.b)  
-  Sr.pre.rate.b <- 5e-7
+  Sr.pre.2 ~ dgamma(Sr.pre.shape, Sr.pre.rate.2)  
+  Sr.pre.rate.2 <- 5e-7
   
-  Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s) 
+  Sr.pre.1 ~ dgamma(Sr.pre.shape, Sr.pre.rate.1) 
   
   Sr.pre.shape <- 100
-  Sr.pre.rate.s <- 5e-6
+  Sr.pre.rate.1 <- 5e-6
   
   #generate null input series
   for (i in 2:t){
     
     Rin.m[i] <- Rin.m[i - 1] + Rin.m.cps[i]
     
-    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3) #Brownian motion, cauchy error term
+    Rin.m.cps[i] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3) #Brownian motion, cauchy error term
 
   }
   # initiate the series with an reasonable prior
@@ -53,7 +53,7 @@ model {
   Rin.int ~ dnorm(0.710, 1/0.01^2)  #an uninformative initial value
   
   #initial change per step
-  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-5e-3, 5e-3)
+  Rin.m.cps[1] ~ dt(0, Rin.m.pre, 1) T(-6e-3, 6e-3)
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100

@@ -2,32 +2,12 @@ model {
   
   h.l = log(2)/a #calculate half life
 
-  Fin <- a * Ps
-
-  #pool size serum (mmol)
-  Ps <- S.vol * S.Ca * S.Sr.Ca.ratio # mmol ~1 mmol
-
-  #Sr/Ca ratio of serum is assumed to be the same as measured ivory
-  S.Sr.Ca.ratio ~ dnorm(S.Sr.Ca.mean, 1/S.Sr.Ca.sd^2)
-
-  S.Sr.Ca.mean <- 0.0011174 # mmol/mmol
-  S.Sr.Ca.sd <- 0.000108103 # mmol/mmol
-
-  #Serum Ca concentration
-  S.Ca ~ dnorm(S.Ca.mean, 1/S.Ca.sd^2)
-
-  S.Ca.mean <- 2.79 # mmol/L
-  S.Ca.sd <- 0.11 # mmol/L
-
-  #assuming serum volume is ~ 7% volume (L) of body mass (kg)
-  S.vol <- 0.07 * Body.mass # Liter
-
   #Data evaluation
   for (i in 1:n.mea){
     
-    Rs.eva[i] <- inprod(Rs.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
+    R1.eva[i] <- inprod(R1.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
-    R.mea[i] ~ dnorm(Rs.eva[i], 1/(R.sd.mea[i])^2)
+    R.mea[i] ~ dnorm(R1.eva[i], 1/(R.sd.mea[i])^2)
   }
   
   #Data model priors for ivory growth
@@ -44,7 +24,7 @@ model {
   for (i in 2:t){
     #serum ratio
     #when bone is not a concern, the equation is the same as exponential decay
-    Rs.m[i] <- Rs.m[i - 1] + a * (Rin[i - 1] - Rs.m[i - 1])
+    R1.m[i] <- R1.m[i - 1] + a * (Rin[i - 1] - R1.m[i - 1])
   }
   
   #define the parameter with uninformative priors
@@ -53,7 +33,7 @@ model {
 
   #model initial values for bone and serum
   #assume that bone value is similar to serum, but use a different error term
-  Rs.m[1] ~ dnorm(R0.mean, R0.pre)
+  R1.m[1] ~ dnorm(R0.mean, R0.pre)
   
   #generate time series of input values
   #Rin is the input ratio, which is modeled with a switch point in the time series
@@ -93,15 +73,10 @@ model {
   Sr.pre.rate.Re <- 2e-5
   Sr.pre.rate.R0 <- 2e-6
   
-  
-  #precision for average Sr measurements in bone should be much smaller
-  Sr.pre.b ~ dgamma(Sr.pre.shape, Sr.pre.rate.b)  
-  Sr.pre.rate.b <- 5e-7
-  
-  Sr.pre.s ~ dgamma(Sr.pre.shape, Sr.pre.rate.s) 
+  Sr.pre.1 ~ dgamma(Sr.pre.shape, Sr.pre.rate.1) 
   
   Sr.pre.shape <- 100
-  Sr.pre.rate.s <- 5e-6
+  Sr.pre.rate.1 <- 5e-6
     
   Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
   Body.mass.mean <- 3000 # kg

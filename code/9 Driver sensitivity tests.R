@@ -30,8 +30,8 @@ Ivo.rate.mean <- 14.7 #microns per day
 Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #parameters to save
-parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","dist.index",
-                "Sr.pre", "Ps", "Fin","Pb", "Fb", "Re.mean", "R0.mean", "switch","dist",
+parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
+                "Sr.pre", "Re.mean", "R0.mean", "switch","dist",
                 "flux.ratio", "pool.ratio","Body.mass")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
@@ -74,7 +74,7 @@ plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab 
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 
-MCMC.dist.plot(post.misha.pc2p8$BUGSoutput$sims.list$Rs.m,
+MCMC.dist.plot(post.misha.pc2p8$BUGSoutput$sims.list$R1.m,
                post.misha.pc2p8$BUGSoutput$sims.list$dist)
 lines(n.avg.misha.50.dist.rmv,n.avg.misha.50.sr.rmv,lwd = 2, col = "#00b4ffff")
 
@@ -118,8 +118,8 @@ max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #these values are expected to affect
 switch <- 83 
 #parameters to save
-parameters <- c("a", "b","c", "Ivo.rate", "Rs.m","Rb.m","Rin","dist.index",
-                "Sr.pre", "Ps", "Fin","Pb", "Fb", "Re.mean", "R0.mean", "switch","dist",
+parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
+                "Sr.pre", "Re.mean", "R0.mean", "switch","dist",
                 "flux.ratio", "pool.ratio","Body.mass")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
@@ -162,7 +162,7 @@ plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab 
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 
-MCMC.dist.plot(post.misha.pc2p8$BUGSoutput$sims.list$Rs.m,
+MCMC.dist.plot(post.misha.pc2p8$BUGSoutput$sims.list$R1.m,
                post.misha.pc2p8$BUGSoutput$sims.list$dist)
 lines(n.avg.misha.50.dist.rmv,n.avg.misha.50.sr.rmv,lwd = 2, col = "#00b4ffff")
 
@@ -185,8 +185,77 @@ legend(0.02, 160, c("a, Two-pool","b, Two-pool", "c, Two-pool", "a, One-pool"),
 ##############sensitivity to time series structure######
 ##############use a random walk per time step structure#######
 #eq: y(t) = B1*X(t-1) + e(t)
-#but this time series structure triggers a run-away process,
-#that increases the change per step by a lot
+
+#note that Rin.pre is different, here it is 2e-7, in the cauchy error ver. it is 1e-7
+R.sd.mea <- n.sd.misha.50.sr.rmv
+dist.mea <- n.avg.misha.50.dist.rmv
+R.mea <- n.avg.misha.50.sr.rmv
+n.mea = length(n.avg.misha.50.sr.rmv)
+
+s.intv <- 52.4
+
+Ivo.rate.mean <- 14.7 #microns per day
+Ivo.rate.sd <- 0.8
+max.dist.mea <- max(n.avg.misha.50.dist) + 30
+
+#posterior samples of parameters from Misha calibration
+
+a.post <- post.misha.pc2p$BUGSoutput$sims.list$a[,1]
+b.post <- post.misha.pc2p$BUGSoutput$sims.list$b[,1]
+c.post <- post.misha.pc2p$BUGSoutput$sims.list$c[,1]
+post.leng <- length(a.post)
+
+parameters <- c("Ivo.rate", "dist","Rin.m.pre",
+                "R1.m","Rin.m", "R2.m","a.m","b.m", "c.m")
+
+dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng, 
+            a.post=a.post, b.post=b.post, c.post=c.post,
+            Ivo.rate.mean = Ivo.rate.mean, Ivo.rate.sd = Ivo.rate.sd,
+            R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 2e3
+n.burnin = 4e2
+n.thin = floor(n.iter-n.burnin)/400
+
+#Run it
+post.misha.inv2pr.tsrw = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS param tsrw.R", 
+                                                     parameters.to.save = parameters, 
+                                                     data = dat, n.chains=5, n.iter = n.iter, 
+                                                     n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 11 hours
+
+save(post.misha.inv2pr.tsrw, file = "out/post.misha.inv2pr.tsrw.RData")
+
+post.misha.inv2pr.tsrw$BUGSoutput$summary
+
+
+#plotting reconstructed Rin.m history
+par(mfrow=c(1,1))
+plot(0,0, xlim = c(1,700), ylim = c(0.705, 0.714), xlab = "days", ylab ="Sr 87/86",
+     main="Estimated input series vs actual input series")
+#converting misha distance to days using rate Ivo.rate
+points((max(n.avg.misha.50.dist) + 30-n.avg.misha.50.dist.rmv)/14.7,n.avg.misha.50.sr.rmv, pch= 18, col="#00b3ffff")
+#Use posterior from the calibration run as reference, but use estimates, not posterior
+post.misha.pc2p.Rin.89<- MCMC.CI.bound(post.misha.pc2p$BUGSoutput$sims.list$Rin, 0.89)
+lines(1:750,post.misha.pc2p.Rin.89[[1]],lwd = 2, col = "black")
+lines(1:750,post.misha.pc2p.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
+lines(1:750,post.misha.pc2p.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
+
+#estimated input series
+MCMC.misha.inv2pr.tsrw.Rin.m.89 <- MCMC.CI.bound(post.misha.inv2pr.tsrw$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:750,MCMC.misha.inv2pr.tsrw.Rin.m.89[[1]],lwd = 2, col = "magenta")
+lines(1:750,MCMC.misha.inv2pr.tsrw.Rin.m.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:750,MCMC.misha.inv2pr.tsrw.Rin.m.89[[3]], lwd = 1, lty = 2, col = "magenta")
+legend(400, 0.708, c("Model input","Estimated input"),lwd = c(2, 2), col=c("black","magenta"))
+
+
+
 ########################inversion by sampling posterior of 2-pool model########
 
 Ivo.rate.mean <- mean.wooller.rate #microns per day
@@ -208,7 +277,7 @@ b.post <- post.misha.pc2p$BUGSoutput$sims.list$b[,1]
 c.post <- post.misha.pc2p$BUGSoutput$sims.list$c[,1]
 post.leng <- length(a.post)
 
-parameters <- c("Ivo.rate","dist", "Rs.m","Rin.m", "Rb.m","a","b","c","exp.ab",
+parameters <- c("Ivo.rate","dist", "R1.m","Rin.m", "R2.m","a","b","c","exp.ab",
                 "Rin.m.pre","a.m","b.m","c.m","Body.mass.m", "Body.mass")
 
 dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng, 
@@ -265,7 +334,7 @@ plot(density(post.invmamm.tsrw$BUGSoutput$sims.list$exp.ab))
 #do the posterior of a.m and c.m 
 
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,500), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,450), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
 #converting misha distance to days using rate Ivo.rate
 points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
        sub.mm.sim.avg.sr, pch= 18, col="#00b4ffff")
