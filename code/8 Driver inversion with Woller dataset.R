@@ -154,7 +154,7 @@ plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$exp.ab))
 #do the posterior of a.m and c.m 
 
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,500), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,450), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
 #converting misha distance to days using rate Ivo.rate
 points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
        sub.mm.sim.avg.sr, pch= 18, col="#00b4ffff")

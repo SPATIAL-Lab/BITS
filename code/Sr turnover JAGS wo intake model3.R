@@ -51,8 +51,8 @@ model {
   c <- b * c.coef
   c.coef ~ dunif(0.1, 2.5) #sensitivity?
   b <- a * b.coef
-  b.coef ~ dunif(0.0001, 1)
-  a ~ dunif(0.0001, 1)
+  b.coef ~ dunif(0, 1)
+  a ~ dunif(0, 1)
 
   #model initial values for bone and serum
   #assume that bone value is similar to serum, but use a different error term

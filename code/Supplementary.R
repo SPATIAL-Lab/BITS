@@ -293,7 +293,7 @@ plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab 
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 
-MCMC.dist.plot(post.misha.2p50$BUGSoutput$sims.list$r1.m,
+MCMC.dist.plot(post.misha.2p50$BUGSoutput$sims.list$R1.m,
                post.misha.2p50$BUGSoutput$sims.list$dist)
 lines(n.avg.misha.50.dist,n.avg.misha.50.sr,lwd = 2, col = "red")
 
