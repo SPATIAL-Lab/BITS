@@ -136,8 +136,8 @@ dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 700, n.m
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 3e3
-n.burnin = 1e3
+n.iter = 5e3
+n.burnin = 2e3
 n.thin = floor(n.iter-n.burnin)/500
 
 #Run it
@@ -147,7 +147,7 @@ post.misha.pc2p.erm = do.call(jags.parallel,list(model.file = "code/Sr turnover 
                                              n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 20 hours
+proc.time() - t1 #~ 17 hours
 
 save(post.misha.pc2p.erm, file = "out/post.misha.pc2p.erm.RData")
 load("out/post.misha.pc2p.erm.RData")
@@ -155,7 +155,7 @@ load("out/post.misha.pc2p.erm.RData")
 traplot(post.misha.pc2p.erm,parms = c("flux.ratio", "pool.ratio"))
 traplot(post.misha.pc2p.erm,parms = c("a", "b","c"))
 
-#convergence params are not so good!
+#convergence params are ok
 subset(post.misha.pc2p.erm$BUGSoutput$summary,
        rownames(post.misha.pc2p.erm$BUGSoutput$summary)=="a")
 subset(post.misha.pc2p.erm$BUGSoutput$summary,

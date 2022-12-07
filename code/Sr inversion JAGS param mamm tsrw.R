@@ -63,22 +63,15 @@ model {
   Rin.m.pre.rate = 2e-7
   
   ####scaling parameters a, b, c to body mass of the subject#####
-  a.m <- a * ((Body.mass.m/Body.mass)^exp.ab)
-  b.m <- b * ((Body.mass.m/Body.mass)^exp.ab)
-  # c.m <- c.post[indx]* ((Body.mass.m/Body.mass)^exp.c)
-  c.m <- c * ((Body.mass.m/Body.mass)^exp.ab)
+  a.m <- a * ((Body.mass.m/Body.mass)^exp.a)
+  b.m <- b * ((Body.mass.m/Body.mass)^exp.bc)
+  c.m <- c * ((Body.mass.m/Body.mass)^exp.bc)
   
   #calculation of exponents 
-  # exp.c <- exp.r.in - exp.bnbm
-  exp.ab <- exp.r.in - exp.smbm
+  #fast turnover pool is not affected by body mass (Thomas & Crowther 2015)
+  exp.a ~ dnorm(0, 1/0.05^2)
   
-  #adjusting a, b and c to the body mass of the elephant investigated
-  #rates scale with ~e 3/4 body mass (basal matabolic rate)
-  #pools scale with ~e 1 body mas, but bone has a slightly higher slope
-  #a, b and c are rate/pool, so it should scale with ~ -1/4 body mass
-  exp.r.in ~ dnorm(0.75, 1/0.05^2) #intake rates scales with BM allometrically
-  # exp.bnbm ~ dnorm(1.05, 1/0.05^2) #bone scales with BM allometrically (Christiansen 2002)
-  exp.smbm ~ dnorm(1, 1/0.05^2) #serum scales with BM isometrically
+  exp.bc ~ dnorm(-0.19, 1/0.05^2) #whole body turnover allometry from Thomas & Crowther 2015
   
   a <- a.post[indx]
   b <- b.post[indx]
