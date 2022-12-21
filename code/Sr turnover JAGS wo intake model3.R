@@ -47,9 +47,8 @@ model {
   }#can use three parameters instead
   
   #define the three parameters with uninformative priors
-  #parameter constraints: a > b, because Fin > F2; b ~ c because P2 ~ P1 ratio between 1:2.5 and 10:1
-  c <- b * c.coef
-  c.coef ~ dunif(0.1, 2.5) #sensitivity?
+  #parameter constraints: a > b, because Fin > F2; 
+  c ~ dunif(0, 1)
   b <- a * b.coef
   b.coef ~ dunif(0, 1)
   a ~ dunif(0, 1)

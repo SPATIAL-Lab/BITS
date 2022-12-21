@@ -346,3 +346,22 @@ lines(1:500,MCMC.ts.Rin.m.invmamm.tsrw.89[[1]],lwd = 2, col = "magenta")
 lines(1:500,MCMC.ts.Rin.m.invmamm.tsrw.89[[2]], lwd = 1, lty = 2, col = "magenta")
 lines(1:500,MCMC.ts.Rin.m.invmamm.tsrw.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
+
+#plotting together with two pool estimate
+par(mfrow=c(1,1))
+plot(0,0, xlim = c(1,450), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+#converting misha distance to days using rate Ivo.rate
+points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
+       sub.mm.sim.avg.sr, pch= 18, col="#00b4ffff")
+lines((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
+      sub.mm.sim.avg.sr, lwd= 1.5, col="#00b4ffff")
+#estimated input series
+MCMC.ts.Rin.m.invmamm.param.erm.89<- MCMC.CI.bound(post.misha.invmamm.param.erm$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.erm.89[[1]],lwd = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.erm.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.erm.89[[3]], lwd = 1, lty = 2, col = "magenta")
+
+lines(1:500,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "black")
+lines(1:500,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "black")
+lines(1:500,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "black")
+legend(300, 0.710, c("Measured ivory","Reconstructed input erm","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta","black"))

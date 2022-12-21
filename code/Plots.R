@@ -84,6 +84,30 @@ lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.
       lwd=1.5, col = "#00b4ffff")
 lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
       lwd=1.5, col = "#00b4ffff")
+dev.off()
+###########updated panel c######
+svg(filename = "out/Fig 4 2pcal.svg",
+    width = 8, height = 5.6, pointsize = 12)
+par(mar = c(5.1, 4.1, 4.1, 2.1))
+plot(0,0, xlim = c(20000,8000), ylim = c(0.7066, 0.712), xlab = "distance", ylab ="Sr 87/86",
+     main="Calibration")
+abline(h = R0, lwd = 2, lty = 2)
+abline(h = Re, lwd = 2, lty = 2)
+#4000 lines are too many
+#further thinning to 2000 lines
+ind.pc2p<- sample(dim(post.misha.pc2p.erm$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
+MCMC.dist.plot(post.misha.pc2p.erm$BUGSoutput$sims.list$R1.m[ind.pc2p,],
+               post.misha.pc2p.erm$BUGSoutput$sims.list$dist[ind.pc2p,])
+points(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
+       pch=18, col = "#00b4ffff")
+points(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
+       pch=18, col = "#00b4ffff")
+
+lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
+      lwd=1.5, col = "#00b4ffff")
+lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
+      lwd=1.5, col = "#00b4ffff")
+dev.off()
 
 #panel d
 par(mar = c(5.1, 4.1, 4.1, 4.1))
@@ -94,6 +118,19 @@ lines(density(post.misha.pc2p$BUGSoutput$sims.list$b, from = 0),lwd = 2, col = p
 lines(density(post.misha.pc2p$BUGSoutput$sims.list$c, from = 0),lwd = 2, col = plot.col.6[5])
 legend(0.02, 150, c("a","b", "c"),
        lwd = rep(2, 3), col=c(plot.col.6[3:5]))
+
+######updated panel d#####
+#536h * 330w
+#panel d
+par(mfrow=c(3,1))
+par(mar = c(4.1, 4.1, 2.1, 4.1))
+# par(mfrow=c(1,2))
+plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.05),ylim= c(0,100),
+     lwd = 2, col = plot.col.6[3],main="a", xlab="parameter estimate")
+plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$b, from = 0), xlim = c(0,0.04),ylim= c(0,40),
+     lwd = 2, col = plot.col.6[4],main="b", xlab="parameter estimate")
+plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$c, from = 0, to = 1), xlim = c(0,1),ylim= c(0,1.2),
+     lwd = 2, col = plot.col.6[5],main="c", xlab="parameter estimate")
 
 ########Figure 4 ##############
 #Results reconstructed input using Misha LA-ICP-MS series (without excursion, 50 pt)
