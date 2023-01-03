@@ -61,7 +61,7 @@ model {
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 1e-7
+  Rin.m.pre.rate = 5e-8
   
   ####scaling parameters a, b, c to body mass of the subject#####
   a.m <- a * ((Body.mass.m/Body.mass)^exp.a)
