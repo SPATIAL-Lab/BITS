@@ -103,8 +103,8 @@ t1 = proc.time()
 
 set.seed(t1[3])
 n.iter = 5e3
-n.burnin = 1e3
-n.thin = floor(n.iter-n.burnin)/400
+n.burnin = 2e3
+n.thin = 1
 
 #Run it
 post.misha.intake = do.call(jags.parallel,list(model.file = "code/Sr intake JAGS.R", 
@@ -118,13 +118,3 @@ proc.time() - t1 #instantaneous
 save(post.misha.intake, file = "out/post.misha.intake.RData")
 
 post.misha.intake$BUGSoutput$summary
-
-post.intake <- cbind(post.misha.intake$BUGSoutput$sims.list$w.hay[,1],
-      post.misha.intake$BUGSoutput$sims.list$w.pel[,1], 
-      post.misha.intake$BUGSoutput$sims.list$w.sup[,1], 
-      post.misha.intake$BUGSoutput$sims.list$w.water[,1])
-colnames(post.intake) <- c("Hay", "Pellet", "Supp.","Water")
-
-vioplot(post.intake, ylab="Sr intake (mg/day)", main ="Daily Sr intake",col=c(plot.col[5:2]),ylim=c(0,1200))
-
-

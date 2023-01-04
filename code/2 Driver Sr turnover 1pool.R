@@ -9,48 +9,15 @@ library(viridisLite)
 library(EnvStats)
 library(zoo)  
 
+source("code/1 Helper functions.R")
+
 plot.col<-viridis(7)
 
 setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 
+####The one pool model is only used in sensitivity test in the supporting information#####
+
 misha.raw <- read.csv("data/Misha raw.csv")
-
-#calculating moving average (400 micron band)
-rm.misha.25 <- rollmean(misha.raw, k = 25)
-
-plot(rm.misha.25[,1],rm.misha.25[,2], type="l", main="rolling mean 25",
-     xlim=c(max(rm.misha.25[,1]),min(rm.misha.25[,1])))
-
-rm.misha.100 <- rollmean(misha.raw, k = 100)
-
-plot(rm.misha.100[,1],rm.misha.100[,2], type="l", main="rolling mean 100",
-     xlim=c(max(rm.misha.100[,1]),min(rm.misha.100[,1])))
-
-##calculate 100 point average to reduce data amount
-misha.raw.Sr <- misha.raw$X87Sr.86Sr
-misha.raw.dist <- misha.raw$dist
-
-n.avg <- 100 #now many data points to average
-n <- floor(length(misha.raw$X87Sr.86Sr)/n.avg) #99 data points, discard the last <100 data points
-
-#initiate vectors
-n.avg.misha.100.sr <- rep(0, n)
-n.sd.misha.100.sr <- rep(0, n)
-
-n.avg.misha.100.dist <- rep(0, n)
-
-for(i in 1:n){
-  x <- ((i-1)*n.avg + 1):(i*n.avg)
-  n.avg.misha.100.sr[i] <- mean(misha.raw.Sr[x])
-  n.sd.misha.100.sr[i] <- sd(misha.raw.Sr[x])
-
-  n.avg.misha.100.dist[i] <- mean(misha.raw.dist[x])#mean and median are the same
-}
-
-plot(misha.raw$dist, misha.raw$X87Sr.86Sr, col=alpha("dark blue", 0.2),
-     xlim=c(20000,8000),ylim=c(0.705,0.715),pch=16,main="100 pt average")#plot all raw data points
-lines(n.avg.misha.100.dist, n.avg.misha.100.sr,col="#00b4ffff",lwd=2)
-points(n.avg.misha.100.dist, n.avg.misha.100.sr, col="#00b4ffff",pch=18)
 
 ##calculate 50 point average to reduce data amount
 n.avg <- 50 #now many data points to average
@@ -86,10 +53,17 @@ n.avg.misha.50.dist.rmv <- n.avg.misha.50.dist[index.50.anom.remv]
 n.avg.misha.50.sr.rmv <- n.avg.misha.50.sr[index.50.anom.remv]
 n.sd.misha.50.sr.rmv <- n.sd.misha.50.sr[index.50.anom.remv]
 
-R.sd.mea <- n.sd.misha.50.sr.rmv
-dist.mea <- n.avg.misha.50.dist.rmv
-R.mea <- n.avg.misha.50.sr.rmv
-n.mea = length(n.avg.misha.50.sr.rmv)
+#the last bit of data removed for parameter estimates#
+ind.50.end.remv <- which(n.avg.misha.50.dist.rmv>10000)
+
+n.sd.misha.50.sr.remv <- n.sd.misha.50.sr.rmv[ind.50.end.remv]
+n.avg.misha.50.dist.remv <- n.avg.misha.50.dist.rmv[ind.50.end.remv]
+n.avg.misha.50.sr.remv <-n.avg.misha.50.sr.rmv[ind.50.end.remv]
+
+R.sd.mea <- n.sd.misha.50.sr.remv
+dist.mea <- n.avg.misha.50.dist.remv
+R.mea <- n.avg.misha.50.sr.remv
+n.mea = length(n.avg.misha.50.sr.remv)
 
 R0 <- 0.707
 
@@ -99,12 +73,12 @@ s.intv <- 52.4
 
 Ivo.rate.mean <- 14.7 #microns per day
 Ivo.rate.sd <- 0.8
-max.dist.mea <- max(n.avg.misha.25.dist) + 30
+max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #parameters to save
 parameters <- c("a", "Ivo.rate", "r1.m","Rin","dist","h.l",
                 "Sr.pre", "Re.mean", "R0.mean", "switch")
 ##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 700, n.mea = n.mea, 
            R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
            Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
 
@@ -112,9 +86,9 @@ dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.m
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 2e3
-n.burnin = 4e2
-n.thin = floor(n.iter-n.burnin)/400
+n.iter = 5e3
+n.burnin = 2e3
+n.thin = 1
 
 #Run it
 post.misha.1p50r = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS no bone woi.R", 
@@ -123,7 +97,7 @@ post.misha.1p50r = do.call(jags.parallel,list(model.file = "code/Sr turnover JAG
                                                  n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 3.5 hours
+proc.time() - t1 #~ 17 hours
 
 post.misha.1p50r$BUGSoutput$summary
 
