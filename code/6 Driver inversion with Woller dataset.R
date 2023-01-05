@@ -8,6 +8,8 @@ library(MASS)
 library(viridisLite)
 library(EnvStats)
 
+source("code/1 Helper functions.R")
+
 plot.col<-viridis(7)
 
 setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")

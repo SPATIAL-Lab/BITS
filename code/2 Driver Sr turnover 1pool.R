@@ -105,17 +105,6 @@ save(post.misha.1p50r, file = "out/post.misha.1p50r.RData")
 load("out/post.misha.1p50r.RData")
 
 summary(post.misha.1p50r$BUGSoutput$sims.list$switch)
-summary(post.misha.1p50r$BUGSoutput$sims.list$Ivo.rate)
 
 #plotting some parameters
-plot(density(post.misha.1p50r$BUGSoutput$sims.list$Ivo.rate))
 map_estimate(post.misha.1p50r$BUGSoutput$sims.list$h.l)
-
-#plotting modeled serum values mapped onto ivory and checking the fit of the data
-plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
-
-MCMC.dist.plot(post.misha.1p50r$BUGSoutput$sims.list$r1.m,
-               post.misha.1p50r$BUGSoutput$sims.list$dist)
-lines(n.avg.misha.50.dist,n.avg.misha.50.sr,lwd = 2, col = "red")
