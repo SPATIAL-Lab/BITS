@@ -6,47 +6,34 @@ library(vioplot)
 source("code/1 Helper functions.R")
 
 plot.col.6 <- inferno(6)
-########Figure 2 ##############
-#######plotting 25 pt average#######
-#600 * 400
-plot(n.avg.misha.25.dist, n.avg.misha.25.sr,col="#00b4ffff",type = "l",lwd=2,
-     xlim=c(20000,8000),ylim=c(0.706,0.712),main="LA-ICP-MS 25 pt average",
-     xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")
-
+########Figure 1(c) ##############
 #######plotting 50 pt average#######
 #540 * 360
 plot(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",type = "l",lwd=2,
-     xlim=c(20000,8000),ylim=c(0.706,0.712),main="LA-ICP-MS 50 pt average",
+     xlim=c(20000,8000),ylim=c(0.705,0.711),main="LA-ICP-MS 50 pt average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")
 
 ########Figure 3 ##############
-#######plotting 25 pt average#######
-#Panel a: 800 * 560
-
-svg(filename = "out/Fig 3 raw.svg",
-         width = 8, height = 5.6, pointsize = 12)
-plot(misha.raw$dist, misha.raw$X87Sr.86Sr, col=alpha("black",0.2),pch=16,
-     xlim=c(20000,8000),ylim=c(0.705,0.714),main="LA-ICP-MS raw data & 25 pt average",
-     xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
-lines(n.avg.misha.25.dist, n.avg.misha.25.sr,col="#00b4ffff",lwd=1.5)
-points(n.avg.misha.25.dist, n.avg.misha.25.sr, col="#00b4ffff",pch=18)
-dev.off()
-#Panel b: range of measured water and food values?
-intake <- read.csv("data/intake.csv")
-
 #######plotting 50 pt average#######
 #Panel a: 800 * 560
 
 svg(filename = "out/Fig 3 raw50.svg",
     width = 8, height = 5.6, pointsize = 12)
-plot(misha.raw$dist, misha.raw$X87Sr.86Sr, col=alpha("black",0.2),pch=16,
-     xlim=c(20000,8000),ylim=c(0.705,0.714),main="LA-ICP-MS raw data & 50 pt average",
+plot(misha.raw.dist, misha.raw.Sr, col=alpha("black",0.2),pch=16,
+     xlim=c(20000,8000),ylim=c(0.704,0.713),main="LA-ICP-MS raw data & 50 pt average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
 lines(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",lwd=1.5)
 points(n.avg.misha.50.dist, n.avg.misha.50.sr, col="#00b4ffff",pch=18)
 dev.off()
-#Panel b: range of measured water and food values?
-intake <- read.csv("data/intake.csv")
+
+#Panel b: range of measured water and food values
+load("out/post.misha.intake.RData")
+
+post.intake <- cbind(post.misha.intake$BUGSoutput$sims.list$w.hay[,1],
+                     post.misha.intake$BUGSoutput$sims.list$w.pel[,1], 
+                     post.misha.intake$BUGSoutput$sims.list$w.sup[,1], 
+                     post.misha.intake$BUGSoutput$sims.list$w.water[,1])
+colnames(post.intake) <- c("Hay", "Pellet", "Supp.","Water")
 
 ##### dot plot for measured food and water values######
 #536h * 330w
@@ -63,43 +50,20 @@ vioplot(post.intake, ylab="Sr intake (mg/day)", main ="Daily Sr intake",col=c(pl
 axis(4,at=c(0, 200, 400, 600) )
 
 #panel c
-load("out/post.misha.pc2p.RData")
-load("out/post.misha.1p50r.RData")
-svg(filename = "out/Fig 4 2pcal.svg",
-    width = 8, height = 5.6, pointsize = 12)
-par(mar = c(5.1, 4.1, 4.1, 2.1))
-plot(0,0, xlim = c(20000,8000), ylim = c(0.7066, 0.712), xlab = "distance", ylab ="Sr 87/86",
-     main="Two-pool model")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
-#4000 lines are too many
-#further thinning to 2000 lines
-ind.pc2p<- sample(dim(post.misha.pc2p$BUGSoutput$sims.list$Rs.m)[1],500,replace = F)
-MCMC.dist.plot(post.misha.pc2p$BUGSoutput$sims.list$Rs.m[ind.pc2p,],
-               post.misha.pc2p$BUGSoutput$sims.list$dist[ind.pc2p,])
-points(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
-       pch=18, col = "#00b4ffff")
-points(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
-       pch=18, col = "#00b4ffff")
+load("out/post.misha.pc2p3.RData")
 
-lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
-      lwd=1.5, col = "#00b4ffff")
-lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
-      lwd=1.5, col = "#00b4ffff")
-dev.off()
-###########updated panel c######
 svg(filename = "out/Fig 4 2pcal.svg",
     width = 8, height = 5.6, pointsize = 12)
 par(mar = c(5.1, 4.1, 4.1, 2.1))
-plot(0,0, xlim = c(20000,8000), ylim = c(0.7066, 0.712), xlab = "distance", ylab ="Sr 87/86",
+plot(0,0, xlim = c(20000,8000), ylim = c(0.705, 0.711), xlab = "distance", ylab ="Sr 87/86",
      main="Calibration")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
 #4000 lines are too many
 #further thinning to 2000 lines
-ind.pc2p<- sample(dim(post.misha.pc2p.erm$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
-MCMC.dist.plot(post.misha.pc2p.erm$BUGSoutput$sims.list$R1.m[ind.pc2p,],
-               post.misha.pc2p.erm$BUGSoutput$sims.list$dist[ind.pc2p,])
+ind.pc2p<- sample(dim(post.misha.pc2p3$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
+MCMC.dist.plot(post.misha.pc2p3$BUGSoutput$sims.list$R1.m[ind.pc2p,],
+               post.misha.pc2p3$BUGSoutput$sims.list$dist[ind.pc2p,])
 points(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
        pch=18, col = "#00b4ffff")
 points(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
@@ -111,62 +75,34 @@ lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.
       lwd=1.5, col = "#00b4ffff")
 dev.off()
 
-#panel d
-par(mar = c(5.1, 4.1, 4.1, 4.1))
-# par(mfrow=c(1,2))
-plot(density(post.misha.pc2p$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.06),ylim= c(0,150),
-     lwd = 2, col = plot.col.6[3],main="Two-pool model", xlab="parameter estimate")
-lines(density(post.misha.pc2p$BUGSoutput$sims.list$b, from = 0),lwd = 2, col = plot.col.6[4])
-lines(density(post.misha.pc2p$BUGSoutput$sims.list$c, from = 0),lwd = 2, col = plot.col.6[5])
-legend(0.02, 150, c("a","b", "c"),
-       lwd = rep(2, 3), col=c(plot.col.6[3:5]))
-
-######updated panel d#####
+######panel d#####
 #536h * 330w
 #panel d
 par(mfrow=c(3,1))
 par(mar = c(4.1, 4.1, 2.1, 4.1))
-# par(mfrow=c(1,2))
-plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.05),ylim= c(0,100),
-     lwd = 2, col = plot.col.6[3],main="a", xlab="parameter estimate")
-plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$b, from = 0), xlim = c(0,0.04),ylim= c(0,40),
-     lwd = 2, col = plot.col.6[4],main="b", xlab="parameter estimate")
-plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$c, from = 0, to = 1), xlim = c(0,1),ylim= c(0,1.2),
-     lwd = 2, col = plot.col.6[5],main="c", xlab="parameter estimate")
-
-######v2 updated panel d#####
-#536h * 330w
-#panel d
-par(mfrow=c(3,1))
-par(mar = c(4.1, 4.1, 2.1, 4.1))
-plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.05),ylim= c(0,100),
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.04),ylim= c(0,100),
      lwd = 2, col = plot.col.6[3],main="a & b", xlab="Parameter estimates")
-lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$b, from = 0),
+lines(density(post.misha.pc2p3$BUGSoutput$sims.list$b, from = 0),
      lwd = 2, col = plot.col.6[4])
+
 legend(0, 100, c("a","b"),
        lwd = rep(2, 2), col=c(plot.col.6[3:4]))
 
-plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$c, from = 0, to = 1), xlim = c(0,1),ylim= c(0,1.2),
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0, to = 0.01), xlim = c(0.001,0.009),ylim= c(0,420),
      lwd = 2, col = plot.col.6[5],main="c", xlab="Parameter estimate")
 
-# #violine plots in question
-# vioplot.a <- post.misha.pc2p.erm$BUGSoutput$sims.list$a[,1]
-# vioplot.b <- post.misha.pc2p.erm$BUGSoutput$sims.list$b[,1]
-# vioplot.c <- post.misha.pc2p.erm$BUGSoutput$sims.list$c[,1]
-# 
-# vioplot(vioplot.a, vioplot.b, trim=FALSE, ylab="Parameters", main ="Parameter estimates",
-#         col=c(plot.col.6[c(5,4)]),ylim=c(0,0.06))
-# axis(4,at=c(0, 200, 400, 600) )
-
+######panel e#####
 # make a contour map
-contour.flux.pool <- kde2d(post.misha.pc2p.erm$BUGSoutput$sims.list$flux.ratio[,1],
-                           post.misha.pc2p.erm$BUGSoutput$sims.list$pool.ratio[,1], n = 64,
-                           lims = c(c(0,4), c(0,80)))
-image(contour.flux.pool, col=viridis(64), xlab="Flux ratio: FI/FII", ylab="Pool ratio: PI/PII",xlim =c(0,4))
+par(mfrow=c(1,1))
+contour.flux.pool <- kde2d(post.misha.pc2p3$BUGSoutput$sims.list$flux.ratio[,1],
+                           post.misha.pc2p3$BUGSoutput$sims.list$pool.ratio[,1], n = 64,
+                           lims = c(c(0.9,1.8), c(0.1,0.5)))
+image(contour.flux.pool, col=viridis(64), xlab="Flux ratio: FI/FII", ylab="Pool ratio: PI/PII")
 contour(contour.flux.pool,lwd = 1, add = TRUE, labcex = 0.8)
 
 
 ########Figure 4 ##############
+load("out/post.misha.inv2perm.param.RData")
 #Results reconstructed input using Misha LA-ICP-MS series (without excursion, 50 pt)
 #days in x-axis, posterior of input (in calibration) vs reconstructed input (with excursion)
 #plotting reconstructed Rin history
@@ -206,14 +142,14 @@ svg(filename = "out/Fig 5ab.svg",
 par(mfrow=c(2,1))
 par(mar = c(4.1, 4.1, 3.1, 2.1))
 plot(Wooller.sub.raw$Dist_Seg01 *10000, Wooller.sub.raw$Sr_Seg01, col=alpha("black",0.2),pch=16,
-     xlim=c(500000,425000),ylim=c(0.707,0.715),main="LA-ICP-MS raw data & 500 micron average",
+     xlim=c(500000,425000),ylim=c(0.708,0.715),main="LA-ICP-MS raw data & 500 micron average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
 lines(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr,col="#00b4ffff",lwd=1.5)
 points(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr, col="#00b4ffff",pch=18)
 
 ##panel b, reconstructed series with days in the x axis
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,440), ylim = c(0.706, 0.714), xlab = "days", ylab ="Sr 87/86",
+plot(0,0, xlim = c(1,440), ylim = c(0.707, 0.714), xlab = "days", ylab ="Sr 87/86",
      main="Estimated input series from 500 micron average")
 #converting misha distance to days using rate Ivo.rate
 points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
@@ -228,30 +164,42 @@ lines(1:480,MCMC.ts.Rin.m.invmamm.param.erm.89[[3]], lwd = 1, lty = 2, col = "ma
 legend(300, 0.709, c("500 micron average","Estimated input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
 dev.off()
 ##panel c, posterior distribution of parameters 1) BM, 2) a, 3) half-life, compared to Misha
-#BM
-svg(filename = "out/Fig 5c.svg",
-    width = 8, height = 4, pointsize = 12)
-par(mfrow=c(1,2))
-par(mar = c(4.1, 4.1, 3.1, 2.1))
 
-plot(density(post.misha.invmamm.tsrwca.erm$BUGSoutput$sims.list$Body.mass.m), xlim = c(2000,9000),ylim= c(0,2.6e-3),
-     lwd=2,col="red", main ="Body mass")
-lines(density(post.misha.invmamm.tsrwca.erm$BUGSoutput$sims.list$Body.mass),
-      lwd=2, col="blue")
-legend(0.2,0.4, c("Misha","Mammoth"),lwd = c(2, 2), col=c("blue","red"))
+svg(filename = "out/Fig 5c.svg",
+    width = 8, height = 8, pointsize = 12)
+par(mfrow=c(2,3))
+par(mar = c(4.1, 4.1, 3.1, 1.1))
 
 #a
-plot(density(post.misha.invmamm.tsrwca.erm$BUGSoutput$sims.list$a.m), xlim = c(0.01, 0.05),ylim = c(0,100),
-     lwd=2,col="red", main ="Parameter a")
+plot(density(post.misha.invmamm.param.erm$BUGSoutput$sims.list$a.m), xlim = c(0.01, 0.05),ylim = c(0,120),
+     lwd=2,col="red", main ="Posterior densities: a", xlab="Parameter estimate")
 lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a),
       lwd=2, col="blue")
 legend(0.04,100, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
 
+#b
+plot(density(post.misha.invmamm.param.erm$BUGSoutput$sims.list$b.m, from = 0), xlim = c(0, 0.05),ylim = c(0,60),
+     lwd=2,col="red", main ="Posterior densities: b", xlab="Parameter estimate")
+lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$b, from = 0),
+      lwd=2, col="blue")
+legend(0.04,100, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
 
-################supp. one pool model#######
-plot(density(post.misha.1p50r$BUGSoutput$sims.list$a),xlim = c(0,0.06),ylim= c(0,150),
-     lwd = 2, col = plot.col.6[2],main="One-pool model", xlab="parameter estimate")
-# dev.off()
+#c
+plot(density(post.misha.invmamm.param.erm$BUGSoutput$sims.list$c.m, from = 0, to = 1), xlim = c(0, 1),ylim = c(0,1.8),
+     lwd=2,col="red", main ="Posterior densities: c", xlab="Parameter estimate")
+lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$c, from = 0, to = 1),
+      lwd=2, col="blue")
+legend(1.8,0.6, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
+dev.off()
+
+
+################supp. one-pool vs two-pool model comparison#######
+#parameter a#
+plot(density(post.misha.1p50r$BUGSoutput$sims.list$a),xlim = c(0.01,0.05),ylim= c(0,120),
+     lwd = 2, col = "red",main="Parameter a comparison", xlab="Parameter estimate")
+lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a, from = 0),
+     lwd = 2, col = "blue")
+
 
 ##panel c, prior and posterior for Re between the models
 
@@ -267,34 +215,6 @@ plot(density(post.misha.1p50r$BUGSoutput$sims.list$Re.mean),col="red",lwd=2,
      xlim=c(0.7095,0.7125),ylim=c(0,6e3), xlab="parameter estimate", main="One-pool model")#posterior
 lines(seq(0.7095,0.7125,0.00001),dnorm(seq(0.7095,0.7125,0.00001),mean = 0.711, sd= 1/sqrt(100/2e-5)))#prior
 dev.off()
-########Figure 5 ##############
-#panel a: pool ratio vs flux ratio contour map
-svg(filename = "out/Fig 5 bivar.svg",
-    width = 6, height = 6, pointsize = 12)
-par(mfrow=c(1,1))
-par(mar = c(5.1, 5.1, 5.1, 5.1))
-# make a contour map of flux ratio and pool ratio
-contour.flux.pool <- kde2d(post.misha.pc2p$BUGSoutput$sims.list$flux.ratio[,1],
-                           post.misha.pc2p$BUGSoutput$sims.list$pool.ratio[,1], n = 64,
-                           lims = c(c(0,8), c(0,1.6)))
-image(contour.flux.pool, col=viridis(64), xlab="Flux ratio: Fs/Fb", ylab="Pool ratio: Ps/Pb")
-contour(contour.flux.pool,lwd = 1.5, add = TRUE, labcex = 1)
-dev.off()
-
-#present half life in a table?
-##panel b, plot half life
-#calculate maximum a posteriori estimates of half-life for pool 1 and pool 2
-hl.p1<- map_estimate(log(2)/post.misha.pc2p$BUGSoutput$sims.list$a)
-hl.p2<- map_estimate(log(2)/post.misha.pc2p$BUGSoutput$sims.list$c)
-
-par(mfrow=c(1,2))
-par(mar = c(5.1, 4.1, 5.1, 3.1))
-plot(density(log(2)/post.misha.pc2p$BUGSoutput$sims.list$a, from = 0, to = 50) ,lwd = 2, col = plot.col.6[3],
-     ylim = c(0,0.08),main= "Half-life: pool 1",xlab="days")
-abline(v=hl.p1[[1]],lty=2,lwd=2)
-plot(density(log(2)/post.misha.pc2p$BUGSoutput$sims.list$c, from = 0, to = 600) ,lwd = 2, col = plot.col.6[5], 
-     xlim= c(0,600), ylim = c(0,0.005),main= "Half-life: pool 2 ",xlab="days")
-abline(v=hl.p2[[1]],lty=2,lwd=2)
 
 ######Figure 6 Results forward model###########
 #Results reconstructed input using forward model simulated ivory (serum) data
@@ -323,3 +243,15 @@ plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high),
 lines(1:length(syn.input.90), syn.input.90)
 lines(1:length(syn.input.90), Se.bone.res90[[1]],lwd=2, col = "#00b4ffff")
 dev.off()
+
+
+######Figure comparing laser ablation and micromill results######
+Misha.mm.4.6 <- read.csv("data/Misha micromill 400-600.csv")
+n.misha.4.6 <- dim(Misha.mm.4.6)
+par(mfrow=c(1,2))
+plot(n.misha.4.6[1]:1, Misha.mm.4.6$X87Sr.86Sr,ylim=c(0.706,0.712), type = "l",  
+     main ="Misha micromill", xlab="sample #",ylab="Sr 87/86")
+
+plot(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",type = "l",lwd=2,
+     xlim=c(20000,8000),ylim=c(0.706,0.712),main="LA-ICP-MS 50 pt average",
+     xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")

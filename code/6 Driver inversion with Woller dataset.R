@@ -94,9 +94,9 @@ max.dist.mea <- max(sub.mm.sim.avg.dist)+ 800 #add some distance before the simu
 
 #posterior samples of parameters from Misha calibration
 
-a.post <- post.misha.pc2p$BUGSoutput$sims.list$a[,1]
-b.post <- post.misha.pc2p$BUGSoutput$sims.list$b[,1]
-c.post <- post.misha.pc2p$BUGSoutput$sims.list$c[,1]
+a.post <- post.misha.pc2p3$BUGSoutput$sims.list$a[,1]
+b.post <- post.misha.pc2p3$BUGSoutput$sims.list$b[,1]
+c.post <- post.misha.pc2p3$BUGSoutput$sims.list$c[,1]
 post.leng <- length(a.post)
 
 parameters <- c("Ivo.rate","dist", "R1.m","Rin.m", "R2.m","a","b","c","exp.a","exp.bc",
@@ -113,7 +113,7 @@ t1 = proc.time()
 set.seed(t1[3])
 n.iter = 5e3
 n.burnin = 2e3
-n.thin = floor(n.iter-n.burnin)/500
+n.thin = 1
 
 #Run it
 post.misha.invmamm.param = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS param mamm.R", 
@@ -133,13 +133,13 @@ load("out/post.misha.invmamm.param.RData")
 plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$Ivo.rate))
 
 #check prior vs posterior parameters
-plot(density(post.misha.pc2p$BUGSoutput$sims.list$a[,1]), col = "black", lwd = 2, type="l",
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a[,1]), col = "black", lwd = 2, type="l",
      xlim = c(0.01,0.1), xlab = "a", ylab= "density")
 #lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a), col = "blue", lwd = 2)
 lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m), col = "red", lwd = 2)
 #slight deviation from prior
 
-plot(density(post.misha.pc2p$BUGSoutput$sims.list$c[,1]), col = "black", lwd = 2, type="l",
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c[,1]), col = "black", lwd = 2, type="l",
      xlim = c(0,0.1), xlab = "c", ylab= "density")
 #lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$c), col = "blue", lwd = 2)
 lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$c.m), col = "red", lwd = 2)
