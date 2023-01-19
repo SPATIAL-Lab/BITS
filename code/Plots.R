@@ -107,30 +107,30 @@ load("out/post.misha.inv2perm.param.RData")
 #days in x-axis, posterior of input (in calibration) vs reconstructed input (with excursion)
 #plotting reconstructed Rin history
 #750*500
-plot(0,0, xlim = c(1,620), ylim = c(0.706, 0.712), xlab = "days", ylab ="Sr 87/86",
+plot(0,0, xlim = c(1,700), ylim = c(0.705, 0.714), xlab = "days", ylab ="Sr 87/86",
      main="Fidelity test: model input series vs. estimated input series")
 #converting misha distance to days using rate Ivo.rate
 
 #Use posterior from the calibration run as reference, but use estimates, not posterior
-post.misha.pc2p.erm.Rin.89<- MCMC.CI.bound(post.misha.pc2p.erm$BUGSoutput$sims.list$Rin, 0.89)
-lines(1:700,post.misha.pc2p.erm.Rin.89[[1]],lwd = 2, col = "black")
-lines(1:700,post.misha.pc2p.erm.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
-lines(1:700,post.misha.pc2p.erm.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
+post.misha.pc2p3.Rin.89<- MCMC.CI.bound(post.misha.pc2p3$BUGSoutput$sims.list$Rin, 0.89)
+lines(1:750,post.misha.pc2p3.Rin.89[[1]],lwd = 2, col = "black")
+lines(1:750,post.misha.pc2p3.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
+lines(1:750,post.misha.pc2p3.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
 
-points((max(n.avg.misha.50.dist) + 30-n.avg.misha.50.dist.remv)/14.7,n.avg.misha.50.sr.remv, pch= 18, col="#00b3ffff")
+points((max(n.avg.misha.50.dist) + 30-n.avg.misha.50.dist.rmv)/14.7,n.avg.misha.50.sr.rmv, pch= 18, col="#00b3ffff")
 
 #estimated input series
 #estimated input series
-MCMC.misha.inv2perm.param.Rin.m.89 <- MCMC.CI.bound(post.misha.inv2perm.param$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:680,MCMC.misha.inv2perm.param.Rin.m.89[[1]],lwd = 2, col = "magenta")
-lines(1:680,MCMC.misha.inv2perm.param.Rin.m.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:680,MCMC.misha.inv2perm.param.Rin.m.89[[3]], lwd = 1, lty = 2, col = "magenta")
+MCMC.misha.inv2p3.param.Rin.m.89 <- MCMC.CI.bound(post.misha.inv2p3.param$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:750,MCMC.misha.inv2p3.param.Rin.m.89[[1]],lwd = 2, col = "magenta")
+lines(1:750,MCMC.misha.inv2p3.param.Rin.m.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:750,MCMC.misha.inv2p3.param.Rin.m.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(400, 0.708, c("Model input","Estimated input"),lwd = c(2, 2), col=c("black","magenta"))
 
 ##panel b adding prior vs posterior density plots#####
-plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.05),ylim= c(0,100),
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.04),ylim= c(0,140),
      lwd = 2, col = "red",main="a", xlab="parameter estimate")
-lines(density(post.misha.inv2perm.param$BUGSoutput$sims.list$a, from = 0),lwd = 2,col="blue")
+lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$a, from = 0),lwd = 2,col="blue")
 
 legend(0.03,100, c("Calibration","Fidelity test"),lwd = c(2, 2), col=c("red","blue"))
 
@@ -149,7 +149,7 @@ points(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr, col="#00b4ffff",pch=18)
 
 ##panel b, reconstructed series with days in the x axis
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,440), ylim = c(0.707, 0.714), xlab = "days", ylab ="Sr 87/86",
+plot(0,0, xlim = c(1,440), ylim = c(0.705, 0.714), xlab = "days", ylab ="Sr 87/86",
      main="Estimated input series from 500 micron average")
 #converting misha distance to days using rate Ivo.rate
 points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
@@ -157,10 +157,10 @@ points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
 # lines((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
 #       sub.mm.sim.avg.sr, lwd= 1.5, col="#00b4ffff")
 #estimated input series
-MCMC.ts.Rin.m.invmamm.param.erm.89<- MCMC.CI.bound(post.misha.invmamm.param.erm$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:480,MCMC.ts.Rin.m.invmamm.param.erm.89[[1]],lwd = 2, col = "magenta")
-lines(1:480,MCMC.ts.Rin.m.invmamm.param.erm.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:480,MCMC.ts.Rin.m.invmamm.param.erm.89[[3]], lwd = 1, lty = 2, col = "magenta")
+MCMC.ts.Rin.m.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(300, 0.709, c("500 micron average","Estimated input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
 dev.off()
 ##panel c, posterior distribution of parameters 1) BM, 2) a, 3) half-life, compared to Misha

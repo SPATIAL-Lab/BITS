@@ -17,7 +17,7 @@ setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 ####invterting laser abalition data from Wooller et al., 2021####
 Wooller <- read.csv("data/Wooller_Data_S3.csv")
 
-#dist is in cm, convert to mm
+#dist is in cm, convert to micron
 wooller.micron <- Wooller$Dist_Seg01*10000
 
 #foward model simulating micromill results (500 micron band)
@@ -111,8 +111,8 @@ dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 5e3
-n.burnin = 2e3
+n.iter = 8e3
+n.burnin = 4e3
 n.thin = 1
 
 #Run it
@@ -122,7 +122,7 @@ post.misha.invmamm.param = do.call(jags.parallel,list(model.file = "code/Sr inve
                                                       n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 10 hours
+proc.time() - t1 #~ 32 hours
 
 save(post.misha.invmamm.param, file = "out/post.misha.invmamm.param.RData")
 
@@ -134,13 +134,13 @@ plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$Ivo.rate))
 
 #check prior vs posterior parameters
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a[,1]), col = "black", lwd = 2, type="l",
-     xlim = c(0.01,0.1), xlab = "a", ylab= "density")
+     xlim = c(0,0.05), xlab = "a", ylab= "density")
 #lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a), col = "blue", lwd = 2)
 lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m), col = "red", lwd = 2)
 #slight deviation from prior
 
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c[,1]), col = "black", lwd = 2, type="l",
-     xlim = c(0,0.1), xlab = "c", ylab= "density")
+     xlim = c(0,0.01), xlab = "c", ylab= "density")
 #lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$c), col = "blue", lwd = 2)
 lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$c.m), col = "red", lwd = 2)
 #slight deviation from prior
@@ -156,7 +156,7 @@ plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$exp.bc))
 #do the posterior of a.m and c.m 
 
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,450), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")
+plot(0,0, xlim = c(1,450), ylim = c(0.705, 0.715), xlab = "days", ylab ="Sr 87/86")
 #converting misha distance to days using rate Ivo.rate
 points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
        sub.mm.sim.avg.sr, pch= 18, col="#00b4ffff")

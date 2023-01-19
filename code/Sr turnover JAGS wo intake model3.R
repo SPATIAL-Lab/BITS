@@ -5,13 +5,6 @@ model {
   #Data eveluation
 
   for (i in 1:n.mea){
-    #dist[1:t] is a descending sequence, no negative value is allowed
-
-    #Evaluating the mean of neighbouring data points
-    #this can accommodate variable growth rate of tusk
-    #the following "<" logical operations create vectors with 1s and 0s,
-    #dist.mea is used as reference; if dist falls within the bracket, then 1s will be recorded
-    #then inprod()/sum() is used to calculate the mean of all data points within the bracket
 
     R1.eva[i] <- inprod(R1.m, ((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))/sum(((dist.mea[i] + s.intv/2) < dist) - ((dist.mea[i] - s.intv/2)  < dist))
     #evaluate its ratio
@@ -30,31 +23,18 @@ model {
 
   #generate time series
   for (i in 2:t){
-    #serum ratio
-    #derivative of serum ratios is linearly correlated with the difference between serum and the two sources
-    #the tow sources are bone and intake
-    #R1.m[i] <- R1.m[i-1] + F2/P1 (R2.m[i-1] - R1.m[i-1]) + Fin/P1 (Rin[i-1] - R1.m[i-1])
+
     R1.m[i] <- R1.m[i - 1] + b * (R2.m[i - 1] - R1.m[i - 1]) + a * (Rin[i - 1] - R1.m[i - 1])
-    #a/b = Fin/F2
-    #c/b = P1/P2
-    #also a > b
-    #b < c
-    #bone ratios
-    #derivative of bone ratios is linearly correlated with the difference between serum and bone
-    #R1.m[i] <- R1.m[i-1] + F2/P2 (R1.m[i-1] - R2.m[i-1])
+
     R2.m[i] <- R2.m[i - 1] + c * (R1.m[i - 1] - R2.m[i - 1])
     
   }#can use three parameters instead
-  
-  #define the three parameters with uninformative priors
-  #parameter constraints: a > b, because Fin > F2; 
+
   c ~ dunif(0, 1)
   b <- a * b.coef
   b.coef ~ dunif(0, 1)
   a ~ dunif(0, 1)
 
-  #model initial values for bone and serum
-  #assume that bone value is similar to serum, but use a different error term
   R2.m[1] ~ dnorm(R1.m[1], Sr.pre.2) 
   R1.m[1] ~ dnorm(R0.mean, R0.pre)
   
@@ -68,9 +48,6 @@ model {
   
   switch ~ dcat(pi)
   
-  #building a vector of weights for the switch point and allow some error
-  #the suspected switch point is 76 out of t
-  #so the values between 74 and 78 are allowed
   pi <- c(pi.int, pi.switch, pi.end)
     
   pi.end <- rep(0, t - date - err.date)
@@ -105,10 +82,5 @@ model {
   
   Sr.pre.shape <- 100
   Sr.pre.rate.1 <- 5e-6
-  
-
-  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
-  Body.mass.mean <- 3000 # kg
-  Body.mass.sd <- 250 # kg
   
 }

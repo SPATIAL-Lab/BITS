@@ -87,6 +87,9 @@ subset(post.misha.pc2p.erm$BUGSoutput$summary,
 subset(post.misha.pc2p.erm$BUGSoutput$summary,
        rownames(post.misha.pc2p.erm$BUGSoutput$summary)=="c")
 
+plot(density(post.misha.pc2p.erm$BUGSoutput$sims.list$Ivo.rate))
+abline(v=14.7)
+
 MAP.a <- map_estimate(post.misha.pc2p.erm$BUGSoutput$sims.list$a)
 MAP.a[1]
 HDI.a <- hdi(post.misha.pc2p.erm$BUGSoutput$sims.list$a,0.89)

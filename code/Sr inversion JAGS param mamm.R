@@ -48,7 +48,7 @@ model {
 
   }
   # initiate the series with an reasonable prior
-  Rin.m[1] ~ dnorm(Rin.int, Rin.m.pre) #allowed some variation
+  Rin.m[1] ~ dnorm(Rin.int, 1/0.0005^2) #allowed some variation
   
   Rin.int ~ dnorm(0.710, 1/0.01^2)  #an uninformative initial value
   
@@ -57,7 +57,7 @@ model {
   
   Rin.m.pre ~ dgamma(Rin.m.pre.shp, Rin.m.pre.rate)
   Rin.m.pre.shp = 100
-  Rin.m.pre.rate = 2.3e-7
+  Rin.m.pre.rate = 2e-7
   
   ####scaling parameters a, b, c to body mass of the subject#####
   a.m <- a * ((Body.mass.m/Body.mass)^exp.a)
