@@ -65,46 +65,27 @@ MCMC.dist.median <- function(MCMC.res){
   return(MCMC.res.med)
 }
 
-pri.multi.norm.den <- function(X.min,X.max,mu,vcov){
-  require(OpenMx)
-  X.range <- X.max - X.min
-  X.interval <- X.range/512
-  X.multinorm <- seq(from = X.min, to = X.max, by = X.interval)
-  dim.vcov <- dim(vcov)
-  
-  #initiate density matrix
-  density <- as.data.frame(matrix(0, nrow=length(X.multinorm), ncol = dim.vcov[1]))
-  
-  #initiate index matrix
-  index <- as.data.frame(matrix(nrow=dim.vcov[1], ncol = 2))
-  for (i in 1: dim.vcov[1]){
-    index[1,i] <- X.min
-    index[2,i] <- X.max
+#Function 5: plotting points with error bars
+PlotPE <- function(x, y, error.y, col){
+  if(length(x) != length(y)){
+    warning("Error in plot.xy, x and y have different lengths")
+  }
+  if(length(x) != length(error.y)){
+    warning("Error in plot.xy, x and error.y have different lengths")
+  }
+  if(length(y) != length(error.y)){
+    warning("Error in plot.xy, y and error.y have different lengths")
+  }
+  if(is.null(col)){
+    warning("Please specify plotting color")
   }
   
-  for (i in 1: dim.vcov[1]){
-    for(j in 2:length(X.multinorm)){
-      #assigning new values
-      index[1,i] <- X.multinorm[j-1]
-      index[2,i] <- X.multinorm[j]
-      #integrating one interval for density[i]
-      density[i,j-1] <- omxMnor(vcov,mu,index[1,],index[2,])
-    }
-    #revert to the default values
-    index[1,i] <- X.min
-    index[2,i] <- X.max
+  n <- length(x)
+  
+  for(i in 1:n){
+    arrows(x[i], y[i], x[i], y[i] + error.y[i], length = 0.03, angle = 90, col = col)
+    arrows(x[i], y[i], x[i], y[i] - error.y[i], length = 0.03, angle = 90, col = col)
   }
+  points (x, y, pch = 16, col = col)
   
-  #scaling density values to 1
-  density.sc <- density[,]/X.interval
-  
-  #monitoring the density scaling approximation
-  #the sum should be close to 1
-  
-  for (i in 1: dim.vcov[1]){
-    print(sum(density[i,]))
-  }
-  
-  results<-list(x = (X.multinorm[1:512]+ X.interval/2), y = density.sc)
-  return(results)
 }
