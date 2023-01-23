@@ -102,7 +102,7 @@ contour(contour.flux.pool,lwd = 1, add = TRUE, labcex = 0.8)
 
 
 ########Figure 4 ##############
-load("out/post.misha.inv2perm.param.RData")
+load("out/post.misha.inv2p3.param.RData")
 #Results reconstructed input using Misha LA-ICP-MS series (without excursion, 50 pt)
 #days in x-axis, posterior of input (in calibration) vs reconstructed input (with excursion)
 #plotting reconstructed Rin history
@@ -128,11 +128,20 @@ lines(1:750,MCMC.misha.inv2p3.param.Rin.m.89[[3]], lwd = 1, lty = 2, col = "mage
 legend(400, 0.708, c("Model input","Estimated input"),lwd = c(2, 2), col=c("black","magenta"))
 
 ##panel b adding prior vs posterior density plots#####
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.04),ylim= c(0,140),
+par(mfrow=c(3,1))
+par(mar = c(4.1, 4.1, 3.1, 2.1))
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.04),ylim= c(0,120),
      lwd = 2, col = "red",main="a", xlab="parameter estimate")
 lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$a, from = 0),lwd = 2,col="blue")
-
 legend(0.03,100, c("Calibration","Fidelity test"),lwd = c(2, 2), col=c("red","blue"))
+
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$b, from = 0), xlim = c(0,0.04),ylim= c(0,120),
+     lwd = 2, col = "red",main="b", xlab="parameter estimate")
+lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$b, from = 0),lwd = 2,col="blue")
+
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0), xlim = c(0,0.01),ylim= c(0,400),
+     lwd = 2, col = "red",main="c", xlab="parameter estimate")
+lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$c, from = 0),lwd = 2,col="blue")
 
 ########Figure 5 ##############
 load("out/post.misha.invmamm.param.erm.RData")
@@ -191,6 +200,17 @@ lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$c, from = 0, to = 1),
       lwd=2, col="blue")
 legend(1.8,0.6, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
 dev.off()
+
+#new panel c: comparing densities of laser ablation data and estimated input
+
+plot(density(MCMC.ts.Rin.m.invmamm.param.89[[1]]),col="magenta",lwd=2, ylim=c(0,500),xlim = c(0.704,0.716))
+lines(density(sub.mm.sim.avg.sr),col="#00b4ffff",lwd=2)
+
+plot(density(MCMC.ts.Rin.m.invmamm.s.89[[1]]),col="magenta",lwd=2, ylim=c(0,500),xlim = c(0.704,0.716))
+lines(density(sub.mm.sim.avg.sr),col="#00b4ffff",lwd=2)
+
+plot(density(MCMC.ts.Rin.m.invmamm.s.89[[1]]),col="magenta",lwd=2, ylim=c(0,500),xlim = c(0.704,0.716))
+lines(density(Wooller.sub.raw$Sr_Seg01),col="#00b4ffff",lwd=2)
 
 
 ################supp. one-pool vs two-pool model comparison#######
