@@ -101,12 +101,115 @@ micromill.sim <- function(max.dist, intv, dist.m, Rs.m){
 }
 
 ####begin forward model####
+#loading MAP estimates from posterior of the calibration
+a <- MAP.a[1]
+b <- MAP.b[1]
+c <- MAP.c[1]
+a
+b
+c
+
+#to change pool ratio, change c; to change flux ratio, change a
+# flux.ratio <- a/b
+# pool.ratio <- c/b
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed durations#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res.misha <- Se.bone.res[[1]]
+
+#change pool ratio: make c smaller or larger
+a <- MAP.a[1]
+b <- MAP.b[1]
+c <- 0.01 #MAP = 0.0041
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed durations#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res.prs <- Se.bone.res[[1]]
+
+#change pool ratio: make c smaller or larger
+a <- MAP.a[1]
+b <- MAP.b[1]
+c <- 0.001 #MAP = 0.0041
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed durations#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+Se.bone.res.prl <- Se.bone.res[[1]]
+
+
+#change flux ratio: make a smaller or larger
+a <- 0.04 #MAP = 0.0169
+b <- MAP.b[1]
+c <- MAP.c[1]
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed durations#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+
+Se.bone.res.frl <- Se.bone.res[[1]]
+
+#change flux ratio: make a smaller or larger
+a <- MAP.b[1] #MAP = 0.0169
+b <- MAP.b[1]
+c <- MAP.c[1]
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed durations#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+
+Se.bone.res.frs <- Se.bone.res[[1]]
+###plots###
+#plot input, serum history, and simulated micromill values
+plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="Pool ratio")
+lines(1:t, input.misha)
+lines(1:t, Se.bone.res.misha,lwd=2, col = "#00b4ffff")
+lines(1:t, Se.bone.res.prl,lwd=2, col = plot.col.6[1])
+lines(1:t, Se.bone.res.prs,lwd=2, col = plot.col.6[3])
+legend(300,0.708,c("Larger pool ratio","Smaller pool ratio"),col=c(plot.col.6[1],plot.col.6[3]),
+       lwd = c(2,2))
+
+plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="Flux ratio")
+lines(1:t, input.misha)
+lines(1:t, Se.bone.res.misha,lwd=2, col = "#00b4ffff")
+lines(1:t, Se.bone.res.frl,lwd=2, col = plot.col.6[1])
+lines(1:t, Se.bone.res.frs,lwd=2, col = plot.col.6[3])
+legend(300,0.708,c("Larger flux ratio","Smaller flux ratio"),col=c(plot.col.6[1],plot.col.6[3]),
+       lwd = c(2,2))
+
+
 ##########180 day switch#########
 #1 extract turnover parameters, use MAP in the forward model
 #parameters a, b, and c from parameter estimates in file 3
-a <- MCMC.CI.a[[1]]
-b <- MCMC.CI.b[[1]]
-c <- MCMC.CI.c[[1]]
+a <- MAP.a[1]
+b <- MAP.b[1]
+c <- MAP.c[1]
 
 #2 number of days in the simulation
 t <- 900
