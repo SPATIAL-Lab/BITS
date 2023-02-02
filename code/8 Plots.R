@@ -144,21 +144,21 @@ plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0), xlim = c(0,0.01
 lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$c, from = 0),lwd = 2,col="blue")
 
 ########Figure 5 ##############
-load("out/post.misha.invmamm.param.erm.RData")
+load("out/post.misha.invmamm.param.RData")
 ##panel a, raw data and 500 micron average data###
 svg(filename = "out/Fig 5ab.svg",
     width = 8, height = 8, pointsize = 12)
 par(mfrow=c(2,1))
 par(mar = c(4.1, 4.1, 3.1, 2.1))
 plot(Wooller.sub.raw$Dist_Seg01 *10000, Wooller.sub.raw$Sr_Seg01, col=alpha("black",0.2),pch=16,
-     xlim=c(500000,425000),ylim=c(0.708,0.715),main="LA-ICP-MS raw data & 500 micron average",
+     xlim=c(500000,425000),ylim=c(0.704,0.715),main="LA-ICP-MS raw data & 500 micron average",
      xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")#plot all raw data points
 lines(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr,col="#00b4ffff",lwd=1.5)
 points(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr, col="#00b4ffff",pch=18)
 
 ##panel b, reconstructed series with days in the x axis
 #plotting reconstructed Rin history
-plot(0,0, xlim = c(1,440), ylim = c(0.705, 0.714), xlab = "days", ylab ="Sr 87/86",
+plot(0,0, xlim = c(1,440), ylim = c(0.704, 0.715), xlab = "days", ylab ="Sr 87/86",
      main="Estimated input series from 500 micron average")
 #converting misha distance to days using rate Ivo.rate
 points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
@@ -166,75 +166,58 @@ points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
 # lines((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
 #       sub.mm.sim.avg.sr, lwd= 1.5, col="#00b4ffff")
 #estimated input series
-MCMC.ts.Rin.m.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "magenta")
-lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
+MCMC.ts.Rin.m.invmamm.i.89<- MCMC.CI.bound(post.misha.invmamm.i$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[1]],lwd = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(300, 0.709, c("500 micron average","Estimated input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
 dev.off()
 ##panel c, posterior distribution of parameters 1) BM, 2) a, 3) half-life, compared to Misha
 
 svg(filename = "out/Fig 5c.svg",
-    width = 8, height = 8, pointsize = 12)
-par(mfrow=c(2,3))
+    width = 8, height = 3, pointsize = 12)
+par(mfrow=c(1,3))
 par(mar = c(4.1, 4.1, 3.1, 1.1))
 
 #a
-plot(density(post.misha.invmamm.param.erm$BUGSoutput$sims.list$a.m), xlim = c(0.01, 0.05),ylim = c(0,120),
+plot(density(post.misha.invmamm.i$BUGSoutput$sims.list$a.m), xlim = c(0, 0.04),ylim = c(0,120),
      lwd=2,col="red", main ="Posterior densities: a", xlab="Parameter estimate")
-lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a),
+lines(density(post.misha.pc2p3$BUGSoutput$sims.list$a),
       lwd=2, col="blue")
-legend(0.04,100, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
+legend(0,124, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
 
 #b
-plot(density(post.misha.invmamm.param.erm$BUGSoutput$sims.list$b.m, from = 0), xlim = c(0, 0.05),ylim = c(0,60),
+plot(density(post.misha.invmamm.i$BUGSoutput$sims.list$b.m, from = 0), xlim = c(0, 0.04),ylim = c(0,120),
      lwd=2,col="red", main ="Posterior densities: b", xlab="Parameter estimate")
-lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$b, from = 0),
+lines(density(post.misha.pc2p3$BUGSoutput$sims.list$b, from = 0),
       lwd=2, col="blue")
-legend(0.04,100, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
-
 #c
-plot(density(post.misha.invmamm.param.erm$BUGSoutput$sims.list$c.m, from = 0, to = 1), xlim = c(0, 1),ylim = c(0,1.8),
+plot(density(post.misha.invmamm.i$BUGSoutput$sims.list$c.m, from = 0, to = 0.01), xlim = c(0, 0.01),ylim = c(0,500),
      lwd=2,col="red", main ="Posterior densities: c", xlab="Parameter estimate")
-lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$c, from = 0, to = 1),
+lines(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0, to = 0.01),
       lwd=2, col="blue")
-legend(1.8,0.6, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
 dev.off()
 
-#new panel c: comparing densities of laser ablation data and estimated input
-
-plot(density(MCMC.ts.Rin.m.invmamm.param.89[[1]]),col="magenta",lwd=2, ylim=c(0,500),xlim = c(0.704,0.716))
-lines(density(sub.mm.sim.avg.sr),col="#00b4ffff",lwd=2)
-
-plot(density(MCMC.ts.Rin.m.invmamm.s.89[[1]]),col="magenta",lwd=2, ylim=c(0,500),xlim = c(0.704,0.716))
-lines(density(sub.mm.sim.avg.sr),col="#00b4ffff",lwd=2)
-
-plot(density(MCMC.ts.Rin.m.invmamm.s.89[[1]]),col="magenta",lwd=2, ylim=c(0,500),xlim = c(0.704,0.716))
-lines(density(Wooller.sub.raw$Sr_Seg01),col="#00b4ffff",lwd=2)
-
-
-################supp. one-pool vs two-pool model comparison#######
-#parameter a#
-plot(density(post.misha.1p50r$BUGSoutput$sims.list$a),xlim = c(0.01,0.05),ylim= c(0,120),
-     lwd = 2, col = "red",main="Parameter a comparison", xlab="Parameter estimate")
-lines(density(post.misha.pc2p.erm$BUGSoutput$sims.list$a, from = 0),
-     lwd = 2, col = "blue")
-
-
-##panel c, prior and posterior for Re between the models
-
-svg(filename = "out/Fig 4 post2p.svg",
-    width = 8, height = 5.6, pointsize = 12)
-par(mar = c(5.1, 4.1, 4.1, 4.1))
+#panel d: comparing densities of laser ablation data and estimated input
+svg(filename = "out/Fig 5d.svg",
+    width = 8, height = 4, pointsize = 12)
 par(mfrow=c(1,2))
-plot(density(post.misha.pc2p$BUGSoutput$sims.list$Re.mean),col="red",lwd=2,
-     xlim=c(0.7095,0.7125),ylim=c(0,6e3), xlab="parameter estimate", main="Two-pool model")#posterior
-lines(seq(0.7095,0.7125,0.00001),dnorm(seq(0.7095,0.7125,0.00001),mean = 0.711, sd= 1/sqrt(100/2e-5)))#prior
+plot(density(MCMC.ts.Rin.m.invmamm.i.89[[1]][1:450],bw=3e-4),col="magenta",lwd=2, 
+     main= "Data Densities", ylim=c(0,500),xlim = c(0.704,0.716), xlab= "87Sr/86Sr")
+lines(density(sub.mm.sim.avg.sr,bw=3e-4),col="#00b4ffff",lwd=2)
+legend(0.704,500, c("Measured ivory","Estimated intake"),lwd = c(2, 2), col=c("#00b4ffff","magenta"))
 
-plot(density(post.misha.1p50r$BUGSoutput$sims.list$Re.mean),col="red",lwd=2,
-     xlim=c(0.7095,0.7125),ylim=c(0,6e3), xlab="parameter estimate", main="One-pool model")#posterior
-lines(seq(0.7095,0.7125,0.00001),dnorm(seq(0.7095,0.7125,0.00001),mean = 0.711, sd= 1/sqrt(100/2e-5)))#prior
+invmamm.i.fr<-post.misha.invmamm.i$BUGSoutput$sims.list$a.m[,1]/post.misha.invmamm.i$BUGSoutput$sims.list$b.m[,1]
+invmamm.i.pr<-post.misha.invmamm.i$BUGSoutput$sims.list$c.m[,1]/post.misha.invmamm.i$BUGSoutput$sims.list$b.m[,1]
+contour.i.flux.pool <- kde2d(invmamm.i.fr,
+                           invmamm.i.pr, n = 64,
+                           lims = c(c(1,1.8), c(0.1,0.4)))
+image(contour.i.flux.pool, col=viridis(64), main="Bivariate density",
+      xlab="Flux ratio: Fin/FII", ylab="Pool ratio: PI/PII")
+contour(contour.i.flux.pool,lwd = 1, add = TRUE, labcex = 0.8)
 dev.off()
+
+
 
 ######Figure 6 Results forward model###########
 #Results reconstructed input using forward model simulated ivory (serum) data
@@ -264,14 +247,3 @@ lines(1:length(syn.input.90), syn.input.90)
 lines(1:length(syn.input.90), Se.bone.res90[[1]],lwd=2, col = "#00b4ffff")
 dev.off()
 
-
-######Figure comparing laser ablation and micromill results######
-Misha.mm.4.6 <- read.csv("data/Misha micromill 400-600.csv")
-n.misha.4.6 <- dim(Misha.mm.4.6)
-par(mfrow=c(1,2))
-plot(n.misha.4.6[1]:1, Misha.mm.4.6$X87Sr.86Sr,ylim=c(0.706,0.712), type = "l",  
-     main ="Misha micromill", xlab="sample #",ylab="Sr 87/86")
-
-plot(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",type = "l",lwd=2,
-     xlim=c(20000,8000),ylim=c(0.706,0.712),main="LA-ICP-MS 50 pt average",
-     xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")

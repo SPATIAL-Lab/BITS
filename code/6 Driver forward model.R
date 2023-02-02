@@ -36,8 +36,8 @@ initiate.switch <- function(t, n.switch, day.switch, a, gap, duration){
     return(Sr.input)
 }
 
-###function 2: model serum and bone values####
-Se.bone.forw.m <- function(t, input, a, b, c, Rs.int, Rb.int){
+###function 2: model P1 and P2 values####
+forw.m <- function(t, input, a, b, c, R1.int, R2.int){
   if(length(input != t)){
     #warning("Length of input has to be same as t. Vector input is being recycled")
     Rin <- rep(0,t) #Initiate Rin
@@ -46,58 +46,24 @@ Se.bone.forw.m <- function(t, input, a, b, c, Rs.int, Rb.int){
   else{
     Rin <- input
   }
-  Rb <- rep(0,t) #initiate rb
-  Rs <- rep(0,t) #initiate rb
-  if(is.null(Rs.int)){
-    Rs[1] <- input[1]
+  R2 <- rep(0,t) #initiate 
+  R1 <- rep(0,t) #initiate 
+  if(is.null(R1.int)){
+    R1[1] <- input[1]
   }
-  if(is.null(Rb.int)){
-    Rb[1] <- input[1]
+  if(is.null(R2.int)){
+    R2[1] <- input[1]
   }
   else{
-    Rb[1] <- Rb.int
-    Rs[1] <- Rs.int
+    R2[1] <- R2.int
+    R1[1] <- R1.int
   }
   for (i in 2:t){ #generate serum and bone series
-    #serum ratio
-    Rs[i] <- Rs[i - 1] + b * (Rb[i - 1] - Rs[i - 1]) + a * (Rin[i - 1] - Rs[i - 1])
+    R1[i] <- R1[i - 1] + b * (R2[i - 1] - R1[i - 1]) + a * (Rin[i - 1] - R1[i - 1])
     
-    #bone ratios
-    Rb[i] <- Rb[i - 1] + c * (Rs[i - 1] - Rb[i - 1])
+    R2[i] <- R2[i - 1] + c * (R1[i - 1] - R2[i - 1])
   }
-  return(list(Rs, Rb))
-}
-
-
-###function 3: ivory growth simulation using mean and sd of growth rate####
-
-gorwth.sim <- function(t, max.dist, rate, rate.sd){
-  dist.m <- rep(0,t) #initiate dist
-  
-  dist.m[1] <- max.dist#maximum distance from the pulp cavity in microns
-  
-  #generate random rates
-  Ivo.rate <- rnorm(t, rate, rate.sd) #ivory growth rate, micron/day
-  
-  #model ivory growth
-  for (i in 2:t){
-    dist.m[i] <- dist.m[i - 1] - Ivo.rate[i] #simulate daily distance increment
-  }
-  return(dist.m)
-}
-
-###function 4: model micromill results given growth rate and sampling interval####
-micromill.sim <- function(max.dist, intv, dist.m, Rs.m){
-  dist.mic <- seq(max.dist, 0, by = - intv) - intv/2
-  n.mic <- length(dist.mic - 1) #remove the last point to avoid negative distance
-  #model averaging
-  Rs.eva <- rep(0, n.mic)#initiate vector
-  for (i in 1:n.mic){
-    vect.upp <- as.integer((dist.mic[i] + intv/2) < dist.m)
-    vect.low <- as.integer((dist.mic[i] - intv/2) < dist.m)
-    Rs.eva[i] <- (Rs.m %*% (vect.upp - vect.low))/sum(vect.upp - vect.low)
-  }
-  return(list(dist.mic, Rs.eva))
+  return(list(R1, R2))
 }
 
 ####begin forward model####
@@ -120,8 +86,8 @@ t <- 900
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
-Se.bone.res.misha <- Se.bone.res[[1]]
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
+res.misha <- res[[1]]
 
 #change pool ratio: make c smaller or larger
 a <- MAP.a[1]
@@ -135,8 +101,8 @@ t <- 900
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
-Se.bone.res.prs <- Se.bone.res[[1]]
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
+res.prs <- res[[1]]
 
 #change pool ratio: make c smaller or larger
 a <- MAP.a[1]
@@ -150,8 +116,8 @@ t <- 900
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
-Se.bone.res.prl <- Se.bone.res[[1]]
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
+res.prl <- res[[1]]
 
 
 #change flux ratio: make a smaller or larger
@@ -166,9 +132,8 @@ t <- 900
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
-
-Se.bone.res.frl <- Se.bone.res[[1]]
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
+res.frl <- res[[1]]
 
 #change flux ratio: make a smaller or larger
 a <- MAP.b[1] #MAP = 0.0169
@@ -182,25 +147,25 @@ t <- 900
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res <- Se.bone.forw.m(t = 900, input = input.misha, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 
-Se.bone.res.frs <- Se.bone.res[[1]]
+res.frs <- res[[1]]
 ###plots###
 #plot input, serum history, and simulated micromill values
 plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="Pool ratio")
 lines(1:t, input.misha)
-lines(1:t, Se.bone.res.misha,lwd=2, col = "#00b4ffff")
-lines(1:t, Se.bone.res.prl,lwd=2, col = plot.col.6[1])
-lines(1:t, Se.bone.res.prs,lwd=2, col = plot.col.6[3])
+lines(1:t, res.misha,lwd=2, col = "#00b4ffff")
+lines(1:t, res.prl,lwd=2, col = plot.col.6[1])
+lines(1:t, res.prs,lwd=2, col = plot.col.6[3])
 legend(300,0.708,c("Intake","Reference (Misha)","Larger pool ratio","Smaller pool ratio"),
        col=c("black","#00b4ffff",plot.col.6[1],plot.col.6[3]),
        lwd = c(1,2,2,2))
 
 plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="Flux ratio")
 lines(1:t, input.misha)
-lines(1:t, Se.bone.res.misha,lwd=2, col = "#00b4ffff")
-lines(1:t, Se.bone.res.frl,lwd=2, col = plot.col.6[1])
-lines(1:t, Se.bone.res.frs,lwd=2, col = plot.col.6[3])
+lines(1:t, res.misha,lwd=2, col = "#00b4ffff")
+lines(1:t, res.frl,lwd=2, col = plot.col.6[1])
+lines(1:t, res.frs,lwd=2, col = plot.col.6[3])
 legend(300,0.708,c("Intake","Reference (Misha)","Larger flux ratio","Smaller flux ratio"),
        col=c("black","#00b4ffff",plot.col.6[1],plot.col.6[3]),
        lwd = c(1,2,2,2))
@@ -225,7 +190,7 @@ syn.low <- 0.707
 syn.input.150 <- c(rep(syn.mid,30), rep(syn.high,150),rep(syn.mid,30),rep(syn.low,150)  )
 syn.input.150 <- rep(syn.input.150,2)
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res150 <- Se.bone.forw.m(t = length(syn.input.150), input = syn.input.150, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+res150 <- forw.m(t = length(syn.input.150), input = syn.input.150, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 
 ######end of forward model######
 
@@ -236,7 +201,7 @@ par(mfrow=c(3,1))
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="87Sr/86Sr",
      main="150-day ends & 30-day intermediate switches")
 lines(1:length(syn.input.150), syn.input.150)
-lines(1:length(syn.input.150), Se.bone.res150[[1]],lwd=2, col = "#00b4ffff")
+lines(1:length(syn.input.150), res150[[1]],lwd=2, col = "#00b4ffff")
 legend(600,0.711,c("Intake","Ivory"),lwd = c(1,2), col=c("black","#00b4ffff"))
 ##150 day switch ~65% of the original input
 
@@ -260,7 +225,7 @@ syn.low <- 0.707
 syn.input.120 <- c(rep(syn.mid,60), rep(syn.high,120),rep(syn.mid,60),rep(syn.low,120)  )
 syn.input.120 <- rep(syn.input.120,2)
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res120 <- Se.bone.forw.m(t = length(syn.input.120), input = syn.input.120, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+res120 <- forw.m(t = length(syn.input.120), input = syn.input.120, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 
 ######end of forward model######
 
@@ -269,7 +234,7 @@ Se.bone.res120 <- Se.bone.forw.m(t = length(syn.input.120), input = syn.input.12
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="87Sr/86Sr",
      main="120-day ends & 60-day intermediate switches")
 lines(1:length(syn.input.120), syn.input.120)
-lines(1:length(syn.input.120), Se.bone.res120[[1]],lwd=2, col = "#00b4ffff")
+lines(1:length(syn.input.120), res120[[1]],lwd=2, col = "#00b4ffff")
 
 ##120 day switch ~60% of the original input
 
@@ -295,7 +260,7 @@ syn.input.60 <- c(rep(syn.mid,30), rep(syn.high,60),rep(syn.mid,30),rep(syn.low,
 syn.input.60 <- rep(syn.input.60,4)
 
 #4 generate serum and bone series based on input series and turnover parameters#
-Se.bone.res60 <- Se.bone.forw.m(t = length(syn.input.60), input = syn.input.60, a = a, b = b, c = c, Rs.int = NULL, Rb.int = NULL)
+res60 <- forw.m(t = length(syn.input.60), input = syn.input.60, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 ######end of forward model######
 
 ###plots###

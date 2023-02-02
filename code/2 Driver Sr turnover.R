@@ -117,9 +117,23 @@ subset(post.misha.pc2p3$BUGSoutput$summary,
 
 MAP.a <- map_estimate(post.misha.pc2p3$BUGSoutput$sims.list$a)
 MAP.a[1]
-HDI.a <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$a,0.89)
-HDI.a$CI_low
-HDI.a$CI_high
+log(2)/MAP.a[1]
+MAP.b <- map_estimate(post.misha.pc2p3$BUGSoutput$sims.list$b)
+MAP.b[1]
+
+MAP.c <- map_estimate(post.misha.pc2p3$BUGSoutput$sims.list$c)
+MAP.c[1]
+log(2)/MAP.c[1]
+
+MCMC.CI.a <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$a,0.89)
+MCMC.CI.a$CI_low
+MCMC.CI.a$CI_high
+MCMC.CI.b <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$b,0.89)
+MCMC.CI.b$CI_low
+MCMC.CI.b$CI_high
+MCMC.CI.c <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$c,0.89)
+MCMC.CI.c$CI_low
+MCMC.CI.c$CI_high
 
 plot(0,0, xlim = c(20000,8000), ylim = c(0.705, 0.711), xlab = "distance", ylab ="Sr 87/86",
      main="Calibration")
