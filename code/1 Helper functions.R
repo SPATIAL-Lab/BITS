@@ -19,7 +19,7 @@ MCMC.CI.bound <- function (MCMC.res, CI){
   return (list(map.res, hdi.low, hdi.high, CI))
 }
 
-#modeled sampling distance to compare with raw data, can be used to visualize serum values (Rs.m)
+#modeled sampling distance to compare with raw data, can be used to visualize Pool1 values (R1.m)
 MCMC.dist.plot <- function(MCMC.res, MCMC.dist){#t is the number of days in the model
   require(scales)
   
@@ -36,7 +36,7 @@ MCMC.dist.plot <- function(MCMC.res, MCMC.dist){#t is the number of days in the 
   
 }
 
-#reconstructed time line, could be serum(Rs.m), input(Rin), modeled distance(dist).
+#reconstructed time line, could be serum(R1.m), input(Rin), modeled distance(dist).
 MCMC.tl.plot <- function(MCMC.res, t){#t is the number of days in the model
   require(scales)
   

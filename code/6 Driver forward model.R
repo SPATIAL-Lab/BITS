@@ -150,28 +150,8 @@ input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005
 res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 
 res.frs <- res[[1]]
-###plots###
-#plot input, serum history, and simulated micromill values
-plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="Pool ratio")
-lines(1:t, input.misha)
-lines(1:t, res.misha,lwd=2, col = "#00b4ffff")
-lines(1:t, res.prl,lwd=2, col = plot.col.6[1])
-lines(1:t, res.prs,lwd=2, col = plot.col.6[3])
-legend(300,0.708,c("Intake","Reference (Misha)","Larger pool ratio","Smaller pool ratio"),
-       col=c("black","#00b4ffff",plot.col.6[1],plot.col.6[3]),
-       lwd = c(1,2,2,2))
 
-plot(0,0, xlim = c(1,t), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="Flux ratio")
-lines(1:t, input.misha)
-lines(1:t, res.misha,lwd=2, col = "#00b4ffff")
-lines(1:t, res.frl,lwd=2, col = plot.col.6[1])
-lines(1:t, res.frs,lwd=2, col = plot.col.6[3])
-legend(300,0.708,c("Intake","Reference (Misha)","Larger flux ratio","Smaller flux ratio"),
-       col=c("black","#00b4ffff",plot.col.6[1],plot.col.6[3]),
-       lwd = c(1,2,2,2))
-
-
-#########Forward model to demonstrate carry over effect, synthetic input 120 days interval#######
+#########Forward model to demonstrate signal attenuation effect, synthetic inputs#######
 ####begin forward model####
 #1 extract turnover parameters, use MAP in the forward model
 a <- MAP.a[1]
@@ -191,20 +171,7 @@ syn.input.150 <- c(rep(syn.mid,30), rep(syn.high,150),rep(syn.mid,30),rep(syn.lo
 syn.input.150 <- rep(syn.input.150,2)
 #4 generate serum and bone series based on input series and turnover parameters#
 res150 <- forw.m(t = length(syn.input.150), input = syn.input.150, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
-
 ######end of forward model######
-
-###plots###
-#plot input, serum history, and simulated micromill values
-par(mfrow=c(3,1))
-
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="87Sr/86Sr",
-     main="150-day ends & 30-day intermediate switches")
-lines(1:length(syn.input.150), syn.input.150)
-lines(1:length(syn.input.150), res150[[1]],lwd=2, col = "#00b4ffff")
-legend(600,0.711,c("Intake","Ivory"),lwd = c(1,2), col=c("black","#00b4ffff"))
-##150 day switch ~65% of the original input
-
 
 #########Forward model to demonstrate carry over effect, synthetic input 120 days interval#######
 ####begin forward model####
@@ -228,15 +195,6 @@ syn.input.120 <- rep(syn.input.120,2)
 res120 <- forw.m(t = length(syn.input.120), input = syn.input.120, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 
 ######end of forward model######
-
-###plots###
-#plot input, serum history, and simulated micromill values
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="87Sr/86Sr",
-     main="120-day ends & 60-day intermediate switches")
-lines(1:length(syn.input.120), syn.input.120)
-lines(1:length(syn.input.120), res120[[1]],lwd=2, col = "#00b4ffff")
-
-##120 day switch ~60% of the original input
 
 ###############synthetic input 60 day interval to demonstrate carry over effect########
 ####begin forward model####
@@ -262,12 +220,3 @@ syn.input.60 <- rep(syn.input.60,4)
 #4 generate serum and bone series based on input series and turnover parameters#
 res60 <- forw.m(t = length(syn.input.60), input = syn.input.60, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 ######end of forward model######
-
-###plots###
-#plot input, serum history, and simulated micromill values
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), 
-     xlab = "days", ylab ="87Sr/86Sr",main="60-day ends & 30-day intermediate switches")
-lines(1:length(syn.input.60), syn.input.60)
-lines(1:length(syn.input.60), Se.bone.res60[[1]],lwd=2, col = "#00b4ffff")
-
-##60 day switch ~50% of the original input

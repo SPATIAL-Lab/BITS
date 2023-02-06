@@ -216,34 +216,3 @@ image(contour.i.flux.pool, col=viridis(64), main="Bivariate density",
       xlab="Flux ratio: Fin/FII", ylab="Pool ratio: PI/PII")
 contour(contour.i.flux.pool,lwd = 1, add = TRUE, labcex = 0.8)
 dev.off()
-
-
-
-######Figure 6 Results forward model###########
-#Results reconstructed input using forward model simulated ivory (serum) data
-svg(filename = "out/Fig 6 fwd.svg",
-    width = 6, height = 8, pointsize = 12)
-par(mfrow=c(4,1))
-par(mar = c(4.1, 4.1, 3.1, 2.1))
-#panel a, synthetic input data with 150-day long intervals and 30-day short intervals (~85% of the variation)
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",
-     main="150 + 30-day annual switch")
-lines(1:length(syn.input.150), syn.input.150)
-lines(1:length(syn.input.150), Se.bone.res150[[1]],lwd=2, col = "#00b4ffff")
-#panel b, synthetic input data with 120-day long intervals and 60-day short intervals (~80% of the variation)
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="Sr 87/86",
-     main="120 + 60-day annual switch")
-lines(1:length(syn.input.120), syn.input.120)
-lines(1:length(syn.input.120), Se.bone.res120[[1]],lwd=2, col = "#00b4ffff")
-#panel c, synthetic input data with 60-day long intervals and 30-day short intervals semiannual (~67%)
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), 
-     xlab = "days", ylab ="Sr 87/86",main="60 + 30-day semiannual switch")
-lines(1:length(syn.input.60), syn.input.60)
-lines(1:length(syn.input.60), Se.bone.res60[[1]],lwd=2, col = "#00b4ffff")
-#panel d, synthetic input data with 90 day intermediate invervals semiannual, to show carry over effect
-plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), 
-     xlab = "days", ylab ="Sr 87/86",main="90 day semiannual switch with carryover")
-lines(1:length(syn.input.90), syn.input.90)
-lines(1:length(syn.input.90), Se.bone.res90[[1]],lwd=2, col = "#00b4ffff")
-dev.off()
-

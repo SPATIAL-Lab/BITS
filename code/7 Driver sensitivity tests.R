@@ -603,7 +603,7 @@ post.misha.inv2p.tsrw = do.call(jags.parallel,list(model.file = "code/Sr inversi
                                                      n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 26 hours
+proc.time() - t1 #~ 40 hours
 
 save(post.misha.inv2p.tsrw, file = "out/post.misha.inv2p.tsrw.RData")
 
@@ -614,25 +614,6 @@ plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a))
 lines(density(post.misha.inv2p.tsrw$BUGSoutput$sims.list$a),col="red") 
 
 plot(density(post.misha.inv2p.tsrw$BUGSoutput$sims.list$Rin.m.cps.ac)) #almost no autocorrelation
-
-
-#plotting reconstructed Rin.m history
-par(mfrow=c(1,1))
-plot(0,0, xlim = c(1,700), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
-#converting misha distance to days using rate Ivo.rate
-points((max(n.avg.misha.50.dist) + 30-n.avg.misha.50.dist.rmv)/14.7,n.avg.misha.50.sr.rmv, pch= 18, col="#00b3ffff")
-#Use posterior from the calibration run as reference, but use estimates, not posterior
-post.misha.pc2p3.Rin.89<- MCMC.CI.bound(post.misha.pc2p3$BUGSoutput$sims.list$Rin, 0.89)
-lines(1:750,post.misha.pc2p3.Rin.89[[1]],lwd = 2, col = "black")
-lines(1:750,post.misha.pc2p3.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
-lines(1:750,post.misha.pc2p3.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
-
-#estimated input series
-MCMC.misha.inv2p.tsrwca.Rin.m.89 <- MCMC.CI.bound(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:750,MCMC.misha.inv2p.tsrw.Rin.m.89[[1]],lwd = 2, col = "magenta")
-lines(1:750,MCMC.misha.inv2p.tsrw.Rin.m.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:750,MCMC.misha.inv2p.tsrw.Rin.m.89[[3]], lwd = 1, lty = 2, col = "magenta")
-legend(0, 0.715, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("black","magenta"))
 ##the normal error structure produce much more constrained random walk histories
 ##Which deviates from natural settings with possible leaps in 87Sr/86Sr
 
@@ -680,7 +661,7 @@ post.misha.inv2p.tsrwca = do.call(jags.parallel,list(model.file = "code/Sr inver
                                                         n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 26 hours
+proc.time() - t1 #~ 40 hours
 
 save(post.misha.inv2p.tsrwca, file = "out/post.misha.inv2p.tsrwca.RData")
 
@@ -690,28 +671,7 @@ post.misha.inv2p.tsrwca$BUGSoutput$summary
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a))
 lines(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$a),col="red") 
 
-plot(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$Rin.m.cps.ac)) #almost no autocorrelation
-
-
-#plotting reconstructed Rin.m history
-par(mfrow=c(1,1))
-plot(0,0, xlim = c(1,700), ylim = c(0.705, 0.716), xlab = "days", ylab ="Sr 87/86")
-#converting misha distance to days using rate Ivo.rate
-points((max(n.avg.misha.50.dist) + 30-n.avg.misha.50.dist.rmv)/14.7,n.avg.misha.50.sr.rmv, pch= 18, col="#00b3ffff")
-#Use posterior from the calibration run as reference, but use estimates, not posterior
-post.misha.pc2p3.Rin.89<- MCMC.CI.bound(post.misha.pc2p3$BUGSoutput$sims.list$Rin, 0.89)
-lines(1:750,post.misha.pc2p3.Rin.89[[1]],lwd = 2, col = "black")
-lines(1:750,post.misha.pc2p3.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
-lines(1:750,post.misha.pc2p3.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
-
-#estimated input series
-MCMC.misha.inv2p.tsrwca.Rin.m.89 <- MCMC.CI.bound(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:750,MCMC.misha.inv2p.tsrwca.Rin.m.89[[1]],lwd = 2, col = "magenta")
-lines(1:750,MCMC.misha.inv2p.tsrwca.Rin.m.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:750,MCMC.misha.inv2p.tsrwca.Rin.m.89[[3]], lwd = 1, lty = 2, col = "magenta")
-legend(0, 0.715, c("Model input","Reconstructed input"),lwd = c(2, 2), col=c("black","magenta"))
-##the uncertainty of the estimated input is slightly wider that without autocorrelation (fig 4a)
-##but the general patterns are very similar
+plot(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$Rin.m.cps.ac)) #autocorrelation is low
 
 ###################################################################################################
 ##############case study: Mammoth##############
