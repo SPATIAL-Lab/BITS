@@ -1,4 +1,4 @@
-##forward model with t iterations
+######forward model########
 
 ####helper functions###
 ###Function 1 create input time series in number of days#####
@@ -71,9 +71,6 @@ forw.m <- function(t, input, a, b, c, R1.int, R2.int){
 a <- MAP.a[1]
 b <- MAP.b[1]
 c <- MAP.c[1]
-a
-b
-c
 
 #to change pool ratio, change c; to change flux ratio, change a
 # flux.ratio <- a/b
@@ -82,7 +79,7 @@ c
 #2 number of days in the simulation
 t <- 900
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
@@ -92,12 +89,12 @@ res.misha <- res[[1]]
 #change pool ratio: make c smaller or larger
 a <- MAP.a[1]
 b <- MAP.b[1]
-c <- 0.01 #MAP = 0.0041
+c <- 0.01 #MAP.c = 0.0041
 
 #2 number of days in the simulation
 t <- 900
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
@@ -107,12 +104,12 @@ res.prs <- res[[1]]
 #change pool ratio: make c smaller or larger
 a <- MAP.a[1]
 b <- MAP.b[1]
-c <- 0.001 #MAP = 0.0041
+c <- 0.001 #MAP.c = 0.0041
 
 #2 number of days in the simulation
 t <- 900
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
@@ -121,14 +118,14 @@ res.prl <- res[[1]]
 
 
 #change flux ratio: make a smaller or larger
-a <- 0.04 #MAP = 0.0169
+a <- 0.04 #MAP.a = 0.0169
 b <- MAP.b[1]
 c <- MAP.c[1]
 
 #2 number of days in the simulation
 t <- 900
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
@@ -136,14 +133,14 @@ res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, 
 res.frl <- res[[1]]
 
 #change flux ratio: make a smaller or larger
-a <- MAP.b[1] #MAP = 0.0169
-b <- MAP.b[1]
+a <- MAP.b[1] #MAP.a = 0.0169
+b <- MAP.b[1] #MAP.b = 0.0141
 c <- MAP.c[1]
 
 #2 number of days in the simulation
 t <- 900
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
 
 #4 generate serum and bone series based on input series and turnover parameters#
@@ -161,7 +158,7 @@ c <- MAP.c[1]
 #2 number of days in the simulation
 #t <- 700 #omitted here due to synthetic input data 
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 #Mid -> low -> mid -> High -> Mid
 syn.mid <- 0.709
 syn.high <- 0.711
@@ -183,7 +180,7 @@ c <- MAP.c[1]
 #2 number of days in the simulation
 #t <- 700 #omitted here due to synthetic input data 
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 #Mid -> low -> mid -> High -> Mid
 syn.mid <- 0.709
 syn.high <- 0.711
@@ -208,7 +205,7 @@ c <- MAP.c[1]
 #2 number of days in the simulation
 #t <- 700 #omitted here due to synthetic input data 
 
-#3 generate input series with fixed durations#
+#3 generate input series with fixed duration#
 #Mid -> low -> mid -> High -> Mid
 syn.mid <- 0.709
 syn.high <- 0.711

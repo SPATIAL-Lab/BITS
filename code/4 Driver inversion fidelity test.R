@@ -26,8 +26,7 @@ Ivo.rate.mean <- 14.7 #microns per day
 Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.50.dist) + 30
 
-#posterior samples of parameters from Misha calibration
-
+#posterior samples of parameters from Misha's calibration
 a.post <- post.misha.pc2p3$BUGSoutput$sims.list$a[,1]
 b.post <- post.misha.pc2p3$BUGSoutput$sims.list$b[,1]
 c.post <- post.misha.pc2p3$BUGSoutput$sims.list$c[,1]
@@ -66,6 +65,7 @@ post.misha.inv2p3.param$BUGSoutput$summary
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a),xlim=c(0,0.04),ylim=c(0,120))
 lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$a),col="red")
 
+#preliminary plots
 plot(0,0, xlim = c(1,700), ylim = c(0.704, 0.714), xlab = "days", ylab ="Sr 87/86",
      main="Fidelity test: model input series vs. estimated input series")
 #converting misha distance to days using rate Ivo.rate
@@ -78,7 +78,6 @@ lines(1:750,post.misha.pc2p3.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
 
 points((max(n.avg.misha.50.dist) + 30-n.avg.misha.50.dist.rmv)/14.7,n.avg.misha.50.sr.rmv, pch= 18, col="#00b3ffff")
 
-#estimated input series
 #estimated input series
 MCMC.misha.inv2p3.param.Rin.m.89 <- MCMC.CI.bound(post.misha.inv2p3.param$BUGSoutput$sims.list$Rin.m, 0.89)
 lines(1:750,MCMC.misha.inv2p3.param.Rin.m.89[[1]],lwd = 2, col = "magenta")

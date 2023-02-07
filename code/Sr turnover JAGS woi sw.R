@@ -56,7 +56,7 @@ model {
   #model initial values for bone and serum
   #assume that bone value is similar to serum, but use a different error term
   R2.m[1] ~ dnorm(R1.m[1], Sr.pre.2) 
-  R1.m[1] ~ dnorm(R0.mean, R0.pre)
+  R1.m[1] ~ dnorm(Rpri.mean, Rpri.pre)
   
   #generate time series of input values
   #Rin is the input ratio, which is modeled with a switch point in the time series
@@ -85,17 +85,15 @@ model {
   # #suspected date of the switch
   # date <- 85
 
-  #allowing some uncertainty in R0 values
-  R0.mean ~ dnorm(R0, R0.pre)
+  Rpri.mean ~ dnorm(Rpri, Rpri.pre)
   
-  Re.mean ~ dnorm(Re, Re.pre)
+  Raft.mean ~ dnorm(Raft, Raft.pre)
   
-  #Re has more uncertainty than Re
-  Re.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Re)
-  R0.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.R0)
-  Sr.pre.rate.Re <- 2e-5
-  Sr.pre.rate.R0 <- 2e-6
-
+  Raft.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Raft)
+  Rpri.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Rpri)
+  Sr.pre.rate.Raft <- 2e-5
+  Sr.pre.rate.Rpri <- 2e-6
+  
   
   #precision for average Sr measurements in bone should be much smaller
   Sr.pre.2 ~ dgamma(Sr.pre.shape, Sr.pre.rate.2)  
@@ -105,10 +103,5 @@ model {
   
   Sr.pre.shape <- 100
   Sr.pre.rate.1 <- 5e-6
-  
-
-  Body.mass ~ dnorm(Body.mass.mean, 1/Body.mass.sd^2)
-  Body.mass.mean <- 3000 # kg
-  Body.mass.sd <- 250 # kg
   
 }

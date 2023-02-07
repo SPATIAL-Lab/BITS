@@ -112,7 +112,7 @@ t1 = proc.time()
 set.seed(t1[3])
 n.iter = 5e3
 n.burnin = 2e3
-n.thin = 1#floor(n.iter-n.burnin)/500
+n.thin = 1
 
 #Run it
 post.misha.invmamm.i = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS param mammi.R", 
@@ -156,16 +156,7 @@ MCMC.CI.c.m <- hdi(post.misha.invmamm.i$BUGSoutput$sims.list$c.m,0.89)
 MCMC.CI.c.m$CI_low
 MCMC.CI.c.m$CI_high
 
-subset(post.misha.invmamm.tsrwca.erm$BUGSoutput$summary,
-       rownames(post.misha.invmamm.tsrwca.erm$BUGSoutput$summary)=="a.m")#
-subset(post.misha.invmamm.tsrwca.erm$BUGSoutput$summary,
-       rownames(post.misha.invmamm.tsrwca.erm$BUGSoutput$summary)=="Rin.m.cps.ac")#poor convergence on autocorrelation
-
-plot(density(post.misha.invmamm.tsrwca.erm$BUGSoutput$sims.list$exp.ab))
-plot(density(post.misha.invmamm.tsrwca.erm$BUGSoutput$sims.list$Rin.m.cps.ac))
-
-#do the posterior of a.m and c.m 
-
+#preliminary plots
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,450), ylim = c(0.705, 0.715), xlab = "days", ylab ="Sr 87/86")
 #converting misha distance to days using rate Ivo.rate
@@ -179,13 +170,3 @@ lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[1]],lwd = 2, col = "magenta")
 lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[2]], lwd = 1, lty = 2, col = "magenta")
 lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
-
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.05),ylim= c(0,120),
-     lwd = 2, col = "red",main="a", xlab="parameter estimate")
-lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
-
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0), xlim = c(0.001,0.01),ylim= c(0,500),
-     lwd = 2, col = "red",main="c", xlab="parameter estimate")
-lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$c.m, from = 0),lwd = 2,col="blue")
-
-legend(0.04,120, c("Calibration","Mammoth"),lwd = c(2, 2), col=c("red","blue"))

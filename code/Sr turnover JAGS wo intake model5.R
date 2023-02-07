@@ -35,11 +35,11 @@ model {
   a ~ dunif(0, 1)
   
   R2.m[1] ~ dnorm(R1.m[1], Sr.pre.2) 
-  R1.m[1] ~ dnorm(R0.mean, R0.pre)
+  R1.m[1] ~ dnorm(Rpri.mean, Rpri.pre)
   
   for(i in 1:t){
     
-    Rin[i] ~ dnorm(ifelse(i > switch, Re.mean, R0.mean), ifelse(i > switch, Re.pre, R0.pre))
+    Rin[i] ~ dnorm(ifelse(i > switch, Raft.mean, Rpri.mean), ifelse(i > switch, Raft.pre, Rpri.pre))
 
   }
   
@@ -57,15 +57,15 @@ model {
   
   date <- 85
 
-  R0.mean ~ dnorm(R0, R0.pre)
+  Rpri.mean ~ dnorm(Rpri, Rpri.pre)
   
-  Re.mean ~ dnorm(Re, Re.pre)
+  Raft.mean ~ dnorm(Raft, Raft.pre)
   
-  Re.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Re)
-  R0.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.R0)
-  Sr.pre.rate.Re <- 2e-5
-  Sr.pre.rate.R0 <- 2e-6
-
+  Raft.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Raft)
+  Rpri.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Rpri)
+  Sr.pre.rate.Raft <- 2e-5
+  Sr.pre.rate.Rpri <- 2e-6
+  
   Sr.pre.2 ~ dgamma(Sr.pre.shape, Sr.pre.rate.2)  
   Sr.pre.rate.2 <- 5e-7
   

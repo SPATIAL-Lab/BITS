@@ -48,8 +48,8 @@ dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.m
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 2e3
-n.burnin = 4e2
+n.iter = 5e3
+n.burnin = 2e3
 n.thin = floor(n.iter-n.burnin)/400
 
 #Run it
@@ -59,7 +59,7 @@ post.misha.pc2p8 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAG
                                               n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 8 hours
+proc.time() - t1 #~ 38 hours
 
 save(post.misha.pc2p8, file = "out/post.misha.pc2p8.RData")
 load("out/post.misha.pc2p8.RData")
@@ -75,7 +75,7 @@ subset(post.misha.pc2p8$BUGSoutput$summary,
 subset(post.misha.pc2p8$BUGSoutput$summary,
        rownames(post.misha.pc2p4$BUGSoutput$summary)=="c")
 
-#plotting modeled serum values mapped onto ivory and checking the fit of the data
+#plotting modeled Pool1 values mapped onto ivory and checking the fit of the data
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
@@ -135,8 +135,8 @@ dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 700, n.m
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 2e3
-n.burnin = 4e2
+n.iter = 5e3
+n.burnin = 2e3
 n.thin = 1
 
 #Run it
@@ -165,7 +165,7 @@ subset(post.misha.woisw86$BUGSoutput$summary,
 plot(density(post.misha.woisw86$BUGSoutput$sims.list$Ivo.rate))
 abline(v=Ivo.rate.mean)
 
-#plotting modeled serum values mapped onto ivory and checking the fit of the data
+#plotting modeled Pool1 values mapped onto ivory and checking the fit of the data
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
@@ -230,7 +230,7 @@ post.misha.pc2p5 = do.call(jags.parallel,list(model.file = "code/Sr turnover JAG
                                               n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 26 hours
+proc.time() - t1 #~ 48 hours
 
 save(post.misha.pc2p5, file = "out/post.misha.pc2p5.RData")
 load("out/post.misha.pc2p5.RData")
@@ -275,8 +275,7 @@ lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.
 lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
       lwd=1.5, col = "#00b4ffff")
 
-par(mfrow=c(3,1))
-par(mar = c(4.1, 4.1, 2.1, 4.1))
+par(mfrow=c(2,1))
 plot(density(post.misha.pc2p5$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.05),ylim= c(0,100),
      lwd = 2, col = plot.col.6[3],main="a & b", xlab="Parameter estimates")
 lines(density(post.misha.pc2p5$BUGSoutput$sims.list$b, from = 0),
@@ -326,7 +325,7 @@ post.misha.pc2p = do.call(jags.parallel,list(model.file = "code/Sr turnover JAGS
                                              n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 26 hours
+proc.time() - t1 #~ 48 hours
 
 save(post.misha.pc2p, file = "out/post.misha.pc2p.RData")
 load("out/post.misha.pc2p.RData")
@@ -355,8 +354,7 @@ plot(0,0, xlim = c(20000,8000), ylim = c(0.7056, 0.712), xlab = "distance", ylab
      main="Calibration")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-#4000 lines are too many
-#further thinning to 2000 lines
+
 ind.pc2p<- sample(dim(post.misha.pc2p$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
 MCMC.dist.plot(post.misha.pc2p$BUGSoutput$sims.list$R1.m[ind.pc2p,],
                post.misha.pc2p$BUGSoutput$sims.list$dist[ind.pc2p,])
@@ -370,8 +368,7 @@ lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.
 lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
       lwd=1.5, col = "#00b4ffff")
 
-par(mfrow=c(3,1))
-par(mar = c(4.1, 4.1, 2.1, 4.1))
+par(mfrow=c(2,1))
 plot(density(post.misha.pc2p$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.05),ylim= c(0,100),
      lwd = 2, col = plot.col.6[3],main="a & b", xlab="Parameter estimates")
 lines(density(post.misha.pc2p$BUGSoutput$sims.list$b, from = 0),
@@ -385,8 +382,8 @@ plot(density(post.misha.pc2p$BUGSoutput$sims.list$c, from = 0, to = 0.015), xlim
 #####################################################################################
 ################################      Section 3      ################################
 #####################################################################################
+
 ##############sensitivity to time series structure######
-############################# inversion of Misha using different error per step params#######
 ##!! sensitive to precision term in Misha's inversion !!##
 R.sd.mea <- n.sd.misha.50.sr.rmv
 dist.mea <- n.avg.misha.50.dist.rmv
@@ -442,9 +439,7 @@ lines(density(post.misha.inv2p3.param.s$BUGSoutput$sims.list$a),col="red")
 
 plot(0,0, xlim = c(1,700), ylim = c(0.704, 0.714), xlab = "days", ylab ="Sr 87/86",
      main="Fidelity test: model input series vs. estimated input series")
-#converting misha distance to days using rate Ivo.rate
 
-#Use posterior from the calibration run as reference, but use estimates, not posterior
 post.misha.pc2p3.Rin.89<- MCMC.CI.bound(post.misha.pc2p3$BUGSoutput$sims.list$Rin, 0.89)
 lines(1:750,post.misha.pc2p3.Rin.89[[1]],lwd = 2, col = "black")
 lines(1:750,post.misha.pc2p3.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
@@ -453,7 +448,6 @@ lines(1:750,post.misha.pc2p3.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
 points((max(n.avg.misha.50.dist) + 30-n.avg.misha.50.dist.rmv)/14.7,n.avg.misha.50.sr.rmv, pch= 18, col="#00b3ffff")
 
 #estimated input series
-#estimated input series
 MCMC.misha.inv2p3.param.s.Rin.m.89 <- MCMC.CI.bound(post.misha.inv2p3.param.s$BUGSoutput$sims.list$Rin.m, 0.89)
 lines(1:750,MCMC.misha.inv2p3.param.s.Rin.m.89[[1]],lwd = 2, col = "magenta")
 lines(1:750,MCMC.misha.inv2p3.param.s.Rin.m.89[[2]], lwd = 1, lty = 2, col = "magenta")
@@ -461,8 +455,82 @@ lines(1:750,MCMC.misha.inv2p3.param.s.Rin.m.89[[3]], lwd = 1, lty = 2, col = "ma
 legend(400, 0.708, c("Model input","Estimated input"),lwd = c(2, 2), col=c("black","magenta"))
 
 ###################################################################################################
-########################inversion with precision 2e-7########
-####to test sensitivity to the precision term#####
+########################Case Study: Mammoth inversion with precision 3e-8########
+####Not sensitive to the precision term using mammoth data#####
+Ivo.rate.mean <- mean.wooller.rate #microns per day
+Ivo.rate.sd <- sd.wooller.rate
+
+R.sd.mea <- sub.mm.sim.sd.sr
+dist.mea <- sub.mm.sim.avg.dist
+R.mea <- sub.mm.sim.avg.sr
+n.mea = length(sub.mm.sim.avg.sr)
+
+s.intv <- mm.bwidth
+
+max.dist.mea <- max(sub.mm.sim.avg.dist)+ 800 #add some distance before the simulation
+
+#posterior samples of parameters from Misha calibration
+
+a.post <- post.misha.pc2p3$BUGSoutput$sims.list$a[,1]
+b.post <- post.misha.pc2p3$BUGSoutput$sims.list$b[,1]
+c.post <- post.misha.pc2p3$BUGSoutput$sims.list$c[,1]
+post.leng <- length(a.post)
+
+parameters <- c("Ivo.rate","dist", "R1.m","Rin.m", "R2.m","a","b","c","exp.ab",
+                "Rin.m.pre","a.m","b.m","c.m","Body.mass.m", "Body.mass", "Rin.m.cps.ac")
+
+dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng, 
+            a.post=a.post, b.post=b.post, c.post=c.post,
+            Ivo.rate.mean = Ivo.rate.mean, Ivo.rate.sd = Ivo.rate.sd,
+            R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 480, n.mea = n.mea)
+
+#Start time
+t1 = proc.time()
+
+set.seed(t1[3])
+n.iter = 5e3
+n.burnin = 2e3
+n.thin = 1
+
+#Run it
+post.misha.invmamm.param = do.call(jags.parallel,list(model.file = "code/Sr inversion JAGS param mamm.R", 
+                                                  parameters.to.save = parameters, 
+                                                  data = dat, n.chains=5, n.iter = n.iter, 
+                                                  n.burnin = n.burnin, n.thin = n.thin))
+
+#Time taken
+proc.time() - t1 #~ 13.5 hours
+
+save(post.misha.invmamm.param, file = "out/post.misha.invmamm.param.RData")
+
+post.misha.invmamm.param$BUGSoutput$summary
+
+load("out/post.misha.invmamm.param.RData")
+
+subset(post.misha.invmamm.param$BUGSoutput$summary,
+       rownames(post.misha.invmamm.param$BUGSoutput$summary)=="a.m")#
+
+plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$exp.ab))
+plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m.cps.ac))
+
+#do the posterior of a.m and c.m 
+
+#plotting reconstructed Rin history
+plot(0,0, xlim = c(1,450), ylim = c(0.705, 0.715), xlab = "days", ylab ="Sr 87/86")
+#converting misha distance to days using rate Ivo.rate
+points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
+       sub.mm.sim.avg.sr, pch= 18, col="#00b4ffff")
+lines((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
+      sub.mm.sim.avg.sr, lwd= 1.5, col="#00b4ffff")
+#estimated input series
+MCMC.ts.Rin.m.invmamm.param.89<- MCMC.CI.bound(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m, 0.89)
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[1]],lwd = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magenta")
+lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
+legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
+
+########################Case Study: Mammoth inversion with precision 2e-7########
+####Not sensitive to the precision term using mammoth data#####
 Ivo.rate.mean <- mean.wooller.rate #microns per day
 Ivo.rate.sd <- sd.wooller.rate
 
@@ -513,20 +581,8 @@ post.misha.invmamm.s$BUGSoutput$summary
 
 load("out/post.misha.invmamm.s.RData")
 
-plot(density(post.misha.invmamm.s$BUGSoutput$sims.list$Ivo.rate))
-
-#check prior vs posterior parameters
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a[,1]), col = "black", lwd = 2, type="l",
-     xlim = c(0.01,0.1), xlab = "a", ylab= "density")
-#lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a), col = "blue", lwd = 2)
-lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$a.m), col = "red", lwd = 2)
-#slight deviation from prior
-
-
 subset(post.misha.invmamm.s$BUGSoutput$summary,
        rownames(post.misha.invmamm.s$BUGSoutput$summary)=="a.m")#
-subset(post.misha.invmamm.s$BUGSoutput$summary,
-       rownames(post.misha.invmamm.s$BUGSoutput$summary)=="Rin.m.cps.ac")#poor convergence on autocorrelation
 
 plot(density(post.misha.invmamm.s$BUGSoutput$sims.list$exp.ab))
 plot(density(post.misha.invmamm.s$BUGSoutput$sims.list$Rin.m.cps.ac))
@@ -546,17 +602,6 @@ lines(1:480,MCMC.ts.Rin.m.invmamm.s.89[[1]],lwd = 2, col = "magenta")
 lines(1:480,MCMC.ts.Rin.m.invmamm.s.89[[2]], lwd = 1, lty = 2, col = "magenta")
 lines(1:480,MCMC.ts.Rin.m.invmamm.s.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
-
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.05),ylim= c(0,120),
-     lwd = 2, col = "red",main="a", xlab="parameter estimate")
-lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
-
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0), xlim = c(0.001,0.01),ylim= c(0,500),
-     lwd = 2, col = "red",main="c", xlab="parameter estimate")
-lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$c.m, from = 0),lwd = 2,col="blue")
-
-legend(0.04,120, c("Calibration","Mammoth"),lwd = c(2, 2), col=c("red","blue"))
-
 
 #####################################################################################
 ################################      Section 4      ################################
@@ -726,19 +771,6 @@ save(post.invmamm.tsrw, file = "out/post.invmamm.tsrw.RData")
 post.invmamm.tsrw$BUGSoutput$summary
 
 load("out/post.misha.invmamm.param.RData")
-
-plot(density(post.invmamm.tsrw$BUGSoutput$sims.list$Ivo.rate))
-
-#check prior vs posterior parameters
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a[,1]), col = "black", lwd = 2, type="l",
-     xlim = c(0.01,0.1), xlab = "a", ylab= "density")
-lines(density(post.invmamm.tsrw$BUGSoutput$sims.list$a.m), col = "red", lwd = 2)
-#slight deviation from prior
-
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c[,1]), col = "black", lwd = 2, type="l",
-     xlim = c(0,0.1), xlab = "c", ylab= "density")
-lines(density(post.invmamm.tsrw$BUGSoutput$sims.list$c.m), col = "red", lwd = 2)
-#slight deviation from prior
 
 subset(post.invmamm.tsrw$BUGSoutput$summary,
        rownames(post.invmamm.tsrw$BUGSoutput$summary)=="a.m")

@@ -17,10 +17,10 @@ source("code/1 Helper functions.R")
 
 ####supplementary figures######
 
-#Fig S1 
+#################Fig S1 ################
 #no associated code 
 
-#Fig S2 
+#################Fig S2 ################
 #comparing solution methods to laser ablation methods
 misha.micromill <- read.csv("data/Misha micromill 400-600.csv")
 
@@ -42,9 +42,23 @@ PlotPE(misha.micromill.dist,misha.micromill.sr,misha.micromill.sr.err,col="red")
 legend(10000, 0.707, c("50-point avg. LA-ICP-MS","Micromill"),
        pch = c(16, 16), col=c("#00b4ffff","red"))
 
-#######Fig S3 sensitivity test Sensitivity to error structure
-#normal vs cauchy with autocorrelation
+##################Fig S3 sensitivity test Sensitivity to cauchy rate parameter################
+par(mfrow=c(3,1))
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
+     lwd = 2, col = "red",main="Parameter a, rate = 1e-7", xlab="Parameter estimate")
+lines(density(post.misha.invmamm.i$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
+legend(0.04,120, c("Calibration","Mammoth"),lwd = c(2, 2), col=c("red","blue"))
 
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
+     lwd = 2, col = "red",main="Parameter a, rate = 3e-8", xlab="Parameter estimate")
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
+
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
+     lwd = 2, col = "red",main="Parameter a, rate = 2e-7", xlab="Parameter estimate")
+lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
+
+##################Fig S4 sensitivity test Sensitivity to error structure################
+#normal vs cauchy with autocorrelation
 par(mfrow=c(2,1))
 plot(0,0, xlim = c(1,700), ylim = c(0.705, 0.714), xlab = "days", ylab ="Sr 87/86",
      main = "Fidelity test: Normal error with autocorrelation")
@@ -80,7 +94,7 @@ lines(1:750,MCMC.misha.inv2p.tsrwca.Rin.m.89[[2]], lwd = 1, lty = 2, col = "mage
 lines(1:750,MCMC.misha.inv2p.tsrwca.Rin.m.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(400, 0.708, c("Model input","Estimated input"),lwd = c(2, 2), col=c("black","magenta"))
 
-#Fig S4: #forward model
+################Fig S5: #forward model################
 #plot input, simulated ivory with different turnover parameter values
 par(mfrow=c(1,2))
 plot(0,0, xlim = c(1,900), ylim = c(0.706, 0.711), xlab = "days", ylab ="Sr 87/86",main="Pool ratio")
@@ -101,9 +115,8 @@ legend(300,0.708,c("Intake","Reference (Misha)","Larger flux ratio","Smaller flu
        col=c("black","#00b4ffff",plot.col.6[1],plot.col.6[3]),
        lwd = c(1,2,2,2))
 
-#Fig S5: forward model
+#################Fig S6: forward model################
 ###plots###
-#plot input, serum history, and simulated micromill values
 par(mfrow=c(3,1))
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="87Sr/86Sr",
      main="150-day ends & 30-day intermediate switches")
@@ -112,20 +125,15 @@ lines(1:length(syn.input.150), res150[[1]],lwd=2, col = "#00b4ffff")
 legend(600,0.711,c("Intake","Ivory"),lwd = c(1,2), col=c("black","#00b4ffff"))
 ##150 day switch ~65% of the original input
 
-###plots###
-#plot input, serum history, and simulated micromill values
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), xlab = "days", ylab ="87Sr/86Sr",
      main="120-day ends & 60-day intermediate switches")
 lines(1:length(syn.input.120), syn.input.120)
 lines(1:length(syn.input.120), res120[[1]],lwd=2, col = "#00b4ffff")
 ##120 day switch ~60% of the original input
 
-###plots###
-#plot input, serum history, and simulated micromill values
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), 
      xlab = "days", ylab ="87Sr/86Sr",main="60-day ends & 30-day intermediate switches")
 lines(1:length(syn.input.60), syn.input.60)
 lines(1:length(syn.input.60), Se.bone.res60[[1]],lwd=2, col = "#00b4ffff")
 
 ##60 day switch ~50% of the original input
-

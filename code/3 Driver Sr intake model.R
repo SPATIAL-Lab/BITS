@@ -86,8 +86,6 @@ parameters <- c("w.contrib","h.contrib", "w.food", "w.hay", "w.pel", "w.sup", "w
                 "f.h", "f.pel", "Rin")
 
 ##Data to pass to the model
-#compared to the turnover model that is essentially the .cal part here 
-#the inversion takes the measured value of potentially a different ivory series
 dat = list(Sr.hay.mean = Sr.hay.mean, Sr.hay.sd = Sr.hay.sd, 
            Sr.pel.mean = Sr.pel.mean, Sr.pel.sd = Sr.pel.sd, 
            Sr.sup.mean = Sr.sup.mean, Sr.sup.sd = Sr.sup.sd,

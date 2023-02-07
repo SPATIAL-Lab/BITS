@@ -62,19 +62,16 @@ model {
   #suspected date of the switch
   date <- 85
 
-  #allowing some uncertainty in R0 values
+
   Rpri.mean ~ dnorm(Rpri, Rpri.pre)
   
   Raft.mean ~ dnorm(Raft, Raft.pre)
   
-  #Re has more uncertainty than Re
   Raft.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Raft)
   Rpri.pre ~ dgamma(Sr.pre.shape, Sr.pre.rate.Rpri)
   Sr.pre.rate.Raft <- 2e-5
   Sr.pre.rate.Rpri <- 2e-6
 
-  
-  #precision for average Sr measurements in bone should be much smaller
   Sr.pre.2 ~ dgamma(Sr.pre.shape, Sr.pre.rate.2)  
   Sr.pre.rate.2 <- 5e-7
   

@@ -57,16 +57,16 @@ n.avg.misha.50.sr.rmv <- n.avg.misha.50.sr[index.50.anom.remv]
 n.sd.misha.50.sr.rmv <- n.sd.misha.50.sr[index.50.anom.remv]
 
 
-#######This is the version used in the article, constrain on b######
+#######This is the version used in the article, constraint on parameter b######
 R.sd.mea <- n.sd.misha.50.sr.rmv
 dist.mea <- n.avg.misha.50.dist.rmv
 R.mea <- n.avg.misha.50.sr.rmv
 n.mea = length(n.avg.misha.50.sr.rmv)
 
-R0 <- 0.706
+Rpri <- 0.706
 
 #Re is the mean ratio of end value  
-Re <- 0.711
+Raft <- 0.711
 s.intv <- 52.4
 
 Ivo.rate.mean <- 14.7 #microns per day
@@ -74,11 +74,11 @@ Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
-                "Sr.pre", "Re.mean", "R0.mean", "switch","dist",
+                "Sr.pre", "Raft.mean", "Rpri.mean", "switch","dist",
                 "flux.ratio", "pool.ratio")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
-           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
+           Rpri = Rpri, Raft = Raft, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
            Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
 
 #Start time
@@ -135,10 +135,11 @@ MCMC.CI.c <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$c,0.89)
 MCMC.CI.c$CI_low
 MCMC.CI.c$CI_high
 
+#preliminary plots
 plot(0,0, xlim = c(20000,8000), ylim = c(0.705, 0.711), xlab = "distance", ylab ="Sr 87/86",
      main="Calibration")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
+abline(h = Rpri, lwd = 2, lty = 2)
+abline(h = Raft, lwd = 2, lty = 2)
 #4000 lines are too many
 #further thinning to 2000 lines
 ind.pc2p<- sample(dim(post.misha.pc2p3$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
