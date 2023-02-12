@@ -47,14 +47,14 @@ par(mfrow=c(3,1))
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
      lwd = 2, col = "red",main="Parameter a, rate = 1e-7", xlab="Parameter estimate")
 lines(density(post.misha.invmamm.i$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
-legend(0.04,120, c("Calibration","Mammoth"),lwd = c(2, 2), col=c("red","blue"))
-
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
-     lwd = 2, col = "red",main="Parameter a, rate = 3e-8", xlab="Parameter estimate")
-lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
+legend(0.03,120, c("Calibration","Mammoth"),lwd = c(2, 2), col=c("red","blue"))
 
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
      lwd = 2, col = "red",main="Parameter a, rate = 2e-7", xlab="Parameter estimate")
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
+
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
+     lwd = 2, col = "red",main="Parameter a, rate = 3e-8", xlab="Parameter estimate")
 lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
 
 ##################Fig S4 sensitivity test Sensitivity to error structure################

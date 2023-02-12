@@ -110,8 +110,8 @@ dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 5e3
-n.burnin = 2e3
+n.iter = 1e4
+n.burnin = 5e3
 n.thin = 1
 
 #Run it
@@ -121,7 +121,7 @@ post.misha.invmamm.i = do.call(jags.parallel,list(model.file = "code/Sr inversio
                                                   n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 13.5 hours
+proc.time() - t1 #~ 28 hours
 
 save(post.misha.invmamm.i, file = "out/post.misha.invmamm.i.RData")
 

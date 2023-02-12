@@ -415,8 +415,8 @@ dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 5e3
-n.burnin = 2e3
+n.iter = 1e4
+n.burnin = 5e3
 n.thin = 1
 
 #Run it
@@ -455,7 +455,7 @@ lines(1:750,MCMC.misha.inv2p3.param.s.Rin.m.89[[3]], lwd = 1, lty = 2, col = "ma
 legend(400, 0.708, c("Model input","Estimated input"),lwd = c(2, 2), col=c("black","magenta"))
 
 ###################################################################################################
-########################Case Study: Mammoth inversion with precision 3e-8########
+########################Case Study: Mammoth inversion with precision 2e-7########
 ####Not sensitive to the precision term using mammoth data#####
 Ivo.rate.mean <- mean.wooller.rate #microns per day
 Ivo.rate.sd <- sd.wooller.rate
@@ -488,8 +488,8 @@ dat = list( s.intv = s.intv, max.dist.mea = max.dist.mea, post.leng=post.leng,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 5e3
-n.burnin = 2e3
+n.iter = 1e4
+n.burnin = 5e3
 n.thin = 1
 
 #Run it
@@ -499,7 +499,7 @@ post.misha.invmamm.param = do.call(jags.parallel,list(model.file = "code/Sr inve
                                                   n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 13.5 hours
+proc.time() - t1 #~ 26 hours
 
 save(post.misha.invmamm.param, file = "out/post.misha.invmamm.param.RData")
 
@@ -511,7 +511,6 @@ subset(post.misha.invmamm.param$BUGSoutput$summary,
        rownames(post.misha.invmamm.param$BUGSoutput$summary)=="a.m")#
 
 plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$exp.ab))
-plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$Rin.m.cps.ac))
 
 #do the posterior of a.m and c.m 
 
@@ -529,7 +528,7 @@ lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[2]], lwd = 1, lty = 2, col = "magent
 lines(1:480,MCMC.ts.Rin.m.invmamm.param.89[[3]], lwd = 1, lty = 2, col = "magenta")
 legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))
 
-########################Case Study: Mammoth inversion with precision 2e-7########
+########################Case Study: Mammoth inversion with precision 3e-8########
 ####Not sensitive to the precision term using mammoth data#####
 Ivo.rate.mean <- mean.wooller.rate #microns per day
 Ivo.rate.sd <- sd.wooller.rate
@@ -585,7 +584,6 @@ subset(post.misha.invmamm.s$BUGSoutput$summary,
        rownames(post.misha.invmamm.s$BUGSoutput$summary)=="a.m")#
 
 plot(density(post.misha.invmamm.s$BUGSoutput$sims.list$exp.ab))
-plot(density(post.misha.invmamm.s$BUGSoutput$sims.list$Rin.m.cps.ac))
 
 #do the posterior of a.m and c.m 
 
