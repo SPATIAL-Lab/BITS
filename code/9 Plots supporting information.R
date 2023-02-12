@@ -18,8 +18,29 @@ source("code/1 Helper functions.R")
 ####supplementary figures######
 
 #################Fig S1 ################
-#no associated code 
+#using Mass 88(Sr) as an indicator of cracks in the ivory slab
+misha.elements <- read.csv("data/Misha elements.csv")
+#the beginning of the transet needs to be cleaned
+misha.elements.cl <- misha.elements[25:nrow(misha.elements),]
 
+par(mfrow=c(3,1))
+plot(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",type = "l",lwd=2,
+     xlim=c(20000,8000),ylim=c(0.705,0.711),main="LA-ICP-MS 50 pt average",
+     xlab="Distance (micron) from pulp cavity", ylab="87Sr/86Sr")
+abline(v=misha.elements.cl$adj.dist[1058-25],lty=2)
+abline(v=misha.elements.cl$adj.dist[2304-25],lty=2)
+abline(v=misha.elements.cl$adj.dist[3019-25],lty=2)
+plot(misha.raw$dist, misha.raw$X88Sr, type = "l",xlim=c(20000,8000),
+     main="Voltage of Mass 88 (Sr)",xlab="Distance (micron) from pulp cavity", ylab="Voltage")
+abline(v=misha.elements.cl$adj.dist[1058-25],lty=2)
+abline(v=misha.elements.cl$adj.dist[2304-25],lty=2)
+abline(v=misha.elements.cl$adj.dist[3019-25],lty=2)
+plot(misha.elements.cl$adj.dist, misha.elements.cl$Mass.88,type = "l",
+     xlim=c(20000,8000),ylim=c(0,20000),col="red",
+     main="Counts of Mass 88 (Sr), Elemental Scan",xlab="Distance (micron) from pulp cavity", ylab="Counts")
+abline(v=misha.elements.cl$adj.dist[1058-25],lty=2)
+abline(v=misha.elements.cl$adj.dist[2304-25],lty=2)
+abline(v=misha.elements.cl$adj.dist[3019-25],lty=2)
 #################Fig S2 ################
 #comparing solution methods to laser ablation methods
 misha.micromill <- read.csv("data/Misha micromill 400-600.csv")
@@ -43,19 +64,21 @@ legend(10000, 0.707, c("50-point avg. LA-ICP-MS","Micromill"),
        pch = c(16, 16), col=c("#00b4ffff","red"))
 
 ##################Fig S3 sensitivity test Sensitivity to cauchy rate parameter################
+
 par(mfrow=c(3,1))
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
-     lwd = 2, col = "red",main="Parameter a, rate = 1e-7", xlab="Parameter estimate")
-lines(density(post.misha.invmamm.i$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
-legend(0.03,120, c("Calibration","Mammoth"),lwd = c(2, 2), col=c("red","blue"))
+     lwd = 2, col = plot.col[2],main="Parameter a, rate = 2e-7", xlab="Parameter estimate")
+lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col=plot.col[6])
+legend(0.03,120, c("Calibration","Mammoth"),lwd = c(2, 2), col=c(plot.col[2],plot.col[6]))
 
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
-     lwd = 2, col = "red",main="Parameter a, rate = 2e-7", xlab="Parameter estimate")
-lines(density(post.misha.invmamm.param$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
+     lwd = 2, col = plot.col[2],main="Parameter a, rate = 1e-7", xlab="Parameter estimate")
+lines(density(post.misha.invmamm.i$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col=plot.col[6])
 
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0.01,0.04),ylim= c(0,120),
-     lwd = 2, col = "red",main="Parameter a, rate = 3e-8", xlab="Parameter estimate")
-lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col="blue")
+     lwd = 2, col = plot.col[2],main="Parameter a, rate = 3e-8", xlab="Parameter estimate")
+lines(density(post.misha.invmamm.s$BUGSoutput$sims.list$a.m, from = 0),lwd = 2,col=plot.col[6])
+
 
 ##################Fig S4 sensitivity test Sensitivity to error structure################
 #normal vs cauchy with autocorrelation

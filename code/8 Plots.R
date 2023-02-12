@@ -11,7 +11,7 @@ plot.col.6 <- inferno(6)
 #540 * 360
 plot(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",type = "l",lwd=2,
      xlim=c(20000,8000),ylim=c(0.705,0.711),main="LA-ICP-MS 50 pt average",
-     xlab="distance (micron) from pulp cavity", ylab="Sr 87/86")
+     xlab="Distance (micron) from pulp cavity", ylab="87Sr/86Sr")
 
 ########Figure 3 ##############
 #######plotting 50 pt average#######
