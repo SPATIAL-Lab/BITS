@@ -100,8 +100,8 @@ dat = list(Sr.hay.mean = Sr.hay.mean, Sr.hay.sd = Sr.hay.sd,
 t1 = proc.time()
 
 set.seed(t1[3])
-n.iter = 5e3
-n.burnin = 2e3
+n.iter = 1e4
+n.burnin = 5e3
 n.thin = 1
 
 #Run it

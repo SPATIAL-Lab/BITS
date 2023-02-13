@@ -18,7 +18,7 @@ setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 ################################      Section 1      ################################
 #####################################################################################
 
-###1 sensitivity to Re value################
+###1 sensitivity to Raft value################
 #2 pool turnover with 50 pt average (excursion rmv) sensitivity test Re =0.7118##
 ###prep data###
 R.sd.mea <- n.sd.misha.50.sr.rmv
@@ -26,10 +26,10 @@ dist.mea <- n.avg.misha.50.dist.rmv
 R.mea <- n.avg.misha.50.sr.rmv
 n.mea = length(n.avg.misha.50.sr.rmv)
 
-R0 <- 0.706
+Rpri <- 0.706
 
 #Re is the mean ratio of end value  
-Re <- 0.7118
+Raft <- 0.7118
 s.intv <- 52.4
 
 Ivo.rate.mean <- 14.7 #microns per day
@@ -37,11 +37,11 @@ Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
-                "Sr.pre", "Re.mean", "R0.mean", "switch","dist",
-                "flux.ratio", "pool.ratio","Body.mass")
+                "Sr.pre", "Raft.mean", "Rpri.mean", "switch","dist",
+                "flux.ratio", "pool.ratio")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
-           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
+           Rpri = Rpri, Raft = Raft, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
            Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
 
 #Start time
@@ -69,11 +69,11 @@ traplot(post.misha.pc2p8,parms = c("a", "b","c"))
 
 #convergence params are not so good!
 subset(post.misha.pc2p8$BUGSoutput$summary,
-       rownames(post.misha.pc2p4$BUGSoutput$summary)=="a")
+       rownames(post.misha.pc2p8$BUGSoutput$summary)=="a")
 subset(post.misha.pc2p8$BUGSoutput$summary,
-       rownames(post.misha.pc2p4$BUGSoutput$summary)=="b")
+       rownames(post.misha.pc2p8$BUGSoutput$summary)=="b")
 subset(post.misha.pc2p8$BUGSoutput$summary,
-       rownames(post.misha.pc2p4$BUGSoutput$summary)=="c")
+       rownames(post.misha.pc2p8$BUGSoutput$summary)=="c")
 
 #plotting modeled Pool1 values mapped onto ivory and checking the fit of the data
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
@@ -87,31 +87,31 @@ lines(n.avg.misha.50.dist.rmv,n.avg.misha.50.sr.rmv,lwd = 2, col = "#00b4ffff")
 
 #compare calibration results with different priors#
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.06),ylim= c(0,180),
-     lwd = 2, col = plot.col.6[3],main="Two-pool model", xlab="parameter estimate")
+     lwd = 2, col = plot.col.6[3],main="Calibration", xlab="parameter estimate")
 lines(density(post.misha.pc2p3$BUGSoutput$sims.list$b, from = 0),lwd = 2, col = plot.col.6[4])
 lines(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0),lwd = 2, col = plot.col.6[5])
-legend(0.02, 160, c("a, Two-pool","b, Two-pool", "c, Two-pool", "a, One-pool"),
-       lwd = rep(2, 4), col=c(plot.col.6[3:5],plot.col.6[2]))
+legend(0.02, 160, c("a","b", "c"),
+       lwd = rep(2, 3), col=c(plot.col.6[3:5]))
 
 plot(density(post.misha.pc2p8$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.06),ylim= c(0,180),
-     lwd = 2, col = plot.col.6[3],main="Two-pool model", xlab="parameter estimate")
+     lwd = 2, col = plot.col.6[3],main="Sensitivity to Raft", xlab="parameter estimate")
 lines(density(post.misha.pc2p8$BUGSoutput$sims.list$b, from = 0),lwd = 2, col = plot.col.6[4])
 lines(density(post.misha.pc2p8$BUGSoutput$sims.list$c, from = 0),lwd = 2, col = plot.col.6[5])
-legend(0.02, 160, c("a, Two-pool","b, Two-pool", "c, Two-pool", "a, One-pool"),
-       lwd = rep(2, 4), col=c(plot.col.6[3:5],plot.col.6[2]))
+legend(0.02, 160, c("a, Raft = 0.7118","b , Raft = 0.7118", "c, Raft = 0.7118"),
+       lwd = rep(2, 3), col=c(plot.col.6[3:5]))
 
 #####sensitivity to the day of switch#######
 #Try switch that is beyond 83 +- 5?
 ###prep data###
-R.sd.mea <- n.sd.misha.50.sr.remv
-dist.mea <- n.avg.misha.50.dist.remv
-R.mea <- n.avg.misha.50.sr.remv
-n.mea = length(n.avg.misha.50.sr.remv)
+R.sd.mea <- n.sd.misha.50.sr.rmv
+dist.mea <- n.avg.misha.50.dist.rmv
+R.mea <- n.avg.misha.50.sr.rmv
+n.mea = length(n.avg.misha.50.sr.rmv)
 
-R0 <- 0.706
+Rpri <- 0.706
 
 #Re is the mean ratio of end value  
-Re <- 0.711
+Raft <- 0.711
 s.intv <- 52.4
 
 Ivo.rate.mean <- 14.7 #microns per day
@@ -122,14 +122,15 @@ max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #by default, 83 is used, here we try 86, 80
 #these values are expected to affect
 switch <- 86 
+
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
-                "Sr.pre", "Re.mean", "R0.mean", "switch","dist",
-                "flux.ratio", "pool.ratio","Body.mass")
+                "Sr.pre", "Raft.mean", "Rpri.mean", "switch","dist",
+                "flux.ratio", "pool.ratio")
 ##Data to pass to the model
-dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 700, n.mea = n.mea, 
-           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
-           Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea, switch = switch)
+dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
+           Rpri = Rpri, Raft = Raft, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
+           Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
 
 #Start time
 t1 = proc.time()
@@ -146,7 +147,7 @@ post.misha.woisw86 = do.call(jags.parallel,list(model.file = "code/Sr turnover J
                                               n.burnin = n.burnin, n.thin = n.thin))
 
 #Time taken
-proc.time() - t1 #~ 8 hours
+proc.time() - t1 #~ 38 hours
 
 save(post.misha.woisw86, file = "out/post.misha.woisw86.RData")
 load("out/post.misha.woisw86.RData")
@@ -162,9 +163,6 @@ subset(post.misha.woisw86$BUGSoutput$summary,
 subset(post.misha.woisw86$BUGSoutput$summary,
        rownames(post.misha.woisw86$BUGSoutput$summary)=="c")
 
-plot(density(post.misha.woisw86$BUGSoutput$sims.list$Ivo.rate))
-abline(v=Ivo.rate.mean)
-
 #plotting modeled Pool1 values mapped onto ivory and checking the fit of the data
 plot(0,0, xlim = c(20000,8000), ylim = c(0.706, 0.713), xlab = "distance", ylab ="Sr 87/86")
 abline(h = R0, lwd = 2, lty = 2)
@@ -176,14 +174,14 @@ lines(n.avg.misha.50.dist.rmv,n.avg.misha.50.sr.rmv,lwd = 2, col = "#00b4ffff")
 
 ##############################################comparing parameter a #
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.06),ylim= c(0,180),
-     lwd = 2, col = plot.col.6[3],main="Two-pool model", xlab="parameter estimate")
-legend(0.02, 160, c("a, Two-pool","b, Two-pool", "c, Two-pool", "a, One-pool"),
-       lwd = rep(2, 4), col=c(plot.col.6[3:5],plot.col.6[2]))
+     lwd = 2, col = plot.col.6[3],main="Calibration", xlab="parameter estimate")
+legend(0.02, 160, c("a, Switch = 83","b, Switch = 83", "c, Switch = 83"),
+       lwd = rep(2, 3), col=c(plot.col.6[3:5]))
 
 plot(density(post.misha.woisw86$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.06),ylim= c(0,180),
-     lwd = 2, col = plot.col.6[3],main="Two-pool model", xlab="parameter estimate")
-legend(0.02, 160, c("a, Two-pool","b, Two-pool", "c, Two-pool", "a, One-pool"),
-       lwd = rep(2, 4), col=c(plot.col.6[3:5],plot.col.6[2]))
+     lwd = 2, col = plot.col.6[3],main="Sensitivity to the day of switch", xlab="parameter estimate")
+legend(0.02, 160, c("a, Switch = 86","b, Switch = 86", "c, Switch = 86"),
+       lwd = rep(2, 3), col=c(plot.col.6[3:5]))
 
 #####################################################################################
 ################################      Section 2      ################################
@@ -197,10 +195,10 @@ dist.mea <- n.avg.misha.50.dist.rmv
 R.mea <- n.avg.misha.50.sr.rmv
 n.mea = length(n.avg.misha.50.sr.rmv)
 
-R0 <- 0.706
+Rpri <- 0.706
 
 #Re is the mean ratio of end value  
-Re <- 0.711
+Raft <- 0.711
 s.intv <- 52.4
 
 Ivo.rate.mean <- 14.7 #microns per day
@@ -208,11 +206,11 @@ Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
-                "Sr.pre", "Re.mean", "R0.mean", "switch","dist",
+                "Sr.pre", "Raft.mean", "Rpri.mean", "switch","dist",
                 "flux.ratio", "pool.ratio")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
-           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
+           Rpri = Rpri, Raft = Raft, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
            Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
 
 #Start time
@@ -239,29 +237,20 @@ load("out/post.misha.pc2p5.RData")
 traplot(post.misha.pc2p5,parms = c("flux.ratio", "pool.ratio"))
 traplot(post.misha.pc2p5,parms = c("a", "b","c"))
 
-plot(density(post.misha.pc2p5$BUGSoutput$sims.list$Ivo.rate))
-abline(v=14.7)
-
 #convergence params are ok, but pool constraints on parameter c
 subset(post.misha.pc2p5$BUGSoutput$summary,
-       rownames(post.misha.pc2p$BUGSoutput$summary)=="a")
+       rownames(post.misha.pc2p5$BUGSoutput$summary)=="a")
 subset(post.misha.pc2p5$BUGSoutput$summary,
-       rownames(post.misha.pc2p$BUGSoutput$summary)=="b")
+       rownames(post.misha.pc2p5$BUGSoutput$summary)=="b")
 subset(post.misha.pc2p5$BUGSoutput$summary,
-       rownames(post.misha.pc2p$BUGSoutput$summary)=="c")
-
-MAP.a <- map_estimate(post.misha.pc2p5$BUGSoutput$sims.list$a)
-MAP.a[1]
-HDI.a <- hdi(post.misha.pc2p5$BUGSoutput$sims.list$a,0.89)
-HDI.a$CI_low
-HDI.a$CI_high
+       rownames(post.misha.pc2p5$BUGSoutput$summary)=="c")
 
 plot(0,0, xlim = c(20000,8000), ylim = c(0.705, 0.711), xlab = "distance", ylab ="Sr 87/86",
      main="Calibration")
 abline(h = R0, lwd = 2, lty = 2)
 abline(h = Re, lwd = 2, lty = 2)
-#4000 lines are too many
-#further thinning to 2000 lines
+
+#thinning to 500 lines
 ind.pc2p<- sample(dim(post.misha.pc2p5$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
 MCMC.dist.plot(post.misha.pc2p5$BUGSoutput$sims.list$R1.m[ind.pc2p,],
                post.misha.pc2p5$BUGSoutput$sims.list$dist[ind.pc2p,])
@@ -292,10 +281,10 @@ dist.mea <- n.avg.misha.50.dist.rmv
 R.mea <- n.avg.misha.50.sr.rmv
 n.mea = length(n.avg.misha.50.sr.rmv)
 
-R0 <- 0.706
+Rpri <- 0.706
 
 #Re is the mean ratio of end value  
-Re <- 0.711
+Raft <- 0.711
 s.intv <- 52.4
 
 Ivo.rate.mean <- 14.7 #microns per day
@@ -303,11 +292,11 @@ Ivo.rate.sd <- 0.8
 max.dist.mea <- max(n.avg.misha.50.dist) + 30
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
-                "Sr.pre", "Re.mean", "R0.mean", "switch","dist",
+                "Sr.pre", "Raft.mean", "Rpri.mean", "switch","dist",
                 "flux.ratio", "pool.ratio")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
-           R0 = R0, Re = Re, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
+           Rpri = Rpri, Raft = Raft, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
            Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
 
 #Start time
@@ -333,9 +322,6 @@ load("out/post.misha.pc2p.RData")
 traplot(post.misha.pc2p,parms = c("flux.ratio", "pool.ratio"))
 traplot(post.misha.pc2p,parms = c("a", "b","c"))
 
-plot(density(post.misha.pc2p$BUGSoutput$sims.list$Ivo.rate))
-abline(v=14.7)
-
 #convergence params are not good with constraints on parameter c
 subset(post.misha.pc2p$BUGSoutput$summary,
        rownames(post.misha.pc2p$BUGSoutput$summary)=="a")
@@ -343,12 +329,6 @@ subset(post.misha.pc2p$BUGSoutput$summary,
        rownames(post.misha.pc2p$BUGSoutput$summary)=="b")
 subset(post.misha.pc2p$BUGSoutput$summary,
        rownames(post.misha.pc2p$BUGSoutput$summary)=="c")
-
-MAP.a <- map_estimate(post.misha.pc2p$BUGSoutput$sims.list$a)
-MAP.a[1]
-HDI.a <- hdi(post.misha.pc2p$BUGSoutput$sims.list$a,0.89)
-HDI.a$CI_low
-HDI.a$CI_high
 
 plot(0,0, xlim = c(20000,8000), ylim = c(0.7056, 0.712), xlab = "distance", ylab ="Sr 87/86",
      main="Calibration")
@@ -440,7 +420,6 @@ lines(density(post.misha.inv2p3.param.s$BUGSoutput$sims.list$a),col="red")
 plot(0,0, xlim = c(1,700), ylim = c(0.704, 0.714), xlab = "days", ylab ="Sr 87/86",
      main="Fidelity test: model input series vs. estimated input series")
 
-post.misha.pc2p3.Rin.89<- MCMC.CI.bound(post.misha.pc2p3$BUGSoutput$sims.list$Rin, 0.89)
 lines(1:750,post.misha.pc2p3.Rin.89[[1]],lwd = 2, col = "black")
 lines(1:750,post.misha.pc2p3.Rin.89[[2]], lwd = 1, lty = 2, col = "black")
 lines(1:750,post.misha.pc2p3.Rin.89[[3]], lwd = 1, lty = 2, col = "black")
@@ -714,7 +693,7 @@ post.misha.inv2p.tsrwca$BUGSoutput$summary
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a))
 lines(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$a),col="red") 
 
-plot(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$Rin.m.cps.ac)) #autocorrelation is low
+plot(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$Rin.m.cps.ac)) #autocorrelation is weak
 
 ###################################################################################################
 ##############case study: Mammoth##############
@@ -774,8 +753,6 @@ subset(post.invmamm.tsrw$BUGSoutput$summary,
        rownames(post.invmamm.tsrw$BUGSoutput$summary)=="a.m")
 subset(post.invmamm.tsrw$BUGSoutput$summary,
        rownames(post.invmamm.tsrw$BUGSoutput$summary)=="c.m")
-
-plot(density(post.invmamm.tsrw$BUGSoutput$sims.list$exp.ab))
 
 #plotting reconstructed Rin history
 plot(0,0, xlim = c(1,450), ylim = c(0.706, 0.715), xlab = "days", ylab ="Sr 87/86")

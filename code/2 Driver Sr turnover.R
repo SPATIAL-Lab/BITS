@@ -107,7 +107,7 @@ traplot(post.misha.pc2p3,parms = c("a", "b","c"))
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$Ivo.rate))
 abline(v=14.7)
 
-#convergence params are ok, but pool constraints on parameter c
+#convergence params are ok
 subset(post.misha.pc2p3$BUGSoutput$summary,
        rownames(post.misha.pc2p3$BUGSoutput$summary)=="a")
 subset(post.misha.pc2p3$BUGSoutput$summary,
@@ -115,6 +115,7 @@ subset(post.misha.pc2p3$BUGSoutput$summary,
 subset(post.misha.pc2p3$BUGSoutput$summary,
        rownames(post.misha.pc2p3$BUGSoutput$summary)=="c")
 
+#save MAPEs and CIs
 MAP.a <- map_estimate(post.misha.pc2p3$BUGSoutput$sims.list$a)
 MAP.a[1]
 log(2)/MAP.a[1]
@@ -134,35 +135,3 @@ MCMC.CI.b$CI_high
 MCMC.CI.c <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$c,0.89)
 MCMC.CI.c$CI_low
 MCMC.CI.c$CI_high
-
-#preliminary plots
-plot(0,0, xlim = c(20000,8000), ylim = c(0.705, 0.711), xlab = "distance", ylab ="Sr 87/86",
-     main="Calibration")
-abline(h = Rpri, lwd = 2, lty = 2)
-abline(h = Raft, lwd = 2, lty = 2)
-#4000 lines are too many
-#further thinning to 2000 lines
-ind.pc2p<- sample(dim(post.misha.pc2p3$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
-MCMC.dist.plot(post.misha.pc2p3$BUGSoutput$sims.list$R1.m[ind.pc2p,],
-               post.misha.pc2p3$BUGSoutput$sims.list$dist[ind.pc2p,])
-points(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
-       pch=18, col = "#00b4ffff")
-points(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
-       pch=18, col = "#00b4ffff")
-
-lines(n.avg.misha.50.dist[index.50.anom.remv1], n.avg.misha.50.sr[index.50.anom.remv1],
-      lwd=1.5, col = "#00b4ffff")
-lines(n.avg.misha.50.dist[index.50.anom.remv2], n.avg.misha.50.sr[index.50.anom.remv2],
-      lwd=1.5, col = "#00b4ffff")
-
-par(mfrow=c(3,1))
-par(mar = c(4.1, 4.1, 2.1, 4.1))
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.05),ylim= c(0,100),
-     lwd = 2, col = plot.col.6[3],main="a & b", xlab="Parameter estimates")
-lines(density(post.misha.pc2p3$BUGSoutput$sims.list$b, from = 0),
-      lwd = 2, col = plot.col.6[4])
-legend(0, 100, c("a","b"),
-       lwd = rep(2, 2), col=c(plot.col.6[3:4]))
-
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0, to = 0.015), xlim = c(0,0.015),
-     lwd = 2, col = plot.col.6[5],main="c", xlab="Parameter estimate")

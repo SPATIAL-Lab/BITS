@@ -86,13 +86,10 @@ input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005
 res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 res.misha <- res[[1]]
 
-#change pool ratio: make c smaller or larger
+###############change pool ratio: make c larger##############
 a <- MAP.a[1]
 b <- MAP.b[1]
 c <- 0.01 #MAP.c = 0.0041
-
-#2 number of days in the simulation
-t <- 900
 
 #3 generate input series with fixed duration#
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
@@ -101,7 +98,7 @@ input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005
 res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 res.prs <- res[[1]]
 
-#change pool ratio: make c smaller or larger
+###############change pool ratio: make c smaller##############
 a <- MAP.a[1]
 b <- MAP.b[1]
 c <- 0.001 #MAP.c = 0.0041
@@ -117,7 +114,7 @@ res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, 
 res.prl <- res[[1]]
 
 
-#change flux ratio: make a smaller or larger
+###############change flux ratio: make a larger##############
 a <- 0.04 #MAP.a = 0.0169
 b <- MAP.b[1]
 c <- MAP.c[1]
@@ -132,7 +129,7 @@ input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005
 res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 res.frl <- res[[1]]
 
-#change flux ratio: make a smaller or larger
+###############change flux ratio: make a smaller ##############
 a <- MAP.b[1] #MAP.a = 0.0169
 b <- MAP.b[1] #MAP.b = 0.0141
 c <- MAP.c[1]
@@ -191,10 +188,7 @@ syn.input.120 <- rep(syn.input.120,2)
 #4 generate serum and bone series based on input series and turnover parameters#
 res120 <- forw.m(t = length(syn.input.120), input = syn.input.120, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 
-######end of forward model######
-
 ###############synthetic input 60 day interval to demonstrate carry over effect########
-####begin forward model####
 
 #1 extract turnover parameters, use MAP in the forward model
 #parameters a, b, and c from parameter estimates in file 3

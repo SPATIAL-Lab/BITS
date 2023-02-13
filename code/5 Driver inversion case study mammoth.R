@@ -67,7 +67,7 @@ plot(3:27,wooller.rate[3:27])
 
 mean.wooller.rate*365*28 #this is close to the total length of the tusk at 1.7 meters
 
-####subseting the entire dataset (150 data points)
+####subsetting the entire data set (150 data points)
 sub <- 851:1000
 sub.mm.sim.avg.dist <- rev(mm.sim.avg.Wooller.dist[sub])
 sub.mm.sim.avg.sr <- rev(mm.sim.avg.Wooller.sr[sub])
@@ -141,6 +141,7 @@ lines(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0, to = 0.01),
       lwd=2, col="blue")
 legend(1.8,0.6, c("Calibration","Case study"),lwd = c(2, 2), col=c("blue","red"))
 
+#save MAPEs and CIs
 MAP.a.m <- map_estimate(post.misha.invmamm.i$BUGSoutput$sims.list$a.m)
 MAP.a.m[1]
 log(2)/MAP.a.m[1]
@@ -155,18 +156,3 @@ MCMC.CI.a.m$CI_high
 MCMC.CI.c.m <- hdi(post.misha.invmamm.i$BUGSoutput$sims.list$c.m,0.89)
 MCMC.CI.c.m$CI_low
 MCMC.CI.c.m$CI_high
-
-#preliminary plots
-#plotting reconstructed Rin history
-plot(0,0, xlim = c(1,450), ylim = c(0.705, 0.715), xlab = "days", ylab ="Sr 87/86")
-#converting misha distance to days using rate Ivo.rate
-points((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
-       sub.mm.sim.avg.sr, pch= 18, col="#00b4ffff")
-lines((max(sub.mm.sim.avg.dist)+ 800-sub.mm.sim.avg.dist)/mean.wooller.rate,
-      sub.mm.sim.avg.sr, lwd= 1.5, col="#00b4ffff")
-#estimated input series
-MCMC.ts.Rin.m.invmamm.i.89<- MCMC.CI.bound(post.misha.invmamm.i$BUGSoutput$sims.list$Rin.m, 0.89)
-lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[1]],lwd = 2, col = "magenta")
-lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[2]], lwd = 1, lty = 2, col = "magenta")
-lines(1:480,MCMC.ts.Rin.m.invmamm.i.89[[3]], lwd = 1, lty = 2, col = "magenta")
-legend(0, 0.715, c("Measured ivory","Reconstructed input"),lwd = c(1.5, 2), col=c("#00b3ffff","magenta"))

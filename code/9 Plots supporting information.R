@@ -23,6 +23,7 @@ misha.elements <- read.csv("data/Misha elements.csv")
 #the beginning of the transet needs to be cleaned
 misha.elements.cl <- misha.elements[25:nrow(misha.elements),]
 
+#panels a-c
 par(mfrow=c(3,1))
 plot(n.avg.misha.50.dist, n.avg.misha.50.sr,col="#00b4ffff",type = "l",lwd=2,
      xlim=c(20000,8000),ylim=c(0.705,0.711),main="LA-ICP-MS 50 pt average",
@@ -41,6 +42,7 @@ plot(misha.elements.cl$adj.dist, misha.elements.cl$Mass.88,type = "l",
 abline(v=misha.elements.cl$adj.dist[1058-25],lty=2)
 abline(v=misha.elements.cl$adj.dist[2304-25],lty=2)
 abline(v=misha.elements.cl$adj.dist[3019-25],lty=2)
+
 #################Fig S2 ################
 #comparing solution methods to laser ablation methods
 misha.micromill <- read.csv("data/Misha micromill 400-600.csv")
