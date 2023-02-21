@@ -96,7 +96,7 @@ input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005
 
 #4 generate serum and bone series based on input series and turnover parameters#
 res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
-res.prs <- res[[1]]
+res.prl <- res[[1]]
 
 ###############change pool ratio: make c smaller##############
 a <- MAP.a[1]
@@ -111,7 +111,7 @@ input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005
 
 #4 generate serum and bone series based on input series and turnover parameters#
 res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
-res.prl <- res[[1]]
+res.prs <- res[[1]]
 
 
 ###############change flux ratio: make a larger##############
