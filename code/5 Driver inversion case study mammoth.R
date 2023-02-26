@@ -146,6 +146,10 @@ MAP.a.m <- map_estimate(post.misha.invmamm.i$BUGSoutput$sims.list$a.m)
 MAP.a.m[1]
 log(2)/MAP.a.m[1]
 
+MAP.b.m <- map_estimate(post.misha.invmamm.i$BUGSoutput$sims.list$b.m)
+MAP.b.m[1]
+log(2)/MAP.b.m[1]
+
 MAP.c.m <- map_estimate(post.misha.invmamm.i$BUGSoutput$sims.list$c.m)
 MAP.c.m[1]
 log(2)/MAP.c.m[1]
@@ -153,6 +157,17 @@ log(2)/MAP.c.m[1]
 MCMC.CI.a.m <- hdi(post.misha.invmamm.i$BUGSoutput$sims.list$a.m,0.89)
 MCMC.CI.a.m$CI_low
 MCMC.CI.a.m$CI_high
+log(2)/MCMC.CI.a.m$CI_low
+log(2)/MCMC.CI.a.m$CI_high
+
+MCMC.CI.b.m <- hdi(post.misha.invmamm.i$BUGSoutput$sims.list$b.m,0.89)
+MCMC.CI.b.m$CI_low
+MCMC.CI.b.m$CI_high
+log(2)/MCMC.CI.b.m$CI_low
+log(2)/MCMC.CI.b.m$CI_high
+
 MCMC.CI.c.m <- hdi(post.misha.invmamm.i$BUGSoutput$sims.list$c.m,0.89)
 MCMC.CI.c.m$CI_low
 MCMC.CI.c.m$CI_high
+log(2)/MCMC.CI.c.m$CI_low
+log(2)/MCMC.CI.c.m$CI_high
