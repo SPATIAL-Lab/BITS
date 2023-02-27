@@ -45,8 +45,8 @@ model {
   f.intake.perc ~ dnorm(0.015, 1/0.002^2)
   
   w.intake = w.intake.perc * Body.mass
-  #daily water intake ~ 1.5% +- 0.2% body mass
-  w.intake.perc ~ dnorm(0.015, 1/0.002^2)
+  #daily water intake ~ 2.5% +- 0.5% body mass
+  w.intake.perc ~ dnorm(0.025, 1/0.005^2)
   
   #water concentration and Sr ratio
   c.Sr.w = Sr.w.m * c.w.m #product of concentration and Sr

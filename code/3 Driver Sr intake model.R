@@ -12,12 +12,6 @@ library(EnvStats)
 plot.col<-viridis(7)
 
 setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
-misha <- read.csv("data/Misha ivory.csv")
-
-R.sd.mea <- misha$sd
-dist.mea <- misha$dist
-R.mea <- misha$mean
-n.mea = length(dist.mea)
 
 #adding the model component of food and water mixture as intake#
 intake <- read.csv("data/intake.csv")
@@ -76,7 +70,7 @@ R.intake.mean <- R.intake$parameters[1]
 R.intake.sd <- R.intake$parameters[2]
 
 ####alternative mean and sd estimates
-R.intake.mean <- 0.711
+R.intake.mean <- intake.af
 R.intake.sd <- 0.0005
 ########inversion model with calibration for either the one/two pool model#######
 #mixing of 10 kg of hay in diet
@@ -116,3 +110,8 @@ proc.time() - t1 #instantaneous
 save(post.misha.intake, file = "out/post.misha.intake.RData")
 
 post.misha.intake$BUGSoutput$summary
+
+w.intake.map <- map_estimate(post.misha.intake$BUGSoutput$sims.list$w.contrib[,1])
+w.intake.hid <- hdi(post.misha.intake$BUGSoutput$sims.list$w.contrib[,1],0.89)
+w.intake[2]
+w.intake[3]
