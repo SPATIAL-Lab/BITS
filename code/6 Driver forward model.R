@@ -71,7 +71,9 @@ forw.m <- function(t, input, a, b, c, R1.int, R2.int){
 a <- MAP.a[1]
 b <- MAP.b[1]
 c <- MAP.c[1]
+c/b
 
+a/b
 #to change pool ratio, change c; to change flux ratio, change a
 # flux.ratio <- a/b
 # pool.ratio <- c/b
@@ -90,6 +92,7 @@ res.misha <- res[[1]]
 a <- MAP.a[1]
 b <- MAP.b[1]
 c <- 0.01 #MAP.c = 0.0041
+c/b
 
 #3 generate input series with fixed duration#
 input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
@@ -102,6 +105,7 @@ res.prl <- res[[1]]
 a <- MAP.a[1]
 b <- MAP.b[1]
 c <- 0.001 #MAP.c = 0.0041
+c/b
 
 #2 number of days in the simulation
 t <- 900
@@ -118,6 +122,7 @@ res.prs <- res[[1]]
 a <- 0.04 #MAP.a = 0.0169
 b <- MAP.b[1]
 c <- MAP.c[1]
+a/b
 
 #2 number of days in the simulation
 t <- 900
@@ -133,6 +138,7 @@ res.frl <- res[[1]]
 a <- MAP.b[1] #MAP.a = 0.0169
 b <- MAP.b[1] #MAP.b = 0.0141
 c <- MAP.c[1]
+a/b
 
 #2 number of days in the simulation
 t <- 900
