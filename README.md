@@ -1,7 +1,7 @@
-# Sr-in-ivory
+# BITS: Bayesian Isotope Turnover and Sampling model
 
 ## Basic
-This a Bayesian hierarchical model that simulates the processes of 87Sr/86Sr incorporation, turnover, and output into incremental tissues. The modeling approach is built with a two-compartment isotope exchange mechanism, with the central pool being a rapidly-exchanging but relatively small pool, and the peripheral pool being a slowly-exchanging but relatively large pool. A steady state is assumed so that pool sizes are constant. The model comprises of 4 components: the model input, process model, data model for tissue growth, and data model for 87Sr/86Sr measurements. The model is demonstrated using 3 model studies explained below.
+The BITS model is a Bayesian hierarchical model that simulates the processes of isotope incorporation, turnover, output into incremental tissues, and data averaging during sampling. The modeling approach is demonstrated using the 87Sr/86Sr system, and built with a two-compartment isotope exchange mechanism, with the central pool being a rapidly-exchanging but relatively small pool, and the peripheral pool being a slowly-exchanging but relatively large pool. A steady state is assumed so that pool sizes are constant. No fractionation is assumed between the pools (for 87Sr/86Sr). The model comprises of 4 components: the model input, process model, data model for tissue growth, and data model for 87Sr/86Sr measurements. The model is demonstrated using 3 model studies explained below.
 
 ## Model studies
 Model study 1 is the **Calibration**, which is used to estimate turnover parameters using high-resolution 87Sr/86Sr measurements on the ivory from an African Savanna Elephant (*Loxodonta africana*) that was relocated to a different 87Sr/86Sr baseline.
@@ -24,4 +24,4 @@ Other R packages specified in the file headers help to visualize data.
 This version of the code is for peer review only, and is subject to major updates.
 
 ## How to cite this software
-TBD
+Yang, D. (2023), BITS: a Bayesian Isotope Turnover and Sampling model. https://github.com/SPATIAL-Lab/BITS
