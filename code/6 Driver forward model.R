@@ -217,3 +217,72 @@ syn.input.60 <- rep(syn.input.60,4)
 #4 generate serum and bone series based on input series and turnover parameters#
 res60 <- forw.m(t = length(syn.input.60), input = syn.input.60, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
 ######end of forward model######
+
+#######compared to the reaction progress approach######
+####begin forward model####
+#loading MAP estimates from posterior of the calibration
+a <- MAP.a[1]
+b <- MAP.b[1]
+c <- MAP.c[1]
+c/b
+
+a/b
+#to change pool ratio, change c; to change flux ratio, change a
+# flux.ratio <- a/b
+# pool.ratio <- c/b
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed duration#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
+res.misha <- res[[1]]
+
+#convert to reaction progress
+
+input.misha #from 0.706 to 0.711
+res.misha #dxt
+
+reac.prog <- (0.711-res.misha)/(0.711-0.706)
+
+reac.prog.tk <- reac.prog[101:length(reac.prog)]
+
+#reaction progress lines
+plot(1:length(reac.prog.tk), log(reac.prog.tk))
+
+#identifying the inflection point: 
+plot(1:100, log(reac.prog.tk[1:100]))
+
+#after the inflection point: [200:800]
+
+lm.res.misha.2 <- lm(log(reac.prog.tk[200:800]) ~ c(200:800))
+summary(lm.res.misha.2)
+#intercept = -0.654
+#slope = -0.0021
+exp(-0.654) #f2 = 0.52
+-1/-0.0021*log(2) #t1/2 = 330 days
+
+#for pool 2
+#slope of f2 ~= -1 *  exp(-0.654) * c
+#is by assuming that isotopic difference between the tow sources are constant
+
+#the linear fit is an approximation
+
+#fit for pool 1
+
+reac.prog.res1 <- log(reac.prog.tk[1:70]-exp(1:70 * -0.0021 -0.654)) #first residual
+
+lm.res.misha.1 <- lm(reac.prog.res1 ~ c(1:70))
+summary(lm.res.misha.1)
+#intercept = -0.7332
+#slope = -0.03359
+exp(-0.7332) #f1 = 0.48
+-1/-0.03359*log(2) #t1/2 = 20.6 days
+
+#for pool 2
+#slope of f2 ~= -1 *  (a + b)
+
+-1 *  (a + b)
