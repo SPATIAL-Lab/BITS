@@ -19,7 +19,7 @@ model {
 
   for (i in 2:t){
     #serum ratio
-    R2.m[i] <- R2.m[i - 1] + b.m * (R2.m[i - 1] - R1.m[i - 1]) + a.m * (Rin.m[i - 1] - R1.m[i - 1])
+    R1.m[i] <- R1.m[i - 1] + b.m * (R2.m[i - 1] - R1.m[i - 1]) + a.m * (Rin.m[i - 1] - R1.m[i - 1])
     
     #bone ratios
     R2.m[i] <- R2.m[i - 1] + c.m * (R1.m[i - 1] - R2.m[i - 1])

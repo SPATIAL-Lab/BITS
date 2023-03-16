@@ -59,6 +59,8 @@ proc.time() - t1 #~ 51 hours
 
 save(post.misha.inv2p3.param, file = "out/post.misha.inv2p3.param.RData")
 
+load("out/post.misha.inv2p3.param.RData")
+
 post.misha.inv2p3.param$BUGSoutput$summary
 
 #check posterior density of parameter a:

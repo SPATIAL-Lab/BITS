@@ -55,7 +55,7 @@ misha.micromill.dist <- misha.micromill$Position * 547
 
 misha.micromill.sr <- misha.micromill$corr..87Sr.86Sr
 misha.micromill.sr.err <- misha.micromill$comb..Err
-
+par(mfrow=c(1,1))
 plot(n.avg.misha.50.dist, n.avg.misha.50.sr,type = "l",col="#00b4ffff",lwd=1.5,
      xlim=c(23000,0),ylim=c(0.705,0.712),xlab="Distance from pulp cavity (microns)",ylab="87Sr/86Sr",
      main="Comparing data from the LA-ICP-MS and the solution methods")
@@ -159,7 +159,7 @@ lines(1:length(syn.input.120), res120[[1]],lwd=2, col = "#00b4ffff")
 plot(0,0, xlim = c(1,720), ylim = c(syn.low, syn.high), 
      xlab = "days", ylab ="87Sr/86Sr",main="60-day ends & 30-day intermediate switches")
 lines(1:length(syn.input.60), syn.input.60)
-lines(1:length(syn.input.60), Se.bone.res60[[1]],lwd=2, col = "#00b4ffff")
+lines(1:length(res60[[1]]), res60[[1]],lwd=2, col = "#00b4ffff")
 
 ##60 day switch ~50% of the original input
 
@@ -167,12 +167,9 @@ lines(1:length(syn.input.60), Se.bone.res60[[1]],lwd=2, col = "#00b4ffff")
 #reaction progress lines
 par(mfrow=c(1,2))
 plot(1:length(reac.prog.tk), log(reac.prog.tk),ylab="ln(1-F)",xlab="Days",main="Slow turnover pool")
-abline(-0.654, -0.0021, col = "red")
+abline(lm.res.misha.2$coefficients[[1]], lm.res.misha.2$coefficients[[2]], col = "red")
 legend(350,0,c("Intercept = -0.654", "Slope = -0.0021","f2 = 0.52"))
 
 plot(c(1:150),reac.prog.res1,ylab="Residual: ln(1-F)",xlab="Days", main = "Fast turnover pool")
-abline(-0.7252, -0.03378, col = "red")
+abline(lm.res.misha.1$coefficients[[1]], lm.res.misha.1$coefficients[[2]], col = "red")
 legend(60,-0.8,c("Intercept = -0.725", "Slope = -0.0338","f1 = 0.48"))
-
-#identifying the inflection point: 
-plot(1:70, log(reac.prog.tk[1:70]))

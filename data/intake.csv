@@ -25,19 +25,19 @@ lab ID,label on sample,type,date,87Sr/86Sr,SE,Sr_conc,Source
 110,Emigration Creek,W,1-Jun-11,0.70824,0.00001,0.46,This study
 111,City Creek,W,1-Jun-11,0.7101,0.00001,0.13,This study
 201,"Red Butte Creek June 9, 2011",W,9-Jun-11,0.70896,0.00002,0.261,This study
-332,Hogle Zoo,W,26-Mar-12,0.7096,0.00001,na,This study
-362,Stone Drinker,W,24-May-12,0.71058,0.00002,na,This study
-363,LFN Drinker,W,24-May-12,0.71062,0.00002,na,This study
-364,Main LFN Pool,W,24-May-12,0.70968,0.00001,na,This study
-na,Surface Water - Wasatch,W,6/29/2012,0.71073,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,10/23/2012,0.71026,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,1/17/2013,0.71039,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,4/23/2013,0.71058,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,10/12/2013,0.71076,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,2/2/2014,0.71029,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,4/30/2014,0.71061,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,7/16/2014,0.71105,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,8/28/2014,0.71052,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,2/17/2015,0.71034,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,12/5/2014,0.71082,na,na,"Tipple et al., 2018"
-na,Surface Water - Wasatch,W,5/1/2015,0.7111,na,na,"Tipple et al., 2018"
+332,Hogle Zoo,W,26-Mar-12,0.7096,0.00001,,This study
+362,Stone Drinker,W,24-May-12,0.71058,0.00002,,This study
+363,LFN Drinker,W,24-May-12,0.71062,0.00002,,This study
+364,Main LFN Pool,W,24-May-12,0.70968,0.00001,,This study
+na,Surface Water - Wasatch,W,6/29/2012,0.71073,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,10/23/2012,0.71026,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,1/17/2013,0.71039,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,4/23/2013,0.71058,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,10/12/2013,0.71076,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,2/2/2014,0.71029,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,4/30/2014,0.71061,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,7/16/2014,0.71105,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,8/28/2014,0.71052,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,2/17/2015,0.71034,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,12/5/2014,0.71082,,,"Tipple et al., 2018"
+na,Surface Water - Wasatch,W,5/1/2015,0.7111,,,"Tipple et al., 2018"

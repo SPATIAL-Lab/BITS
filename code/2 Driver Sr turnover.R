@@ -65,7 +65,6 @@ n.mea = length(n.avg.misha.50.sr.rmv)
 
 Rpri <- 0.706
 
-#Re is the mean ratio of end value  
 Raft <- 0.711
 s.intv <- 52.4
 

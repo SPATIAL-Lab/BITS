@@ -62,7 +62,7 @@ model {
   #Rin is the input ratio, which is modeled with a switch point in the time series
   for(i in 1:t){
     
-    Rin[i] ~ dnorm(ifelse(i > switch, Re.mean, R0.mean), ifelse(i > switch, Re.pre, R0.pre))
+    Rin[i] ~ dnorm(ifelse(i > switch, Raft.mean, Rpri.mean), ifelse(i > switch, Raft.pre, Rpri.pre))
     #When i is greater than the switch point, Rin ~ dnorm(Re.mean, Rin.m.pre)
   }
   

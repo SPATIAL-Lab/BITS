@@ -11,6 +11,7 @@ library(EnvStats)
 source("code/1 Helper functions.R")
 
 plot.col<-viridis(7)
+plot.col.6<-inferno(6)
 
 setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 
@@ -125,12 +126,12 @@ switch <- 86
 
 #parameters to save
 parameters <- c("a", "b","c", "Ivo.rate", "R1.m","R2.m","Rin","dist.index",
-                "Sr.pre", "Raft.mean", "Rpri.mean", "switch","dist",
+                "Sr.pre", "Raft.mean", "Rpri.mean","dist",
                 "flux.ratio", "pool.ratio")
 ##Data to pass to the model
 dat = list(R.mea = R.mea, dist.mea = dist.mea, R.sd.mea = R.sd.mea, t = 750, n.mea = n.mea, 
            Rpri = Rpri, Raft = Raft, s.intv = s.intv, Ivo.rate.mean = Ivo.rate.mean,
-           Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea)
+           Ivo.rate.sd = Ivo.rate.sd, max.dist.mea = max.dist.mea, switch = switch)
 
 #Start time
 t1 = proc.time()
@@ -332,8 +333,8 @@ subset(post.misha.pc2p$BUGSoutput$summary,
 
 plot(0,0, xlim = c(20000,8000), ylim = c(0.7056, 0.712), xlab = "distance", ylab ="Sr 87/86",
      main="Calibration")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
+abline(h = Rpri, lwd = 2, lty = 2)
+abline(h = Raft, lwd = 2, lty = 2)
 
 ind.pc2p<- sample(dim(post.misha.pc2p$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
 MCMC.dist.plot(post.misha.pc2p$BUGSoutput$sims.list$R1.m[ind.pc2p,],
@@ -409,6 +410,7 @@ post.misha.inv2p3.param.s = do.call(jags.parallel,list(model.file = "code/Sr inv
 proc.time() - t1 #~ 51 hours
 
 save(post.misha.inv2p3.param.s, file = "out/post.misha.inv2p3.param.s.RData")
+load("out/post.misha.inv2p3.param.s.RData")
 
 post.misha.inv2p3.param.s$BUGSoutput$summary
 
@@ -489,7 +491,7 @@ load("out/post.misha.invmamm.param.RData")
 subset(post.misha.invmamm.param$BUGSoutput$summary,
        rownames(post.misha.invmamm.param$BUGSoutput$summary)=="a.m")#
 
-plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$exp.ab))
+plot(density(post.misha.invmamm.param$BUGSoutput$sims.list$exp.a))
 
 #do the posterior of a.m and c.m 
 
@@ -562,7 +564,7 @@ load("out/post.misha.invmamm.s.RData")
 subset(post.misha.invmamm.s$BUGSoutput$summary,
        rownames(post.misha.invmamm.s$BUGSoutput$summary)=="a.m")#
 
-plot(density(post.misha.invmamm.s$BUGSoutput$sims.list$exp.ab))
+plot(density(post.misha.invmamm.s$BUGSoutput$sims.list$exp.a))
 
 #do the posterior of a.m and c.m 
 
@@ -631,6 +633,8 @@ save(post.misha.inv2p.tsrw, file = "out/post.misha.inv2p.tsrw.RData")
 
 post.misha.inv2p.tsrw$BUGSoutput$summary
 
+load("out/post.misha.inv2p.tsrw.RData")
+
 #comparing parameter a
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a))
 lines(density(post.misha.inv2p.tsrw$BUGSoutput$sims.list$a),col="red") 
@@ -688,6 +692,8 @@ proc.time() - t1 #~ 40 hours
 save(post.misha.inv2p.tsrwca, file = "out/post.misha.inv2p.tsrwca.RData")
 
 post.misha.inv2p.tsrwca$BUGSoutput$summary
+
+load("out/post.misha.inv2p.tsrwca.RData")
 
 #comparing parameter a
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a))
@@ -747,7 +753,7 @@ save(post.invmamm.tsrw, file = "out/post.invmamm.tsrw.RData")
 
 post.invmamm.tsrw$BUGSoutput$summary
 
-load("out/post.misha.invmamm.param.RData")
+load("out/post.invmamm.tsrw.RData")
 
 subset(post.invmamm.tsrw$BUGSoutput$summary,
        rownames(post.invmamm.tsrw$BUGSoutput$summary)=="a.m")

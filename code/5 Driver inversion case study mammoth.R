@@ -17,6 +17,8 @@ setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 ####invterting laser abalition data from Wooller et al., 2021####
 Wooller <- read.csv("data/Wooller_Data_S3.csv")
 
+Wooller.sr <- Wooller$Sr_Seg01
+
 #dist is in cm, convert to micron
 wooller.micron <- Wooller$Dist_Seg01*10000
 
@@ -51,17 +53,17 @@ wooller.rate <- rep(NA,27)
 #first 2 years of life is neonate (Wooller et al 2021)
 #last year is close to death, so these data are omitted
 for(i in 3:27){
-  test.sub.last <- subset(wooller.COSr$d,wooller.COSr$year==(i-1))
-  test.sub <- subset(wooller.COSr$d,wooller.COSr$year==i)
+  test.sub.last <- subset(wooller.COSr$d, wooller.COSr$year==(i-1))
+  test.sub <- subset(wooller.COSr$d, wooller.COSr$year==i)
   #d is in an increasing order, so get the first element of last year
-  test.comb <- rbind(test.sub,test.sub.next[1])
+  test.comb <- rbind(test.sub,test.sub.last[1])
   wooller.rate[i] <- 10000*(max(test.comb)- min(test.comb))/365 #distance in cm, 365 days in a year
   #results are in microns/day
 }
 
-wooller.rate<- na.omit(wooller.rate)
-mean.wooller.rate <- mean(wooller.rate)
-sd.wooller.rate <- sd(wooller.rate)
+wooller.rate.omit <- na.omit(wooller.rate)
+mean.wooller.rate <- mean(wooller.rate.omit)
+sd.wooller.rate <- sd(wooller.rate.omit)
 hist(wooller.rate[3:27])
 plot(3:27,wooller.rate[3:27])
 

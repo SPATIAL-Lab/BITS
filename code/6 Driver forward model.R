@@ -254,31 +254,32 @@ reac.prog.tk <- reac.prog[101:length(reac.prog)]
 
 lm.res.misha.2 <- lm(log(reac.prog.tk[200:800]) ~ c(200:800))
 summary(lm.res.misha.2)
-#intercept = -0.6539
-#slope = -0.002102
-exp(-0.6539) #f2 = 0.52
--1/-0.002102*log(2) #t1/2 = 330 days
+lm.res.misha.2$coefficients[[1]] #intercept
+lm.res.misha.2$coefficients[[2]] #slope
+
+exp(lm.res.misha.2$coefficients[[1]]) #f2
+-1/lm.res.misha.2$coefficients[[2]]*log(2) #t1/2 = 330 days
 
 #estimate of parameter c:
-#c ~= -0.002102 /(1-exp(-0.654))
-0.002102/(1-exp(-0.6539))
+-lm.res.misha.2$coefficients[[2]]/(1-exp(lm.res.misha.2$coefficients[[1]]))
 
 #fit for pool 1
 
-reac.prog.res1 <- log(reac.prog.tk[1:150]-exp(1:150 * -0.002102 -0.6539)) #first residual
+reac.prog.res1 <- log(reac.prog.tk[1:150]-exp(1:150 * lm.res.misha.2$coefficients[[2]] + lm.res.misha.2$coefficients[[1]])) #first residual
 plot(c(1:150),reac.prog.res1,ylab="residual: ln(1-F)",xlab="Days")
 lm.res.misha.1 <- lm(reac.prog.res1 ~ c(1:150))
 summary(lm.res.misha.1)
-#intercept = -0.7252
-#slope = -0.03378
-exp(-0.7252) #f1 = 0.48
--1/-0.03378*log(2) #t1/2 = 20.5 days
+lm.res.misha.1$coefficients[[1]] #intercept
+lm.res.misha.1$coefficients[[2]] #slope
+
+exp(lm.res.misha.1$coefficients[[1]]) #f1 = 0.48
+-1/lm.res.misha.1$coefficients[[2]]*log(2) #t1/2 = 20.5 days
 
 #estimate of parameter a:
-#a ~= 0.03378*exp(-0.7252)
-0.03378*exp(-0.7252)
+-lm.res.misha.1$coefficients[[2]]*exp(lm.res.misha.1$coefficients[[1]])
 
-0.52/0.48 # f2/f1 ~= flux ratio
+# f1/f2 ~= flux ratio
+exp(lm.res.misha.1$coefficients[[1]])/exp(lm.res.misha.2$coefficients[[1]])
 
 #################use a different ratio###################
 ####begin forward model####
@@ -315,26 +316,27 @@ reac.prog.frl.tk <- reac.prog.frl[101:length(reac.prog.frl)]
 lm.res.frl.2 <- lm(log(reac.prog.frl.tk[200:800]) ~ c(200:800))
 plot(1:length(reac.prog.frl.tk), log(reac.prog.frl.tk),ylab="ln(1-F)",xlab="Days",main="Slow turnover pool")
 summary(lm.res.frl.2)
-#intercept = -1.235
-#slope = -0.00297
-exp(-1.235) #f2 = 0.291
--1/-0.00297*log(2) #t1/2 = 233 days
+lm.res.frl.2$coefficients[[1]] #intercept
+lm.res.frl.2$coefficients[[2]] #slope
+
+exp(lm.res.frl.2$coefficients[[1]]) #f2 = 0.2885
+-1/lm.res.frl.2$coefficients[[2]]*log(2) #t1/2 = 271 days
 
 #estimate of parameter c:
-#for pool 2, c ~= -1 *  (1-exp(-1.235)) * -0.00297
-0.00297/(1-exp(-1.235))
+-lm.res.frl.2$coefficients[[2]]/(1-exp(lm.res.frl.2$coefficients[[1]]))
 
 #fit for pool 1
-reac.prog.frl.res1 <- log(reac.prog.frl.tk[1:150]-exp(1:150 * -0.00297 -1.235)) #first residual
+reac.prog.frl.res1 <- log(reac.prog.frl.tk[1:150]-exp(1:150 * lm.res.frl.2$coefficients[[2]] +lm.res.frl.2$coefficients[[1]])) #first residual
 plot(c(1:150),reac.prog.frl.res1,ylab="residual: ln(1-F)",xlab="Days")
 lm.res.frl.1 <- lm(reac.prog.frl.res1 ~ c(1:150))
 summary(lm.res.frl.1)
-#intercept = -0.3111
-#slope = -0.05775
-exp(-0.3111) #f1 = 0.73
--1/-0.05775*log(2) #t1/2 = 12 days
+lm.res.frl.1$coefficients[[1]] #intercept
+lm.res.frl.1$coefficients[[2]] #slope
+exp(lm.res.frl.1$coefficients[[1]]) #f1 = 0.711
+-1/lm.res.frl.1$coefficients[[2]]*log(2) #t1/2 = 12.3 days
 
 #estimate of parameter a:
-0.05775*exp(-0.3111) 
+-lm.res.frl.1$coefficients[[2]]*exp(lm.res.frl.1$coefficients[[1]]) 
 
-0.73/0.291 # f2/f1 ~= flux ratio
+# f1/f2 ~= flux ratio
+exp(lm.res.frl.1$coefficients[[1]]) /exp(lm.res.frl.2$coefficients[[1]])  

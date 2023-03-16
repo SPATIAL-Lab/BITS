@@ -51,14 +51,16 @@ axis(4,at=c(0, 200, 400, 600) )
 
 #panel c
 load("out/post.misha.pc2p3.RData")
+Rpri <- 0.706
+Raft <- 0.711
 
 svg(filename = "out/Fig 4 2pcal.svg",
     width = 8, height = 5.6, pointsize = 12)
 par(mar = c(5.1, 4.1, 4.1, 2.1))
 plot(0,0, xlim = c(20000,8000), ylim = c(0.705, 0.711), xlab = "distance", ylab ="Sr 87/86",
      main="Calibration")
-abline(h = R0, lwd = 2, lty = 2)
-abline(h = Re, lwd = 2, lty = 2)
+abline(h = Rpri, lwd = 2, lty = 2)
+abline(h = Raft, lwd = 2, lty = 2)
 #4000 lines are too many
 #further thinning to 2000 lines
 ind.pc2p<- sample(dim(post.misha.pc2p3$BUGSoutput$sims.list$R1.m)[1],500,replace = F)
@@ -78,7 +80,7 @@ dev.off()
 ######panel d#####
 #536h * 330w
 #panel d
-par(mfrow=c(3,1))
+par(mfrow=c(2,1))
 par(mar = c(4.1, 4.1, 2.1, 4.1))
 plot(density(post.misha.pc2p3$BUGSoutput$sims.list$a, from = 0), xlim = c(0,0.04),ylim= c(0,100),
      lwd = 2, col = plot.col.6[3],main="a & b", xlab="Parameter estimates")
@@ -139,7 +141,7 @@ plot(density(post.misha.pc2p3$BUGSoutput$sims.list$b, from = 0), xlim = c(0,0.04
      lwd = 2, col = "red",main="b", xlab="parameter estimate")
 lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$b, from = 0),lwd = 2,col="blue")
 
-plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0), xlim = c(0,0.01),ylim= c(0,400),
+plot(density(post.misha.pc2p3$BUGSoutput$sims.list$c, from = 0), xlim = c(0,0.01),ylim= c(0,420),
      lwd = 2, col = "red",main="c", xlab="parameter estimate")
 lines(density(post.misha.inv2p3.param$BUGSoutput$sims.list$c, from = 0),lwd = 2,col="blue")
 

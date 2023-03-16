@@ -15,6 +15,7 @@ setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
 
 #adding the model component of food and water mixture as intake#
 intake <- read.csv("data/intake.csv")
+intake$Sr_conc
 
 Hay <- subset(intake, intake$type=="H")
 Pellet <- subset(intake, intake$type=="P")
@@ -75,6 +76,7 @@ R.intake.sd <- 0.0005
 ########inversion model with calibration for either the one/two pool model#######
 #mixing of 10 kg of hay in diet
 m.feed <- 10
+
 #parameters to save
 parameters <- c("w.contrib","h.contrib", "w.food", "w.hay", "w.pel", "w.sup", "w.water",
                 "f.h", "f.pel", "Rin")
@@ -113,5 +115,5 @@ post.misha.intake$BUGSoutput$summary
 
 w.intake.map <- map_estimate(post.misha.intake$BUGSoutput$sims.list$w.contrib[,1])
 w.intake.hid <- hdi(post.misha.intake$BUGSoutput$sims.list$w.contrib[,1],0.89)
-w.intake[2]
-w.intake[3]
+w.intake.hid[2]
+w.intake.hid[3]
