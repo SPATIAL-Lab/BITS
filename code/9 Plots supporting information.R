@@ -162,3 +162,17 @@ lines(1:length(syn.input.60), syn.input.60)
 lines(1:length(syn.input.60), Se.bone.res60[[1]],lwd=2, col = "#00b4ffff")
 
 ##60 day switch ~50% of the original input
+
+###############Fig S7: comparing reaction progress and BITS###########
+#reaction progress lines
+par(mfrow=c(1,2))
+plot(1:length(reac.prog.tk), log(reac.prog.tk),ylab="ln(1-F)",xlab="Days",main="Slow turnover pool")
+abline(-0.654, -0.0021, col = "red")
+legend(350,0,c("Intercept = -0.654", "Slope = -0.0021","f2 = 0.52"))
+
+plot(c(1:150),reac.prog.res1,ylab="Residual: ln(1-F)",xlab="Days", main = "Fast turnover pool")
+abline(-0.7252, -0.03378, col = "red")
+legend(60,-0.8,c("Intercept = -0.725", "Slope = -0.0338","f1 = 0.48"))
+
+#identifying the inflection point: 
+plot(1:70, log(reac.prog.tk[1:70]))

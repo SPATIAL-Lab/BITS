@@ -250,39 +250,91 @@ reac.prog <- (0.711-res.misha)/(0.711-0.706)
 
 reac.prog.tk <- reac.prog[101:length(reac.prog)]
 
-#reaction progress lines
-plot(1:length(reac.prog.tk), log(reac.prog.tk))
-
-#identifying the inflection point: 
-plot(1:100, log(reac.prog.tk[1:100]))
-
 #after the inflection point: [200:800]
 
 lm.res.misha.2 <- lm(log(reac.prog.tk[200:800]) ~ c(200:800))
 summary(lm.res.misha.2)
-#intercept = -0.654
-#slope = -0.0021
-exp(-0.654) #f2 = 0.52
--1/-0.0021*log(2) #t1/2 = 330 days
+#intercept = -0.6539
+#slope = -0.002102
+exp(-0.6539) #f2 = 0.52
+-1/-0.002102*log(2) #t1/2 = 330 days
 
-#for pool 2
-#slope of f2 ~= -1 *  exp(-0.654) * c
-#is by assuming that isotopic difference between the tow sources are constant
-
-#the linear fit is an approximation
+#estimate of parameter c:
+#c ~= -0.002102 /(1-exp(-0.654))
+0.002102/(1-exp(-0.6539))
 
 #fit for pool 1
 
-reac.prog.res1 <- log(reac.prog.tk[1:70]-exp(1:70 * -0.0021 -0.654)) #first residual
-
-lm.res.misha.1 <- lm(reac.prog.res1 ~ c(1:70))
+reac.prog.res1 <- log(reac.prog.tk[1:150]-exp(1:150 * -0.002102 -0.6539)) #first residual
+plot(c(1:150),reac.prog.res1,ylab="residual: ln(1-F)",xlab="Days")
+lm.res.misha.1 <- lm(reac.prog.res1 ~ c(1:150))
 summary(lm.res.misha.1)
-#intercept = -0.7332
-#slope = -0.03359
-exp(-0.7332) #f1 = 0.48
--1/-0.03359*log(2) #t1/2 = 20.6 days
+#intercept = -0.7252
+#slope = -0.03378
+exp(-0.7252) #f1 = 0.48
+-1/-0.03378*log(2) #t1/2 = 20.5 days
 
-#for pool 2
-#slope of f2 ~= -1 *  (a + b)
+#estimate of parameter a:
+#a ~= 0.03378*exp(-0.7252)
+0.03378*exp(-0.7252)
 
--1 *  (a + b)
+0.52/0.48 # f2/f1 ~= flux ratio
+
+#################use a different ratio###################
+####begin forward model####
+#loading MAP estimates from posterior of the calibration
+a <- 0.04
+b <- MAP.b[1]
+c <- MAP.c[1]
+a/b
+#to change pool ratio, change c; to change flux ratio, change a
+# flux.ratio <- a/b
+# pool.ratio <- c/b
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed duration#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
+res.frl <- res[[1]]
+
+#convert to reaction progress
+
+input.misha #from 0.706 to 0.711
+res.frl #dxt
+
+reac.prog.frl <- (0.711-res.frl)/(0.711-0.706)
+
+reac.prog.frl.tk <- reac.prog.frl[101:length(reac.prog.frl)]
+
+#after the inflection point: [200:800]
+
+lm.res.frl.2 <- lm(log(reac.prog.frl.tk[200:800]) ~ c(200:800))
+plot(1:length(reac.prog.frl.tk), log(reac.prog.frl.tk),ylab="ln(1-F)",xlab="Days",main="Slow turnover pool")
+summary(lm.res.frl.2)
+#intercept = -1.235
+#slope = -0.00297
+exp(-1.235) #f2 = 0.291
+-1/-0.00297*log(2) #t1/2 = 233 days
+
+#estimate of parameter c:
+#for pool 2, c ~= -1 *  (1-exp(-1.235)) * -0.00297
+0.00297/(1-exp(-1.235))
+
+#fit for pool 1
+reac.prog.frl.res1 <- log(reac.prog.frl.tk[1:150]-exp(1:150 * -0.00297 -1.235)) #first residual
+plot(c(1:150),reac.prog.frl.res1,ylab="residual: ln(1-F)",xlab="Days")
+lm.res.frl.1 <- lm(reac.prog.frl.res1 ~ c(1:150))
+summary(lm.res.frl.1)
+#intercept = -0.3111
+#slope = -0.05775
+exp(-0.3111) #f1 = 0.73
+-1/-0.05775*log(2) #t1/2 = 12 days
+
+#estimate of parameter a:
+0.05775*exp(-0.3111) 
+
+0.73/0.291 # f2/f1 ~= flux ratio
