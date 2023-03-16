@@ -8,13 +8,13 @@ Model study 1 is the **Calibration**, which is used to estimate turnover paramet
 
 Model study 2 is the **Fidelity test**, which uses the same turnover parameters in the Calibration to recover the 87Sr/86Sr history associated with the known relocation.
 
-Model study 3 is the **Case study**, which is used to estimate possible 87Sr/86Sr intake history from published ivory measurements from an Alaskan Woolly Mammoth [Wooller et al., (2021)](https://www.science.org/doi/abs/10.1126/science.abg1134).
+Model study 3 is the **Case study**, which is used to estimate possible 87Sr/86Sr intake history from published ivory measurements from an Alaskan Woolly Mammoth [(Wooller et al., 2021)](https://www.science.org/doi/abs/10.1126/science.abg1134).
 
 ## Data
-The "data" folder consists of both data from this study, and published data from [Wooller et al., (2021)](https://www.science.org/doi/abs/10.1126/science.abg1134) for the case studies. 
+The "data" folder contains both data used in this study, and published data from [Wooller et al., (2021)](https://www.science.org/doi/abs/10.1126/science.abg1134) for the case studies. 
 
 ## Software requirements
-The code is developed in R calling the standalone JAGS (Just Another Gibbs Sampler) program, which is required before the code can be run. The JAGS program can be downloaded via [this link](https://sourceforge.net/projects/mcmc-jags/). Please make sure to download the version that is appropriate for your operating system.
+The code is developed in R (ver. 4.0.5) calling the standalone JAGS (Just Another Gibbs Sampler) program, which is required before the code can be run. The JAGS program can be downloaded via [this link](https://sourceforge.net/projects/mcmc-jags/). Please make sure to download the version that is appropriate for your operating system.
 
 To call JAGS from RStudio, the R packages "rjags" and "R2jags" are also required.
 
