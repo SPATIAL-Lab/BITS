@@ -224,8 +224,7 @@ res60 <- forw.m(t = length(syn.input.60), input = syn.input.60, a = a, b = b, c 
 a <- MAP.a[1]
 b <- MAP.b[1]
 c <- MAP.c[1]
-c/b
-
+c/b #0.2909254
 a/b
 #to change pool ratio, change c; to change flux ratio, change a
 # flux.ratio <- a/b
@@ -255,7 +254,7 @@ reac.prog.tk <- reac.prog[101:length(reac.prog)]
 lm.res.misha.2 <- lm(log(reac.prog.tk[200:800]) ~ c(200:800))
 summary(lm.res.misha.2)
 lm.res.misha.2$coefficients[[1]] #intercept
-lm.res.misha.2$coefficients[[2]] #slope
+lm.res.misha.2$coefficients[[2]] #slope lambda2
 
 exp(lm.res.misha.2$coefficients[[1]]) #f2
 -1/lm.res.misha.2$coefficients[[2]]*log(2) #t1/2 = 330 days
@@ -270,7 +269,7 @@ plot(c(1:150),reac.prog.res1,ylab="residual: ln(1-F)",xlab="Days")
 lm.res.misha.1 <- lm(reac.prog.res1 ~ c(1:150))
 summary(lm.res.misha.1)
 lm.res.misha.1$coefficients[[1]] #intercept
-lm.res.misha.1$coefficients[[2]] #slope
+lm.res.misha.1$coefficients[[2]] #slope lambda1
 
 exp(lm.res.misha.1$coefficients[[1]]) #f1 = 0.48
 -1/lm.res.misha.1$coefficients[[2]]*log(2) #t1/2 = 20.5 days
@@ -281,6 +280,9 @@ exp(lm.res.misha.1$coefficients[[1]]) #f1 = 0.48
 # f1/f2 ~= flux ratio
 exp(lm.res.misha.1$coefficients[[1]])/exp(lm.res.misha.2$coefficients[[1]])
 
+# lambda1/(lambda2*f1*f2) ~= pool ratio
+lm.res.misha.2$coefficients[[2]]/lm.res.misha.1$coefficients[[2]]/exp(lm.res.misha.1$coefficients[[1]])/exp(lm.res.misha.2$coefficients[[1]])
+
 #################use a different ratio###################
 ####begin forward model####
 #loading MAP estimates from posterior of the calibration
@@ -288,6 +290,7 @@ a <- 0.04
 b <- MAP.b[1]
 c <- MAP.c[1]
 a/b
+c/b
 #to change pool ratio, change c; to change flux ratio, change a
 # flux.ratio <- a/b
 # pool.ratio <- c/b
@@ -317,7 +320,7 @@ lm.res.frl.2 <- lm(log(reac.prog.frl.tk[200:800]) ~ c(200:800))
 plot(1:length(reac.prog.frl.tk), log(reac.prog.frl.tk),ylab="ln(1-F)",xlab="Days",main="Slow turnover pool")
 summary(lm.res.frl.2)
 lm.res.frl.2$coefficients[[1]] #intercept
-lm.res.frl.2$coefficients[[2]] #slope
+lm.res.frl.2$coefficients[[2]] #slope lambda2
 
 exp(lm.res.frl.2$coefficients[[1]]) #f2 = 0.2885
 -1/lm.res.frl.2$coefficients[[2]]*log(2) #t1/2 = 271 days
@@ -331,7 +334,7 @@ plot(c(1:150),reac.prog.frl.res1,ylab="residual: ln(1-F)",xlab="Days")
 lm.res.frl.1 <- lm(reac.prog.frl.res1 ~ c(1:150))
 summary(lm.res.frl.1)
 lm.res.frl.1$coefficients[[1]] #intercept
-lm.res.frl.1$coefficients[[2]] #slope
+lm.res.frl.1$coefficients[[2]] #slope lambda1
 exp(lm.res.frl.1$coefficients[[1]]) #f1 = 0.711
 -1/lm.res.frl.1$coefficients[[2]]*log(2) #t1/2 = 12.3 days
 
@@ -340,3 +343,58 @@ exp(lm.res.frl.1$coefficients[[1]]) #f1 = 0.711
 
 # f1/f2 ~= flux ratio
 exp(lm.res.frl.1$coefficients[[1]]) /exp(lm.res.frl.2$coefficients[[1]])  
+
+# lambda1/(lambda2*f1*f2) ~= pool ratio
+lm.res.frl.2$coefficients[[2]]/lm.res.frl.1$coefficients[[2]]/exp(lm.res.frl.1$coefficients[[1]])/exp(lm.res.frl.2$coefficients[[1]])
+##############use a different c #################
+a <- MAP.a[1]
+b <- MAP.b[1]
+c <- 0.001 #MAP.c = 0.0041
+c/b
+
+#2 number of days in the simulation
+t <- 900
+
+#3 generate input series with fixed duration#
+input.misha <- initiate.switch(t, n.switch=1, day.switch=100, a=0.706, gap=0.005, duration=360)
+
+#4 generate serum and bone series based on input series and turnover parameters#
+res <- forw.m(t = 900, input = input.misha, a = a, b = b, c = c, R1.int = NULL, R2.int = NULL)
+res.prs <- res[[1]]
+
+reac.prog.prs <- (0.711-res.prs)/(0.711-0.706)
+
+reac.prog.prs.tk <- reac.prog.prs[101:length(reac.prog.prs)]
+
+#after the inflection point: [200:800]
+
+lm.res.prs.2 <- lm(log(reac.prog.prs.tk[200:800]) ~ c(200:800))
+plot(1:length(reac.prog.prs.tk), log(reac.prog.prs.tk),ylab="ln(1-F)",xlab="Days",main="Slow turnover pool")
+summary(lm.res.prs.2)
+lm.res.prs.2$coefficients[[1]] #intercept
+lm.res.prs.2$coefficients[[2]] #slope lambda2
+
+exp(lm.res.prs.2$coefficients[[1]]) #f2 = 0.4700503
+-1/lm.res.prs.2$coefficients[[2]]*log(2) #t1/2 = 1284.937 days
+
+#estimate of parameter c:
+-lm.res.prs.2$coefficients[[2]]/(1-exp(lm.res.prs.2$coefficients[[1]]))
+
+#fit for pool 1
+reac.prog.prs.res1 <- log(reac.prog.prs.tk[1:150]-exp(1:150 * lm.res.prs.2$coefficients[[2]] +lm.res.prs.2$coefficients[[1]])) #first residual
+plot(c(1:150),reac.prog.prs.res1,ylab="residual: ln(1-F)",xlab="Days")
+lm.res.prs.1 <- lm(reac.prog.prs.res1 ~ c(1:150))
+summary(lm.res.prs.1)
+lm.res.prs.1$coefficients[[1]] #intercept
+lm.res.prs.1$coefficients[[2]] #slope lambda1
+exp(lm.res.prs.1$coefficients[[1]]) #f1 = 0.5343916
+-1/lm.res.prs.1$coefficients[[2]]*log(2) #t1/2 = 21.53086 days
+
+#estimate of parameter a:
+-lm.res.prs.1$coefficients[[2]]*exp(lm.res.prs.1$coefficients[[1]]) 
+
+# fin/f2 ~= flux ratio
+exp(lm.res.prs.1$coefficients[[1]]) /exp(lm.res.prs.2$coefficients[[1]])  
+
+# lambda1/(lambda2*f1*f2) ~= pool ratio
+lm.res.prs.2$coefficients[[2]]/lm.res.prs.1$coefficients[[2]]/exp(lm.res.prs.1$coefficients[[1]])/exp(lm.res.prs.2$coefficients[[1]])

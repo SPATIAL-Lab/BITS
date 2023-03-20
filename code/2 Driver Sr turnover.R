@@ -145,7 +145,21 @@ MCMC.CI.c$CI_high
 log(2)/MCMC.CI.c$CI_low
 log(2)/MCMC.CI.c$CI_high
 
+MAP.flux.ratio <- map_estimate(post.misha.pc2p3$BUGSoutput$sims.list$flux.ratio)
+MAP.flux.ratio[1]
+MCMC.CI.flux.ratio <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$flux.ratio,0.89)
+MCMC.CI.flux.ratio$CI_low
+MCMC.CI.flux.ratio$CI_high
+
+MAP.pool.ratio <- map_estimate(post.misha.pc2p3$BUGSoutput$sims.list$pool.ratio)
+MAP.pool.ratio[1]
+MCMC.CI.pool.ratio <- hdi(post.misha.pc2p3$BUGSoutput$sims.list$pool.ratio,0.89)
+MCMC.CI.pool.ratio$CI_low
+MCMC.CI.pool.ratio$CI_high
+
 #get posterior of intake ratio
 post.misha.pc2p3.Rin.89<- MCMC.CI.bound(post.misha.pc2p3$BUGSoutput$sims.list$Rin, 0.89)
 #calculate the mean of intake after switch
 intake.af <- mean(post.misha.pc2p3.Rin.89[[1]][90:750])
+
+

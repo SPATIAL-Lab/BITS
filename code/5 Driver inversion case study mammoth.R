@@ -173,3 +173,17 @@ MCMC.CI.c.m$CI_low
 MCMC.CI.c.m$CI_high
 log(2)/MCMC.CI.c.m$CI_low
 log(2)/MCMC.CI.c.m$CI_high
+
+flux.ratio.m <- post.misha.invmamm.i$BUGSoutput$sims.list$a.m/post.misha.invmamm.i$BUGSoutput$sims.list$b.m
+MAP.flux.ratio.m <- map_estimate(flux.ratio.m)
+MAP.flux.ratio.m[1]
+MCMC.CI.flux.ratio.m <- hdi(flux.ratio.m,0.89)
+MCMC.CI.flux.ratio.m$CI_low
+MCMC.CI.flux.ratio.m$CI_high
+
+pool.ratio.m <- post.misha.invmamm.i$BUGSoutput$sims.list$c.m/post.misha.invmamm.i$BUGSoutput$sims.list$b.m
+MAP.pool.ratio.m <- map_estimate(pool.ratio.m)
+MAP.pool.ratio.m[1]
+MCMC.CI.pool.ratio.m <- hdi(pool.ratio.m,0.89)
+MCMC.CI.pool.ratio.m$CI_low
+MCMC.CI.pool.ratio.m$CI_high
