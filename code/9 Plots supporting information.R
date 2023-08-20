@@ -11,8 +11,6 @@ library(zoo)
 
 plot.col<-viridis(7)
 
-setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
-
 source("code/1 Helper functions.R")
 
 ####supplementary figures######

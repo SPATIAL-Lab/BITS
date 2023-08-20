@@ -14,14 +14,14 @@ Model study 3 is the **Case study**, which is used to estimate possible 87Sr/86S
 The "data" folder contains both data used in this study, and published data from [Wooller et al., (2021)](https://www.science.org/doi/abs/10.1126/science.abg1134) for the case studies. 
 
 ## Software requirements
-The code is developed in R (ver. 4.0.5) calling the standalone JAGS (Just Another Gibbs Sampler) program, which is required before the code can be run. The JAGS program can be downloaded via [this link](https://sourceforge.net/projects/mcmc-jags/). Please make sure to download the version that is appropriate for your operating system.
+The code was developed in R (ver. 4.0.5) calling the standalone JAGS (Just Another Gibbs Sampler) program, which is required before the code can be run. The JAGS program can be downloaded via [this link](https://sourceforge.net/projects/mcmc-jags/). Please make sure to download the version that is appropriate for your operating system.
 
 To call JAGS from RStudio, the R packages "rjags" and "R2jags" are also required.
 
 Other R packages specified in the file headers help to visualize data.
 
 ## Related Publication
-This version of the code is for peer review only, and is subject to major updates.
+Yang et al., (in revision), BITS: a Bayesian Isotope Turnover and Sampling model for strontium isotopes in proboscideans and its potential utility in movement ecology, Methods in Ecology and Evolution.
 
 ## How to cite this software
 Yang, D. (2023), BITS: a Bayesian Isotope Turnover and Sampling model. https://github.com/SPATIAL-Lab/BITS

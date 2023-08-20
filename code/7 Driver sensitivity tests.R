@@ -10,10 +10,9 @@ library(EnvStats)
 
 source("code/1 Helper functions.R")
 
-plot.col<-viridis(7)
-plot.col.6<-inferno(6)
-
-setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
+#set plot colors
+plot.col <- viridis(7)
+plot.col.6 <- inferno(6)
 
 #####################################################################################
 ################################      Section 1      ################################
@@ -702,7 +701,7 @@ lines(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$a),col="red")
 plot(density(post.misha.inv2p.tsrwca$BUGSoutput$sims.list$Rin.m.cps.ac)) #autocorrelation is weak
 
 ###################################################################################################
-##############case study: Mammoth##############
+############## case study: Mammoth ##############
 ######Mammoth inversion with normal per step error: tsrw ########
 
 Ivo.rate.mean <- mean.wooller.rate #microns per day

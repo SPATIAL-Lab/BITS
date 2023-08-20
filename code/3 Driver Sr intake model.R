@@ -8,11 +8,6 @@ library(MASS)
 library(viridisLite)
 library(EnvStats)
 
-
-plot.col<-viridis(7)
-
-setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
-
 #adding the model component of food and water mixture as intake#
 intake <- read.csv("data/intake.csv")
 intake$Sr_conc
@@ -113,6 +108,7 @@ save(post.misha.intake, file = "out/post.misha.intake.RData")
 
 post.misha.intake$BUGSoutput$summary
 
+#save MAP estimate and HDI
 w.intake.map <- map_estimate(post.misha.intake$BUGSoutput$sims.list$w.contrib[,1])
 w.intake.hid <- hdi(post.misha.intake$BUGSoutput$sims.list$w.contrib[,1],0.89)
 w.intake.hid[2]

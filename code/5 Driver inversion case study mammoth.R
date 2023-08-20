@@ -10,11 +10,7 @@ library(EnvStats)
 
 source("code/1 Helper functions.R")
 
-plot.col<-viridis(7)
-
-setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
-
-####invterting laser abalition data from Wooller et al., 2021####
+#### invterting laser abalition data from Wooller et al., 2021 ####
 Wooller <- read.csv("data/Wooller_Data_S3.csv")
 
 Wooller.sr <- Wooller$Sr_Seg01
@@ -22,7 +18,7 @@ Wooller.sr <- Wooller$Sr_Seg01
 #dist is in cm, convert to micron
 wooller.micron <- Wooller$Dist_Seg01*10000
 
-#foward model simulating micromill results (500 micron band)
+#forward model simulating micromill results (500 micron band)
 mm.bwidth <- 500 #microns
 index.wooller.dist<- ceiling(wooller.micron/mm.bwidth) #this is about the same as averaging per 100 data points!
 
@@ -45,7 +41,7 @@ for(i in 1:mm.sim.n){
 
 plot(mm.sim.avg.Wooller.dist, mm.sim.avg.Wooller.sr,type="l")
 
-######ivory extension rate Wooller et al 2021####
+######tusk dentine extension rate Wooller et al 2021####
 wooller.COSr<-read.csv("data/Wooller_isotope_data.csv")
 
 wooller.rate <- rep(NA,27)
@@ -80,7 +76,7 @@ plot(sub.mm.sim.avg.dist, sub.mm.sim.avg.sr, type="l",
 #back to raw data, which is in the dist
 Wooller.sub.raw <- subset(Wooller, (wooller.micron> min(sub.mm.sim.avg.dist -250)) & (wooller.micron< 250 + max(sub.mm.sim.avg.dist)))
 
-########################inversion with precision 1e-7########
+######################## inversion with precision 1e-7 ########
 Ivo.rate.mean <- mean.wooller.rate #microns per day
 Ivo.rate.sd <- sd.wooller.rate
 

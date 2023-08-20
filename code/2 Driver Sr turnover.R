@@ -10,10 +10,6 @@ library(EnvStats)
 
 source("code/1 Helper functions.R")
 
-plot.col<-viridis(7)
-
-setwd("C:/Users/ydmag/Google Drive/U of U/Elephant movement/Sr-in-ivory")
-
 ####The one pool model is only used in sensitivity test in the supporting information#####
 
 misha.raw <- read.csv("data/Misha raw.csv")
@@ -45,7 +41,7 @@ plot(n.avg.misha.50.dist, n.avg.misha.50.sr, main="50 pt average",
 lines(n.avg.misha.50.dist, n.avg.misha.50.sr)
 hist(n.sd.misha.50.sr)
 
-##################2 pool turnover with 50 pt average (excursion rmv)################
+################## 2 pool turnover with 50 pt average (excursion rmv) ################
 ###prep data###
 ind.remv.50 <- which(n.avg.misha.50.dist > 17000 & n.avg.misha.50.dist < 17500 & n.avg.misha.50.sr < 0.7075)
 ind.remv.50 #36 37 38 39
@@ -57,7 +53,7 @@ n.avg.misha.50.sr.rmv <- n.avg.misha.50.sr[index.50.anom.remv]
 n.sd.misha.50.sr.rmv <- n.sd.misha.50.sr[index.50.anom.remv]
 
 
-#######This is the version used in the article, constraint on parameter b######
+####### This is the version used in the article, constraint on parameter b ######
 R.sd.mea <- n.sd.misha.50.sr.rmv
 dist.mea <- n.avg.misha.50.dist.rmv
 R.mea <- n.avg.misha.50.sr.rmv
@@ -161,5 +157,3 @@ MCMC.CI.pool.ratio$CI_high
 post.misha.pc2p3.Rin.89<- MCMC.CI.bound(post.misha.pc2p3$BUGSoutput$sims.list$Rin, 0.89)
 #calculate the mean of intake after switch
 intake.af <- mean(post.misha.pc2p3.Rin.89[[1]][90:750])
-
-
